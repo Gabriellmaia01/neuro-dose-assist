@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
@@ -27,7 +27,7 @@ import {
     type TrendDataPoint,
     type RiskAlert,
     type PatientAnalytics,
-    type PredictiveInsights as PredictiveInsightsType
+    type PredictiveInsights as TipoInsightsPreditivos
 } from "@/lib/analytics";
 import { getDoses, DoseRecord } from "@/lib/doses";
 import { getPatients, Patient } from "@/lib/patients";
@@ -47,290 +47,499 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function Analytics() {
+
+// =============================================================================
+// INTERFACES — Segregação de Interface (I do SOLID)
+// Cada interface representa um contrato enxuto e específico.
+// =============================================================================
+
+/** Dados brutos carregados do backend */
+interface DadosBrutos {
+    doses: DoseRecord[];
+    pacientes: Patient[];
+    medicamentos: Medication[];
+}
+
+/** Estado de carregamento da página */
+interface EstadoCarregamento {
+    carregando: boolean;
+    atualizando: boolean;
+}
+
+/** Opções de filtro selecionadas pelo usuário */
+interface OpcoesFiltro {
+    pacienteSelecionado: string;
+    periodoEmDias: string;
+}
+
+/** Resultado completo das métricas calculadas */
+interface MetricasCalculadas {
+    metricas: AnalyticsMetrics;
+    dadosTendencia: TrendDataPoint[];
+    alertasRisco: RiskAlert[];
+    analiticoPacientes: PatientAnalytics[];
+    insightsPreditivos: TipoInsightsPreditivos;
+}
+
+/** Props de um card de estatística individual */
+interface PropsCartaoEstatistica {
+    rotulo: string;
+    valor: ReactNode;
+    icone: ReactNode;
+    corBorda: string;
+}
+
+
+// =============================================================================
+// HOOKS CUSTOMIZADOS — Inversão de Dependência (D do SOLID)
+// A página depende de abstrações (hooks) e não de implementações concretas.
+// =============================================================================
+
+/**
+ * Hook: useDadosAnaliticos
+ * Responsabilidade Única (S): carregar e armazenar dados brutos do backend.
+ */
+function useDadosAnaliticos(): DadosBrutos & EstadoCarregamento & { recarregar: () => void } {
     const { user } = useAuth();
     const { effectiveUserId } = useClinic();
 
-    // Data states
     const [doses, setDoses] = useState<DoseRecord[]>([]);
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [medications, setMedications] = useState<Medication[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+    const [pacientes, setPacientes] = useState<Patient[]>([]);
+    const [medicamentos, setMedicamentos] = useState<Medication[]>([]);
+    const [carregando, setCarregando] = useState(true);
+    const [atualizando, setAtualizando] = useState(false);
 
-    // Filter states
-    const [selectedPatient, setSelectedPatient] = useState<string>("all");
-    const [timeRange, setTimeRange] = useState<string>("30");
-
-    // Load data
-    const loadData = async (showRefresh = false) => {
+    const carregarDados = async (mostrarAtualizacao = false) => {
         if (!user || !effectiveUserId) return;
 
-        if (showRefresh) setRefreshing(true);
-        else setLoading(true);
+        if (mostrarAtualizacao) setAtualizando(true);
+        else setCarregando(true);
 
         try {
-            const [dosesData, patientsData, medicationsData] = await Promise.all([
+            const [dadosDoses, dadosPacientes, dadosMedicamentos] = await Promise.all([
                 getDoses(effectiveUserId),
                 getPatients(effectiveUserId),
                 getMedications(effectiveUserId)
             ]);
 
-            setDoses(dosesData || []);
-            setPatients(patientsData || []);
-            setMedications(medicationsData || []);
-        } catch (error) {
-            console.error("Error loading analytics data:", error);
+            setDoses(dadosDoses || []);
+            setPacientes(dadosPacientes || []);
+            setMedicamentos(dadosMedicamentos || []);
+        } catch (erro) {
+            console.error("Erro ao carregar dados de analytics:", erro);
         } finally {
-            setLoading(false);
-            setRefreshing(false);
+            setCarregando(false);
+            setAtualizando(false);
         }
     };
 
     useEffect(() => {
-        loadData();
+        carregarDados();
     }, [user, effectiveUserId]);
 
-    // Filter doses by patient
-    const filteredDoses = useMemo(() => {
-        if (selectedPatient === "all") return doses;
-        return doses.filter(d => d.patientId === selectedPatient);
-    }, [doses, selectedPatient]);
+    const recarregar = () => carregarDados(true);
 
-    // Calculate analytics
-    const metrics: AnalyticsMetrics = useMemo(() => {
-        return aggregateMetrics(filteredDoses, patients);
-    }, [filteredDoses, patients]);
+    return { doses, pacientes, medicamentos, carregando, atualizando, recarregar };
+}
 
-    const trendData: TrendDataPoint[] = useMemo(() => {
-        return calculateTrendData(filteredDoses, parseInt(timeRange));
-    }, [filteredDoses, timeRange]);
+/**
+ * Hook: useFiltros
+ * Responsabilidade Única (S): gerenciar o estado dos filtros da página.
+ */
+function useFiltros(): OpcoesFiltro & {
+    setPacienteSelecionado: (valor: string) => void;
+    setPeriodoEmDias: (valor: string) => void;
+} {
+    const [pacienteSelecionado, setPacienteSelecionado] = useState<string>("all");
+    const [periodoEmDias, setPeriodoEmDias] = useState<string>("30");
 
-    const riskAlerts: RiskAlert[] = useMemo(() => {
-        return identifyRiskPatterns(filteredDoses, patients);
-    }, [filteredDoses, patients]);
+    return { pacienteSelecionado, setPacienteSelecionado, periodoEmDias, setPeriodoEmDias };
+}
 
-    const patientAnalytics: PatientAnalytics[] = useMemo(() => {
-        // Get insights for patients that have doses
-        const patientsWithDoses = new Set(doses.map(d => d.patientId));
-        return patients
-            .filter(p => p.id && patientsWithDoses.has(p.id))
+/**
+ * Hook: useMetricasCalculadas
+ * Responsabilidade Única (S): derivar todas as métricas analíticas a partir dos dados brutos e filtros.
+ */
+function useMetricasCalculadas(
+    dados: DadosBrutos,
+    filtros: OpcoesFiltro
+): MetricasCalculadas {
+    const { doses, pacientes, medicamentos } = dados;
+    const { pacienteSelecionado, periodoEmDias } = filtros;
+
+    const dosesFiltradas = useMemo(() => {
+        if (pacienteSelecionado === "all") return doses;
+        return doses.filter(d => d.patientId === pacienteSelecionado);
+    }, [doses, pacienteSelecionado]);
+
+    const metricas = useMemo(
+        () => aggregateMetrics(dosesFiltradas, pacientes),
+        [dosesFiltradas, pacientes]
+    );
+
+    const dadosTendencia = useMemo(
+        () => calculateTrendData(dosesFiltradas, parseInt(periodoEmDias)),
+        [dosesFiltradas, periodoEmDias]
+    );
+
+    const alertasRisco = useMemo(
+        () => identifyRiskPatterns(dosesFiltradas, pacientes),
+        [dosesFiltradas, pacientes]
+    );
+
+    const analiticoPacientes = useMemo(() => {
+        const pacientesComDoses = new Set(doses.map(d => d.patientId));
+        return pacientes
+            .filter(p => p.id && pacientesComDoses.has(p.id))
             .map(p => getPatientInsights(p.id!, p.name, doses));
-    }, [doses, patients]);
+    }, [doses, pacientes]);
 
-    const predictiveInsights: PredictiveInsightsType = useMemo(() => {
-        return generatePredictiveInsights(
-            selectedPatient === "all" ? null : selectedPatient,
-            filteredDoses,
-            medications
-        );
-    }, [filteredDoses, medications, selectedPatient]);
+    const insightsPreditivos = useMemo(
+        () => generatePredictiveInsights(
+            pacienteSelecionado === "all" ? null : pacienteSelecionado,
+            dosesFiltradas,
+            medicamentos
+        ),
+        [dosesFiltradas, medicamentos, pacienteSelecionado]
+    );
 
-    const getTrendIcon = () => {
-        if (metrics.trendDirection === "up") return <TrendingUp className="w-4 h-4 text-success" />;
-        if (metrics.trendDirection === "down") return <TrendingDown className="w-4 h-4 text-destructive" />;
-        return <Minus className="w-4 h-4 text-muted-foreground" />;
-    };
+    return { metricas, dadosTendencia, alertasRisco, analiticoPacientes, insightsPreditivos };
+}
 
-    if (loading) {
-        return (
-            <MainLayout>
-                <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                    <p className="text-muted-foreground font-medium">Carregando analytics...</p>
+
+// =============================================================================
+// COMPONENTES PUROS — Responsabilidade Única (S) + Aberto/Fechado (O)
+// Cada componente renderiza UMA parte da UI e é extensível via props.
+// =============================================================================
+
+/** Indicador de carregamento exibido enquanto os dados são buscados */
+function IndicadorCarregamento() {
+    return (
+        <MainLayout>
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground font-medium">Carregando analytics...</p>
+            </div>
+        </MainLayout>
+    );
+}
+
+/** Cabeçalho da página com título e descrição */
+function Cabecalho() {
+    return (
+        <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-lg">
+                <LineChart className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                    Analytics Avançado
+                </h1>
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                    Insights preditivos e análise inteligente do tratamento
+                </p>
+            </div>
+        </div>
+    );
+}
+
+/** Painel de filtros: seletor de paciente, período e botão de atualizar */
+function PainelFiltros({
+    pacientes,
+    filtros,
+    atualizando,
+    aoSelecionarPaciente,
+    aoSelecionarPeriodo,
+    aoRecarregar,
+}: {
+    pacientes: Patient[];
+    filtros: OpcoesFiltro;
+    atualizando: boolean;
+    aoSelecionarPaciente: (valor: string) => void;
+    aoSelecionarPeriodo: (valor: string) => void;
+    aoRecarregar: () => void;
+}) {
+    return (
+        <div className="flex items-center gap-3">
+            <Select value={filtros.pacienteSelecionado} onValueChange={aoSelecionarPaciente}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Paciente" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos pacientes</SelectItem>
+                    {pacientes.map(p => (
+                        <SelectItem key={p.id} value={p.id || ""}>
+                            {p.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            <Select value={filtros.periodoEmDias} onValueChange={aoSelecionarPeriodo}>
+                <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Período" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="7">7 dias</SelectItem>
+                    <SelectItem value="14">14 dias</SelectItem>
+                    <SelectItem value="30">30 dias</SelectItem>
+                    <SelectItem value="60">60 dias</SelectItem>
+                    <SelectItem value="90">90 dias</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={aoRecarregar}
+                disabled={atualizando}
+            >
+                <RefreshCw className={cn("w-4 h-4", atualizando && "animate-spin")} />
+            </Button>
+        </div>
+    );
+}
+
+/** Card individual de estatística rápida */
+function CartaoEstatistica({ rotulo, valor, icone, corBorda }: PropsCartaoEstatistica) {
+    return (
+        <div className={cn("glass-card rounded-xl p-4 border-l-4", corBorda)}>
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {rotulo}
+                    </p>
+                    <div className="mt-1">{valor}</div>
                 </div>
-            </MainLayout>
-        );
+                {icone}
+            </div>
+        </div>
+    );
+}
+
+/** Resolve o ícone e texto de tendência a partir da direção */
+function obterConteudoTendencia(direcao: "up" | "down" | "stable") {
+    const mapa = {
+        up: {
+            icone: <TrendingUp className="w-4 h-4 text-success" />,
+            texto: "Alta",
+            corTexto: "text-success",
+        },
+        down: {
+            icone: <TrendingDown className="w-4 h-4 text-destructive" />,
+            texto: "Queda",
+            corTexto: "text-destructive",
+        },
+        stable: {
+            icone: <Minus className="w-4 h-4 text-muted-foreground" />,
+            texto: "Estável",
+            corTexto: "text-muted-foreground",
+        },
+    };
+    return mapa[direcao];
+}
+
+/** Resolve a cor do texto com base em um valor e limiares */
+function obterCorPorLimiar(valor: number, limiarAlto: number, limiarMedio: number): string {
+    if (valor >= limiarAlto) return "text-success";
+    if (valor >= limiarMedio) return "text-warning";
+    return "text-destructive";
+}
+
+/** Grade com os 6 cards de estatísticas rápidas */
+function GradeEstatisticas({ metricas }: { metricas: AnalyticsMetrics }) {
+    const tendencia = obterConteudoTendencia(metricas.trendDirection);
+
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <CartaoEstatistica
+                rotulo="Total Doses"
+                valor={<p className="text-2xl font-display font-bold">{metricas.totalDoses}</p>}
+                icone={<Pill className="w-8 h-8 text-primary/60" />}
+                corBorda="border-l-primary"
+            />
+
+            <CartaoEstatistica
+                rotulo="Pacientes"
+                valor={<p className="text-2xl font-display font-bold">{metricas.totalPatients}</p>}
+                icone={<Users className="w-8 h-8 text-info/60" />}
+                corBorda="border-l-info"
+            />
+
+            <CartaoEstatistica
+                rotulo="Eficácia"
+                valor={
+                    <p className={cn(
+                        "text-2xl font-display font-bold",
+                        obterCorPorLimiar(metricas.avgEfficacy, 70, 50)
+                    )}>
+                        {metricas.avgEfficacy}%
+                    </p>
+                }
+                icone={<Activity className="w-8 h-8 text-success/60" />}
+                corBorda="border-l-success"
+            />
+
+            <CartaoEstatistica
+                rotulo="Adesão"
+                valor={
+                    <p className={cn(
+                        "text-2xl font-display font-bold",
+                        obterCorPorLimiar(metricas.adherenceRate, 80, 60)
+                    )}>
+                        {metricas.adherenceRate}%
+                    </p>
+                }
+                icone={<Brain className="w-8 h-8 text-purple-500/60" />}
+                corBorda="border-l-purple-500"
+            />
+
+            <CartaoEstatistica
+                rotulo="Alertas"
+                valor={
+                    <p className={cn(
+                        "text-2xl font-display font-bold",
+                        metricas.riskAlerts > 0 ? "text-warning" : "text-success"
+                    )}>
+                        {metricas.riskAlerts}
+                    </p>
+                }
+                icone={<Sparkles className="w-8 h-8 text-warning/60" />}
+                corBorda="border-l-warning"
+            />
+
+            <CartaoEstatistica
+                rotulo="Tendência"
+                valor={
+                    <div className="flex items-center gap-2">
+                        {tendencia.icone}
+                        <span className={cn("text-lg font-display font-bold", tendencia.corTexto)}>
+                            {tendencia.texto}
+                        </span>
+                    </div>
+                }
+                icone={null}
+                corBorda="border-l-accent"
+            />
+        </div>
+    );
+}
+
+/** Painel lateral com anel de adesão e indicadores de risco */
+function PainelAdesao({
+    metricas,
+    periodoEmDias,
+    alertasRisco,
+}: {
+    metricas: AnalyticsMetrics;
+    periodoEmDias: string;
+    alertasRisco: RiskAlert[];
+}) {
+    return (
+        <div className="space-y-6">
+            {/* Anel de Adesão */}
+            <div className="glass-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Activity className="w-4 h-4 text-primary" />
+                    </div>
+                    <h3 className="font-display font-semibold text-lg">Taxa de Adesão</h3>
+                </div>
+                <div className="flex justify-center py-4">
+                    <AdherenceChart
+                        value={metricas.adherenceRate}
+                        size="lg"
+                        trend={metricas.trendDirection}
+                    />
+                </div>
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                    Baseado nos últimos {periodoEmDias} dias
+                </p>
+            </div>
+
+            {/* Indicadores de Risco */}
+            <RiskIndicators alerts={alertasRisco} maxVisible={4} />
+        </div>
+    );
+}
+
+/** Grade principal com gráficos (coluna esquerda) e métricas/IA (coluna direita) */
+function GradeAnaliticos({
+    dadosTendencia,
+    analiticoPacientes,
+    metricas,
+    periodoEmDias,
+    alertasRisco,
+}: {
+    dadosTendencia: TrendDataPoint[];
+    analiticoPacientes: PatientAnalytics[];
+    metricas: AnalyticsMetrics;
+    periodoEmDias: string;
+    alertasRisco: RiskAlert[];
+}) {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Coluna Esquerda — Gráficos */}
+            <div className="lg:col-span-2 space-y-6">
+                <TrendAnalysis data={dadosTendencia} height={280} />
+                <PatientInsights analytics={analiticoPacientes} />
+            </div>
+
+            {/* Coluna Direita — Métricas e IA */}
+            <PainelAdesao
+                metricas={metricas}
+                periodoEmDias={periodoEmDias}
+                alertasRisco={alertasRisco}
+            />
+        </div>
+    );
+}
+
+
+// =============================================================================
+// COMPONENTE PRINCIPAL — Composição via Inversão de Dependência (D do SOLID)
+// A página é apenas uma composição de hooks e componentes especializados.
+// =============================================================================
+
+export default function Analytics() {
+    const dados = useDadosAnaliticos();
+    const filtros = useFiltros();
+    const calculadas = useMetricasCalculadas(dados, filtros);
+
+    if (dados.carregando) {
+        return <IndicadorCarregamento />;
     }
 
     return (
         <MainLayout>
             <div className="space-y-8 pb-8">
-                {/* Header */}
+                {/* Cabeçalho + Filtros */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-lg">
-                            <LineChart className="w-6 h-6 text-primary-foreground" />
-                        </div>
-                        <div>
-                            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-                                Analytics Avançado
-                            </h1>
-                            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                                Insights preditivos e análise inteligente do tratamento
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Filters */}
-                    <div className="flex items-center gap-3">
-                        <Select value={selectedPatient} onValueChange={setSelectedPatient}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Paciente" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos pacientes</SelectItem>
-                                {patients.map(p => (
-                                    <SelectItem key={p.id} value={p.id || ""}>
-                                        {p.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={timeRange} onValueChange={setTimeRange}>
-                            <SelectTrigger className="w-[140px]">
-                                <SelectValue placeholder="Período" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="7">7 dias</SelectItem>
-                                <SelectItem value="14">14 dias</SelectItem>
-                                <SelectItem value="30">30 dias</SelectItem>
-                                <SelectItem value="60">60 dias</SelectItem>
-                                <SelectItem value="90">90 dias</SelectItem>
-                            </SelectContent>
-                        </Select>
-
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => loadData(true)}
-                            disabled={refreshing}
-                        >
-                            <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-                        </Button>
-                    </div>
+                    <Cabecalho />
+                    <PainelFiltros
+                        pacientes={dados.pacientes}
+                        filtros={filtros}
+                        atualizando={dados.atualizando}
+                        aoSelecionarPaciente={filtros.setPacienteSelecionado}
+                        aoSelecionarPeriodo={filtros.setPeriodoEmDias}
+                        aoRecarregar={dados.recarregar}
+                    />
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Doses</p>
-                                <p className="text-2xl font-display font-bold mt-1">{metrics.totalDoses}</p>
-                            </div>
-                            <Pill className="w-8 h-8 text-primary/60" />
-                        </div>
-                    </div>
+                {/* Estatísticas Rápidas */}
+                <GradeEstatisticas metricas={calculadas.metricas} />
 
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pacientes</p>
-                                <p className="text-2xl font-display font-bold mt-1">{metrics.totalPatients}</p>
-                            </div>
-                            <Users className="w-8 h-8 text-info/60" />
-                        </div>
-                    </div>
+                {/* Grade Analítica Principal */}
+                <GradeAnaliticos
+                    dadosTendencia={calculadas.dadosTendencia}
+                    analiticoPacientes={calculadas.analiticoPacientes}
+                    metricas={calculadas.metricas}
+                    periodoEmDias={filtros.periodoEmDias}
+                    alertasRisco={calculadas.alertasRisco}
+                />
 
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Eficácia</p>
-                                <p className={cn(
-                                    "text-2xl font-display font-bold mt-1",
-                                    metrics.avgEfficacy >= 70 ? "text-success" :
-                                        metrics.avgEfficacy >= 50 ? "text-warning" : "text-destructive"
-                                )}>
-                                    {metrics.avgEfficacy}%
-                                </p>
-                            </div>
-                            <Activity className="w-8 h-8 text-success/60" />
-                        </div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-purple-500">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Adesão</p>
-                                <p className={cn(
-                                    "text-2xl font-display font-bold mt-1",
-                                    metrics.adherenceRate >= 80 ? "text-success" :
-                                        metrics.adherenceRate >= 60 ? "text-warning" : "text-destructive"
-                                )}>
-                                    {metrics.adherenceRate}%
-                                </p>
-                            </div>
-                            <Brain className="w-8 h-8 text-purple-500/60" />
-                        </div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Alertas</p>
-                                <p className={cn(
-                                    "text-2xl font-display font-bold mt-1",
-                                    metrics.riskAlerts > 0 ? "text-warning" : "text-success"
-                                )}>
-                                    {metrics.riskAlerts}
-                                </p>
-                            </div>
-                            <Sparkles className="w-8 h-8 text-warning/60" />
-                        </div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4 border-l-4 border-l-accent">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tendência</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    {getTrendIcon()}
-                                    <span className={cn(
-                                        "text-lg font-display font-bold",
-                                        metrics.trendDirection === "up" ? "text-success" :
-                                            metrics.trendDirection === "down" ? "text-destructive" : "text-muted-foreground"
-                                    )}>
-                                        {metrics.trendDirection === "up" ? "Alta" :
-                                            metrics.trendDirection === "down" ? "Queda" : "Estável"}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Analytics Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Charts */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Trend Analysis */}
-                        <TrendAnalysis data={trendData} height={280} />
-
-                        {/* Patient Insights */}
-                        <PatientInsights analytics={patientAnalytics} />
-                    </div>
-
-                    {/* Right Column - Metrics & AI */}
-                    <div className="space-y-6">
-                        {/* Adherence Ring */}
-                        <div className="glass-card rounded-2xl p-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    <Activity className="w-4 h-4 text-primary" />
-                                </div>
-                                <h3 className="font-display font-semibold text-lg">Taxa de Adesão</h3>
-                            </div>
-                            <div className="flex justify-center py-4">
-                                <AdherenceChart
-                                    value={metrics.adherenceRate}
-                                    size="lg"
-                                    trend={metrics.trendDirection}
-                                />
-                            </div>
-                            <p className="text-center text-sm text-muted-foreground mt-2">
-                                Baseado nos últimos {timeRange} dias
-                            </p>
-                        </div>
-
-                        {/* Risk Indicators */}
-                        <RiskIndicators alerts={riskAlerts} maxVisible={4} />
-                    </div>
-                </div>
-
-                {/* Predictive Card - Full Width */}
-                <PredictiveCard insights={predictiveInsights} />
+                {/* Card Preditivo — Largura Total */}
+                <PredictiveCard insights={calculadas.insightsPreditivos} />
             </div>
         </MainLayout>
     );
