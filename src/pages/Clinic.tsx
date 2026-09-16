@@ -33,7 +33,6 @@ import {
     Check,
     X,
     UserPlus,
-    PartyPopper,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -54,84 +53,143 @@ import {
 } from "@/lib/clinics";
 import { toast } from "@/hooks/use-toast";
 
-const roleIcons: Record<MemberRole, React.ElementType> = {
+
+// =============================================================================
+// CONSTANTES — Mapeamentos de estilo e rótulos
+// =============================================================================
+
+const ICONES_FUNCAO: Record<MemberRole, React.ElementType> = {
     owner: Crown,
     admin: Shield,
     member: User,
 };
 
-const roleLabels: Record<MemberRole, string> = {
+const ROTULOS_FUNCAO: Record<MemberRole, string> = {
     owner: "Proprietário",
     admin: "Administrador",
     member: "Membro",
 };
 
-const roleStyles: Record<MemberRole, string> = {
+const ESTILOS_FUNCAO: Record<MemberRole, string> = {
     owner: "bg-warning/10 text-warning border-warning/20",
     admin: "bg-primary/10 text-primary border-primary/20",
     member: "bg-muted text-muted-foreground",
 };
 
-export default function ClinicPage() {
+
+// =============================================================================
+// INTERFACES — Segregação de Interface (I do SOLID)
+// =============================================================================
+
+/** Dados do formulário de criação de clínica */
+interface DadosFormularioCriacao {
+    nomeClinica: string;
+}
+
+/** Dados do formulário de convite */
+interface DadosFormularioConvite {
+    email: string;
+    funcao: MemberRole;
+}
+
+/** Props de um membro da equipe */
+interface PropsCartaoMembro {
+    email: string;
+    nome?: string;
+    funcao: MemberRole;
+    uid: string;
+    ehProprietario: boolean;
+    aoRemover: (uid: string) => void;
+}
+
+/** Props do banner de convite pendente */
+interface PropsBannerConvite {
+    convite: ClinicInvite;
+    salvando: boolean;
+    aoAceitar: () => void;
+    aoRecusar: () => void;
+}
+
+/** Props do card de informações da clínica */
+interface PropsInfoClinica {
+    clinica: Clinic;
+    ehProprietario: boolean;
+}
+
+
+// =============================================================================
+// HOOKS CUSTOMIZADOS — Inversão de Dependência (D do SOLID)
+// =============================================================================
+
+/**
+ * Hook: useDadosClinica
+ * Responsabilidade Única (S): carregar e gerenciar dados da clínica.
+ */
+function useDadosClinica() {
     const { user } = useAuth();
     const { refreshClinic } = useClinic();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [clinic, setClinic] = useState<Clinic | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
 
-    // Invite from URL
-    const [pendingUrlInvite, setPendingUrlInvite] = useState<ClinicInvite | null>(null);
-    const [inviteLoading, setInviteLoading] = useState(false);
+    const [clinica, setClinica] = useState<Clinic | null>(null);
+    const [carregando, setCarregando] = useState(true);
+    const [salvando, setSalvando] = useState(false);
 
-    // Dialogs
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-
-    // Form states
-    const [clinicName, setClinicName] = useState("");
-    const [inviteEmail, setInviteEmail] = useState("");
-    const [inviteRole, setInviteRole] = useState<MemberRole>("member");
-
-    // Load clinic data
     useEffect(() => {
-        const loadData = async () => {
+        const carregarDados = async () => {
             if (!user?.email) return;
 
             try {
-                setLoading(true);
-                const clinicData = await getUserClinic(user.uid);
-                setClinic(clinicData);
-            } catch (error) {
-                console.error("Error loading clinic data:", error);
+                setCarregando(true);
+                const dadosClinica = await getUserClinic(user.uid);
+                setClinica(dadosClinica);
+            } catch (erro) {
+                console.error("Erro ao carregar dados da clínica:", erro);
             } finally {
-                setLoading(false);
+                setCarregando(false);
             }
         };
 
-        loadData();
+        carregarDados();
     }, [user]);
 
-    // Handle invite URL params
-    useEffect(() => {
-        const loadInvite = async () => {
-            const inviteId = searchParams.get("invite");
-            const clinicId = searchParams.get("clinic");
+    const recarregar = async () => {
+        if (!user) return;
+        const atualizada = await getUserClinic(user.uid);
+        setClinica(atualizada);
+        await refreshClinic();
+    };
 
-            if (!inviteId || !clinicId || !user) return;
+    const ehProprietario = clinica?.ownerId === user?.uid;
+
+    return { clinica, carregando, salvando, setSalvando, recarregar, user, ehProprietario, refreshClinic };
+}
+
+/**
+ * Hook: useConviteUrl
+ * Responsabilidade Única (S): processar convites recebidos via URL.
+ */
+function useConviteUrl(user: any) {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [convitePendente, setConvitePendente] = useState<ClinicInvite | null>(null);
+    const [carregandoConvite, setCarregandoConvite] = useState(false);
+
+    useEffect(() => {
+        const carregarConvite = async () => {
+            const idConvite = searchParams.get("invite");
+            const idClinica = searchParams.get("clinic");
+
+            if (!idConvite || !idClinica || !user) return;
 
             try {
-                setInviteLoading(true);
-                const invite = await getInviteById(clinicId, inviteId);
+                setCarregandoConvite(true);
+                const convite = await getInviteById(idClinica, idConvite);
 
-                if (invite && invite.status === "pending") {
-                    setPendingUrlInvite(invite);
-                } else if (invite && invite.status === "accepted") {
+                if (convite && convite.status === "pending") {
+                    setConvitePendente(convite);
+                } else if (convite && convite.status === "accepted") {
                     toast({
                         title: "Convite já aceito",
                         description: "Este convite já foi utilizado anteriormente.",
                     });
-                    // Clean URL params
                     setSearchParams({});
                 } else {
                     toast({
@@ -141,47 +199,59 @@ export default function ClinicPage() {
                     });
                     setSearchParams({});
                 }
-            } catch (error) {
-                console.error("Error loading invite:", error);
+            } catch (erro) {
+                console.error("Erro ao carregar convite:", erro);
             } finally {
-                setInviteLoading(false);
+                setCarregandoConvite(false);
             }
         };
 
-        loadInvite();
+        carregarConvite();
     }, [searchParams, user]);
 
-    const handleCreateClinic = async () => {
-        if (!user?.email || !clinicName.trim()) return;
+    const limparConvite = () => {
+        setConvitePendente(null);
+        setSearchParams({});
+    };
+
+    const obterIdClinicaUrl = () => searchParams.get("clinic");
+
+    return { convitePendente, carregandoConvite, limparConvite, obterIdClinicaUrl };
+}
+
+/**
+ * Hook: useAcoesClinica
+ * Responsabilidade Única (S): operações de negócio — criar clínica, convidar, aceitar, remover.
+ */
+function useAcoesClinica(
+    dados: ReturnType<typeof useDadosClinica>,
+    conviteUrl: ReturnType<typeof useConviteUrl>
+) {
+    const { user, setSalvando, recarregar } = dados;
+
+    const criarClinica = async (nome: string) => {
+        if (!user?.email || !nome.trim()) return;
 
         try {
-            setSaving(true);
-            await createClinic(clinicName.trim(), user.uid, user.email);
+            setSalvando(true);
+            await createClinic(nome.trim(), user.uid, user.email);
             toast({
                 title: "Clínica criada!",
-                description: `${clinicName} foi criada com sucesso.`,
+                description: `${nome} foi criada com sucesso.`,
             });
-
-            const updatedClinic = await getUserClinic(user.uid);
-            setClinic(updatedClinic);
-            await refreshClinic();
-            setIsCreateDialogOpen(false);
-            setClinicName("");
-        } catch (error) {
-            console.error("Error creating clinic:", error);
-            toast({
-                title: "Erro ao criar clínica",
-                variant: "destructive",
-            });
+            await recarregar();
+        } catch (erro) {
+            console.error("Erro ao criar clínica:", erro);
+            toast({ title: "Erro ao criar clínica", variant: "destructive" });
         } finally {
-            setSaving(false);
+            setSalvando(false);
         }
     };
 
-    const handleSendInvite = async () => {
-        if (!user || !clinic?.id || !inviteEmail.trim()) return;
+    const enviarConvite = async (clinicaId: string, nomeClinica: string, email: string, funcao: MemberRole) => {
+        if (!user || !email.trim()) return;
 
-        if (!inviteEmail.includes("@")) {
+        if (!email.includes("@")) {
             toast({
                 title: "Email inválido",
                 description: "O email deve conter @. Verifique e tente novamente.",
@@ -191,410 +261,642 @@ export default function ClinicPage() {
         }
 
         try {
-            setSaving(true);
-            const result = await sendClinicInvite(
-                clinic.id,
-                clinic.name,
-                inviteEmail.trim(),
-                inviteRole,
+            setSalvando(true);
+            const resultado = await sendClinicInvite(
+                clinicaId,
+                nomeClinica,
+                email.trim(),
+                funcao,
                 user.uid,
                 user.displayName || user.email || undefined
             );
 
-            if (result.emailSent) {
+            if (resultado.emailSent) {
                 toast({
                     title: "Convite enviado por email! 📧",
-                    description: `Um email de convite foi enviado para ${inviteEmail}`,
+                    description: `Um email de convite foi enviado para ${email}`,
                 });
             } else {
                 toast({
                     title: "Convite criado!",
-                    description: `Convite para ${inviteEmail} foi salvo. Configure o EmailJS para enviar por email.`,
+                    description: `Convite para ${email} foi salvo. Configure o EmailJS para enviar por email.`,
                 });
             }
-
-            setIsInviteDialogOpen(false);
-            setInviteEmail("");
-            setInviteRole("member");
-        } catch (error) {
-            console.error("Error sending invite:", error);
-            toast({
-                title: "Erro ao enviar convite",
-                variant: "destructive",
-            });
+        } catch (erro) {
+            console.error("Erro ao enviar convite:", erro);
+            toast({ title: "Erro ao enviar convite", variant: "destructive" });
         } finally {
-            setSaving(false);
+            setSalvando(false);
         }
     };
 
-    const handleAcceptUrlInvite = async () => {
-        if (!user || !pendingUrlInvite?.id) return;
+    const aceitarConviteUrl = async () => {
+        if (!user || !conviteUrl.convitePendente?.id) return;
 
-        const clinicId = searchParams.get("clinic");
-        if (!clinicId) return;
+        const idClinica = conviteUrl.obterIdClinicaUrl();
+        if (!idClinica) return;
 
         try {
-            setSaving(true);
+            setSalvando(true);
             await acceptClinicInvite(
-                pendingUrlInvite.id,
-                clinicId,
+                conviteUrl.convitePendente.id,
+                idClinica,
                 user.uid,
                 user.email || "",
                 user.displayName || undefined
             );
             toast({
                 title: "Convite aceito! 🎉",
-                description: `Você agora faz parte de ${pendingUrlInvite.clinicName}`,
+                description: `Você agora faz parte de ${conviteUrl.convitePendente.clinicName}`,
             });
 
-            setPendingUrlInvite(null);
-            setSearchParams({});
-
-            // Reload clinic data
-            const updatedClinic = await getUserClinic(user.uid);
-            setClinic(updatedClinic);
-            await refreshClinic();
-        } catch (error: any) {
-            console.error("Error accepting invite:", error);
+            conviteUrl.limparConvite();
+            await recarregar();
+        } catch (erro: any) {
+            console.error("Erro ao aceitar convite:", erro);
             toast({
                 title: "Erro ao aceitar convite",
-                description: error?.message || "Tente novamente.",
+                description: erro?.message || "Tente novamente.",
                 variant: "destructive",
             });
         } finally {
-            setSaving(false);
+            setSalvando(false);
         }
     };
 
-    const handleDeclineUrlInvite = () => {
-        setPendingUrlInvite(null);
-        setSearchParams({});
+    const recusarConviteUrl = () => {
+        conviteUrl.limparConvite();
         toast({ title: "Convite recusado" });
     };
 
-    const handleRemoveMember = async (memberUid: string) => {
-        if (!clinic?.id) return;
-
+    const removerMembro = async (clinicaId: string, uidMembro: string) => {
         if (!confirm("Tem certeza que deseja remover este membro?")) return;
 
         try {
-            await removeClinicMember(clinic.id, memberUid);
+            await removeClinicMember(clinicaId, uidMembro);
             toast({ title: "Membro removido" });
-
-            const updatedClinic = await getUserClinic(user!.uid);
-            setClinic(updatedClinic);
-            await refreshClinic();
-        } catch (error) {
-            console.error("Error removing member:", error);
-            toast({
-                title: "Erro ao remover membro",
-                variant: "destructive",
-            });
+            await recarregar();
+        } catch (erro) {
+            console.error("Erro ao remover membro:", erro);
+            toast({ title: "Erro ao remover membro", variant: "destructive" });
         }
     };
 
-    const isOwner = clinic?.ownerId === user?.uid;
+    return { criarClinica, enviarConvite, aceitarConviteUrl, recusarConviteUrl, removerMembro };
+}
+
+/**
+ * Hook: useFormulariosClinica
+ * Responsabilidade Única (S): gerenciar estado dos formulários (criação e convite).
+ */
+function useFormulariosClinica() {
+    const [dialogoCriacaoAberto, setDialogoCriacaoAberto] = useState(false);
+    const [dialogoConviteAberto, setDialogoConviteAberto] = useState(false);
+    const [nomeClinica, setNomeClinica] = useState("");
+    const [emailConvite, setEmailConvite] = useState("");
+    const [funcaoConvite, setFuncaoConvite] = useState<MemberRole>("member");
+
+    const resetarFormularioCriacao = () => {
+        setNomeClinica("");
+        setDialogoCriacaoAberto(false);
+    };
+
+    const resetarFormularioConvite = () => {
+        setEmailConvite("");
+        setFuncaoConvite("member");
+        setDialogoConviteAberto(false);
+    };
+
+    return {
+        dialogoCriacaoAberto,
+        setDialogoCriacaoAberto,
+        dialogoConviteAberto,
+        setDialogoConviteAberto,
+        nomeClinica,
+        setNomeClinica,
+        emailConvite,
+        setEmailConvite,
+        funcaoConvite,
+        setFuncaoConvite,
+        resetarFormularioCriacao,
+        resetarFormularioConvite,
+    };
+}
+
+
+// =============================================================================
+// COMPONENTES PUROS — Responsabilidade Única (S) + Aberto/Fechado (O)
+// =============================================================================
+
+/** Indicador de carregamento */
+function IndicadorCarregamento() {
+    return (
+        <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span className="text-muted-foreground font-medium">Carregando...</span>
+        </div>
+    );
+}
+
+/** Cabeçalho da página */
+function Cabecalho() {
+    return (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+                    <Building2 className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                    <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                        Clínica
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Gerencie sua equipe e colaboradores
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/** Banner de convite pendente recebido via URL */
+function BannerConvitePendente({ convite, salvando, aoAceitar, aoRecusar }: PropsBannerConvite) {
+    return (
+        <Card className="border-primary/50 bg-primary/5">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                    <UserPlus className="w-5 h-5" />
+                    Convite Recebido
+                </CardTitle>
+                <CardDescription>
+                    Você foi convidado para participar de uma clínica
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
+                    <div>
+                        <p className="font-semibold text-lg">{convite.clinicName}</p>
+                        <p className="text-sm text-muted-foreground">
+                            Função: {ROTULOS_FUNCAO[convite.role]}
+                        </p>
+                        {convite.invitedByName && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Convidado por: {convite.invitedByName}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive"
+                            onClick={aoRecusar}
+                        >
+                            <X className="w-4 h-4 mr-1" />
+                            Recusar
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="neuro"
+                            onClick={aoAceitar}
+                            disabled={salvando}
+                        >
+                            {salvando ? (
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                                <Check className="w-4 h-4 mr-1" />
+                            )}
+                            Aceitar
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+/** Estado vazio — nenhuma clínica encontrada */
+function EstadoSemClinica({
+    dialogoAberto,
+    aoMudarDialogo,
+    nomeClinica,
+    aoMudarNome,
+    salvando,
+    aoCriar,
+}: {
+    dialogoAberto: boolean;
+    aoMudarDialogo: (aberto: boolean) => void;
+    nomeClinica: string;
+    aoMudarNome: (nome: string) => void;
+    salvando: boolean;
+    aoCriar: () => void;
+}) {
+    return (
+        <Card>
+            <CardContent className="py-12 text-center">
+                <Building2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                <h3 className="text-xl font-semibold mb-2">Você ainda não tem uma clínica</h3>
+                <p className="text-muted-foreground mb-6">
+                    Crie sua clínica para começar a gerenciar sua equipe
+                </p>
+
+                <DialogoCriarClinica
+                    aberto={dialogoAberto}
+                    aoMudar={aoMudarDialogo}
+                    nomeClinica={nomeClinica}
+                    aoMudarNome={aoMudarNome}
+                    salvando={salvando}
+                    aoCriar={aoCriar}
+                />
+            </CardContent>
+        </Card>
+    );
+}
+
+/** Diálogo para criar nova clínica */
+function DialogoCriarClinica({
+    aberto,
+    aoMudar,
+    nomeClinica,
+    aoMudarNome,
+    salvando,
+    aoCriar,
+}: {
+    aberto: boolean;
+    aoMudar: (aberto: boolean) => void;
+    nomeClinica: string;
+    aoMudarNome: (nome: string) => void;
+    salvando: boolean;
+    aoCriar: () => void;
+}) {
+    return (
+        <Dialog open={aberto} onOpenChange={aoMudar}>
+            <DialogTrigger asChild>
+                <Button variant="neuro">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Clínica
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Criar Nova Clínica</DialogTitle>
+                    <DialogDescription>
+                        Digite o nome da sua clínica ou consultório
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <Label htmlFor="clinic-name">Nome da Clínica</Label>
+                    <Input
+                        id="clinic-name"
+                        placeholder="Ex: Clínica Neurológica São Paulo"
+                        value={nomeClinica}
+                        onChange={(e) => aoMudarNome(e.target.value)}
+                        className="mt-2"
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => aoMudar(false)}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="neuro"
+                        onClick={aoCriar}
+                        disabled={salvando || !nomeClinica.trim()}
+                    >
+                        {salvando ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Criando...
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Criar Clínica
+                            </>
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/** Card com informações da clínica (nome, data de criação, badge do proprietário) */
+function CardInfoClinica({ clinica, ehProprietario }: PropsInfoClinica) {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="text-2xl">{clinica.name}</CardTitle>
+                        <CardDescription>
+                            Criada em {clinica.createdAt && new Date(clinica.createdAt).toLocaleDateString("pt-BR")}
+                        </CardDescription>
+                    </div>
+                    {ehProprietario ? (
+                        <Badge variant="outline" className={ESTILOS_FUNCAO.owner}>
+                            <Crown className="w-3 h-3 mr-1" />
+                            Proprietário
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline" className={ESTILOS_FUNCAO.member}>
+                            <User className="w-3 h-3 mr-1" />
+                            Membro
+                        </Badge>
+                    )}
+                </div>
+            </CardHeader>
+        </Card>
+    );
+}
+
+/** Card de um membro individual da equipe */
+function CartaoMembro({ email, nome, funcao, uid, ehProprietario, aoRemover }: PropsCartaoMembro) {
+    const IconeFuncao = ICONES_FUNCAO[funcao];
+
+    return (
+        <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+            <div className="flex items-center gap-3">
+                <Avatar>
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                        {email[0].toUpperCase()}
+                    </AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-medium">{nome || email.split("@")[0]}</p>
+                    <p className="text-sm text-muted-foreground">{email}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-3">
+                <Badge variant="outline" className={ESTILOS_FUNCAO[funcao]}>
+                    <IconeFuncao className="w-3 h-3 mr-1" />
+                    {ROTULOS_FUNCAO[funcao]}
+                </Badge>
+                {ehProprietario && funcao !== "owner" && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => aoRemover(uid)}
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/** Diálogo para enviar convite a um novo membro */
+function DialogoConvidarMembro({
+    aberto,
+    aoMudar,
+    email,
+    aoMudarEmail,
+    funcao,
+    aoMudarFuncao,
+    salvando,
+    aoEnviar,
+}: {
+    aberto: boolean;
+    aoMudar: (aberto: boolean) => void;
+    email: string;
+    aoMudarEmail: (email: string) => void;
+    funcao: MemberRole;
+    aoMudarFuncao: (funcao: MemberRole) => void;
+    salvando: boolean;
+    aoEnviar: () => void;
+}) {
+    return (
+        <Dialog open={aberto} onOpenChange={aoMudar}>
+            <DialogTrigger asChild>
+                <Button variant="neuro" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Convidar
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Convidar Membro</DialogTitle>
+                    <DialogDescription>
+                        Envie um convite para adicionar um novo membro à equipe
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="invite-email">Email</Label>
+                        <Input
+                            id="invite-email"
+                            type="email"
+                            placeholder="email@exemplo.com"
+                            value={email}
+                            onChange={(e) => aoMudarEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="invite-role">Função</Label>
+                        <Select
+                            value={funcao}
+                            onValueChange={(value) => aoMudarFuncao(value as MemberRole)}
+                        >
+                            <SelectTrigger id="invite-role">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="member">Membro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => aoMudar(false)}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="neuro"
+                        onClick={aoEnviar}
+                        disabled={salvando || !email.trim()}
+                    >
+                        {salvando ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Enviando...
+                            </>
+                        ) : (
+                            <>
+                                <Mail className="w-4 h-4 mr-2" />
+                                Enviar Convite
+                            </>
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/** Card da equipe com lista de membros e botão de convidar */
+function CardEquipe({
+    clinica,
+    ehProprietario,
+    formularios,
+    aoEnviarConvite,
+    aoRemoverMembro,
+}: {
+    clinica: Clinic;
+    ehProprietario: boolean;
+    formularios: ReturnType<typeof useFormulariosClinica>;
+    aoEnviarConvite: () => void;
+    aoRemoverMembro: (uid: string) => void;
+}) {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Equipe
+                        </CardTitle>
+                        <CardDescription>
+                            {clinica.members.length} membro{clinica.members.length !== 1 && "s"}
+                        </CardDescription>
+                    </div>
+
+                    {ehProprietario && (
+                        <DialogoConvidarMembro
+                            aberto={formularios.dialogoConviteAberto}
+                            aoMudar={formularios.setDialogoConviteAberto}
+                            email={formularios.emailConvite}
+                            aoMudarEmail={formularios.setEmailConvite}
+                            funcao={formularios.funcaoConvite}
+                            aoMudarFuncao={formularios.setFuncaoConvite}
+                            salvando={false}
+                            aoEnviar={aoEnviarConvite}
+                        />
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3">
+                    {clinica.members.map((membro, indice) => (
+                        <CartaoMembro
+                            key={indice}
+                            email={membro.email}
+                            nome={membro.name}
+                            funcao={membro.role}
+                            uid={membro.uid}
+                            ehProprietario={ehProprietario}
+                            aoRemover={aoRemoverMembro}
+                        />
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+/** Seção completa quando a clínica existe */
+function SecaoClinicaExistente({
+    clinica,
+    ehProprietario,
+    formularios,
+    aoEnviarConvite,
+    aoRemoverMembro,
+}: {
+    clinica: Clinic;
+    ehProprietario: boolean;
+    formularios: ReturnType<typeof useFormulariosClinica>;
+    aoEnviarConvite: () => void;
+    aoRemoverMembro: (uid: string) => void;
+}) {
+    return (
+        <>
+            <CardInfoClinica clinica={clinica} ehProprietario={ehProprietario} />
+            <CardEquipe
+                clinica={clinica}
+                ehProprietario={ehProprietario}
+                formularios={formularios}
+                aoEnviarConvite={aoEnviarConvite}
+                aoRemoverMembro={aoRemoverMembro}
+            />
+        </>
+    );
+}
+
+
+// =============================================================================
+// COMPONENTE PRINCIPAL — Composição via Inversão de Dependência (D do SOLID)
+// =============================================================================
+
+export default function ClinicPage() {
+    const dados = useDadosClinica();
+    const conviteUrl = useConviteUrl(dados.user);
+    const formularios = useFormulariosClinica();
+    const acoes = useAcoesClinica(dados, conviteUrl);
+
+    const aoClicarCriar = async () => {
+        await acoes.criarClinica(formularios.nomeClinica);
+        formularios.resetarFormularioCriacao();
+    };
+
+    const aoClicarEnviarConvite = async () => {
+        if (!dados.clinica?.id) return;
+        await acoes.enviarConvite(
+            dados.clinica.id,
+            dados.clinica.name,
+            formularios.emailConvite,
+            formularios.funcaoConvite
+        );
+        formularios.resetarFormularioConvite();
+    };
+
+    const aoRemoverMembro = (uid: string) => {
+        if (!dados.clinica?.id) return;
+        acoes.removerMembro(dados.clinica.id, uid);
+    };
 
     return (
         <MainLayout>
             <div className="space-y-8 pb-8">
-                {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-                            <Building2 className="w-6 h-6 text-primary-foreground" />
-                        </div>
-                        <div>
-                            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-                                Clínica
-                            </h1>
-                            <p className="text-muted-foreground mt-1">
-                                Gerencie sua equipe e colaboradores
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <Cabecalho />
 
-                {loading || inviteLoading ? (
-                    <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                        <span className="text-muted-foreground font-medium">Carregando...</span>
-                    </div>
+                {dados.carregando || conviteUrl.carregandoConvite ? (
+                    <IndicadorCarregamento />
                 ) : (
                     <>
-                        {/* Pending URL Invite */}
-                        {pendingUrlInvite && (
-                            <Card className="border-primary/50 bg-primary/5">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-primary">
-                                        <UserPlus className="w-5 h-5" />
-                                        Convite Recebido
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Você foi convidado para participar de uma clínica
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
-                                        <div>
-                                            <p className="font-semibold text-lg">
-                                                {pendingUrlInvite.clinicName}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Função: {roleLabels[pendingUrlInvite.role]}
-                                            </p>
-                                            {pendingUrlInvite.invitedByName && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Convidado por: {pendingUrlInvite.invitedByName}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-destructive"
-                                                onClick={handleDeclineUrlInvite}
-                                            >
-                                                <X className="w-4 h-4 mr-1" />
-                                                Recusar
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="neuro"
-                                                onClick={handleAcceptUrlInvite}
-                                                disabled={saving}
-                                            >
-                                                {saving ? (
-                                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                                ) : (
-                                                    <Check className="w-4 h-4 mr-1" />
-                                                )}
-                                                Aceitar
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                        {/* Convite Pendente via URL */}
+                        {conviteUrl.convitePendente && (
+                            <BannerConvitePendente
+                                convite={conviteUrl.convitePendente}
+                                salvando={dados.salvando}
+                                aoAceitar={acoes.aceitarConviteUrl}
+                                aoRecusar={acoes.recusarConviteUrl}
+                            />
                         )}
 
-                        {/* No Clinic */}
-                        {!clinic && !pendingUrlInvite && (
-                            <Card>
-                                <CardContent className="py-12 text-center">
-                                    <Building2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                                    <h3 className="text-xl font-semibold mb-2">Você ainda não tem uma clínica</h3>
-                                    <p className="text-muted-foreground mb-6">
-                                        Crie sua clínica para começar a gerenciar sua equipe
-                                    </p>
-
-                                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                                        <DialogTrigger asChild>
-                                            <Button variant="neuro">
-                                                <Plus className="w-4 h-4 mr-2" />
-                                                Criar Clínica
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Criar Nova Clínica</DialogTitle>
-                                                <DialogDescription>
-                                                    Digite o nome da sua clínica ou consultório
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="py-4">
-                                                <Label htmlFor="clinic-name">Nome da Clínica</Label>
-                                                <Input
-                                                    id="clinic-name"
-                                                    placeholder="Ex: Clínica Neurológica São Paulo"
-                                                    value={clinicName}
-                                                    onChange={(e) => setClinicName(e.target.value)}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-                                            <DialogFooter>
-                                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                                                    Cancelar
-                                                </Button>
-                                                <Button
-                                                    variant="neuro"
-                                                    onClick={handleCreateClinic}
-                                                    disabled={saving || !clinicName.trim()}
-                                                >
-                                                    {saving ? (
-                                                        <>
-                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                            Criando...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Plus className="w-4 h-4 mr-2" />
-                                                            Criar Clínica
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
-                                </CardContent>
-                            </Card>
+                        {/* Sem Clínica */}
+                        {!dados.clinica && !conviteUrl.convitePendente && (
+                            <EstadoSemClinica
+                                dialogoAberto={formularios.dialogoCriacaoAberto}
+                                aoMudarDialogo={formularios.setDialogoCriacaoAberto}
+                                nomeClinica={formularios.nomeClinica}
+                                aoMudarNome={formularios.setNomeClinica}
+                                salvando={dados.salvando}
+                                aoCriar={aoClicarCriar}
+                            />
                         )}
 
-                        {/* Clinic Info */}
-                        {clinic && (
-                            <>
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle className="text-2xl">{clinic.name}</CardTitle>
-                                                <CardDescription>
-                                                    Criada em {clinic.createdAt && new Date(clinic.createdAt).toLocaleDateString("pt-BR")}
-                                                </CardDescription>
-                                            </div>
-                                            {isOwner ? (
-                                                <Badge variant="outline" className={roleStyles.owner}>
-                                                    <Crown className="w-3 h-3 mr-1" />
-                                                    Proprietário
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline" className={roleStyles.member}>
-                                                    <User className="w-3 h-3 mr-1" />
-                                                    Membro
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </CardHeader>
-                                </Card>
-
-                                {/* Team Members */}
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle className="flex items-center gap-2">
-                                                    <Users className="w-5 h-5" />
-                                                    Equipe
-                                                </CardTitle>
-                                                <CardDescription>
-                                                    {clinic.members.length} membro{clinic.members.length !== 1 && "s"}
-                                                </CardDescription>
-                                            </div>
-
-                                            {isOwner && (
-                                                <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="neuro" size="sm">
-                                                            <Plus className="w-4 h-4 mr-2" />
-                                                            Convidar
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogHeader>
-                                                            <DialogTitle>Convidar Membro</DialogTitle>
-                                                            <DialogDescription>
-                                                                Envie um convite para adicionar um novo membro à equipe
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <div className="space-y-4 py-4">
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="invite-email">Email</Label>
-                                                                <Input
-                                                                    id="invite-email"
-                                                                    type="email"
-                                                                    placeholder="email@exemplo.com"
-                                                                    value={inviteEmail}
-                                                                    onChange={(e) => setInviteEmail(e.target.value)}
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="invite-role">Função</Label>
-                                                                <Select
-                                                                    value={inviteRole}
-                                                                    onValueChange={(value) => setInviteRole(value as MemberRole)}
-                                                                >
-                                                                    <SelectTrigger id="invite-role">
-                                                                        <SelectValue />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="admin">Administrador</SelectItem>
-                                                                        <SelectItem value="member">Membro</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                        </div>
-                                                        <DialogFooter>
-                                                            <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
-                                                                Cancelar
-                                                            </Button>
-                                                            <Button
-                                                                variant="neuro"
-                                                                onClick={handleSendInvite}
-                                                                disabled={saving || !inviteEmail.trim()}
-                                                            >
-                                                                {saving ? (
-                                                                    <>
-                                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                                        Enviando...
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <Mail className="w-4 h-4 mr-2" />
-                                                                        Enviar Convite
-                                                                    </>
-                                                                )}
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-                                            )}
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-3">
-                                            {clinic.members.map((member, index) => {
-                                                const RoleIcon = roleIcons[member.role];
-                                                return (
-                                                    <div
-                                                        key={index}
-                                                        className="flex items-center justify-between p-4 rounded-lg border bg-card"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <Avatar>
-                                                                <AvatarFallback className="bg-primary/10 text-primary">
-                                                                    {member.email[0].toUpperCase()}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <div>
-                                                                <p className="font-medium">
-                                                                    {member.name || member.email.split("@")[0]}
-                                                                </p>
-                                                                <p className="text-sm text-muted-foreground">{member.email}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <Badge variant="outline" className={roleStyles[member.role]}>
-                                                                <RoleIcon className="w-3 h-3 mr-1" />
-                                                                {roleLabels[member.role]}
-                                                            </Badge>
-                                                            {isOwner && member.role !== "owner" && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="text-destructive hover:text-destructive"
-                                                                    onClick={() => handleRemoveMember(member.uid)}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </>
+                        {/* Clínica Existente */}
+                        {dados.clinica && (
+                            <SecaoClinicaExistente
+                                clinica={dados.clinica}
+                                ehProprietario={dados.ehProprietario}
+                                formularios={formularios}
+                                aoEnviarConvite={aoClicarEnviarConvite}
+                                aoRemoverMembro={aoRemoverMembro}
+                            />
                         )}
                     </>
                 )}
