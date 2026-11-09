@@ -4,17 +4,16 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getDatabase } from "firebase/database";
 
-// Configuração do Firebase
-// IMPORTANTE: Substitua estas variáveis pelas suas credenciais do Firebase
+// Configuração do Firebase — credenciais lidas de variáveis de ambiente
 const firebaseConfig = {
-    apiKey: "AIzaSyAuZz_kd2y1nePipjOiwCHCpX3G4UCwZmY",
-    authDomain: "neurodose-40e5e.firebaseapp.com",
-    databaseURL: "https://neurodose-40e5e-default-rtdb.firebaseio.com",
-    projectId: "neurodose-40e5e",
-    storageBucket: "neurodose-40e5e.firebasestorage.app",
-    messagingSenderId: "979759766920",
-    appId: "1:979759766920:web:922b3761ef9361c890ae3d",
-    measurementId: "G-WMNGEWWLW0"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Inicializar Firebase

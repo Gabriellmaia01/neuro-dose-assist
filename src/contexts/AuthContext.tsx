@@ -1,20 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import {
-  User,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { authService, type AuthUser } from "@/services";
 import { toast } from "@/hooks/use-toast";
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -26,17 +15,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     console.log("AuthProvider initialized");
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = authService.onAuthStateChanged((user) => {
       console.log("Auth state changed:", user ? "User logged in" : "No user");
       setUser(user);
-      setLoading(false);
-    }, (error) => {
-      console.error("Auth state change error:", error);
       setLoading(false);
     });
 
@@ -45,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await authService.signInWithEmail(email, password);
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta.",
@@ -70,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await authService.signUpWithEmail(email, password);
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo ao Neuro Dose Assist.",
@@ -95,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await authService.signInWithGoogle();
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta.",
@@ -130,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      await authService.signOut();
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
@@ -150,12 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Reautenticar o usuário
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-
-      // Atualizar a senha
-      await updatePassword(user, newPassword);
+      await authService.updatePassword(currentPassword, newPassword);
 
       toast({
         title: "Senha atualizada com sucesso!",
