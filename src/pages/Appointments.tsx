@@ -24,7 +24,6 @@ import {
     Plus,
     Calendar as CalendarIcon,
     Clock,
-    User,
     ChevronLeft,
     ChevronRight,
     Loader2,
@@ -56,187 +55,389 @@ import {
 } from "@/lib/appointments";
 import { toast } from "@/hooks/use-toast";
 
-const appointmentTypeStyles: Record<AppointmentType, string> = {
+
+// =============================================================================
+// CONSTANTES
+// =============================================================================
+
+const ESTILOS_TIPO_CONSULTA: Record<AppointmentType, string> = {
     Consulta: "bg-primary/10 text-primary border-primary/20",
     Retorno: "bg-info/10 text-info border-info/20",
     Exame: "bg-warning/10 text-warning border-warning/20",
     Outro: "bg-muted text-muted-foreground border-muted",
 };
 
-const appointmentStatusStyles: Record<AppointmentStatus, string> = {
+const ESTILOS_STATUS_CONSULTA: Record<AppointmentStatus, string> = {
     Agendada: "bg-muted text-muted-foreground",
     Confirmada: "bg-info/10 text-info",
     Concluída: "bg-success/10 text-success",
     Cancelada: "bg-destructive/10 text-destructive",
 };
 
-const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const MONTHS = [
+const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+const MESES = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-export default function Appointments() {
+
+// =============================================================================
+// INTERFACES — Segregação de Interface (I do SOLID)
+// Cada interface representa um contrato enxuto e específico.
+// =============================================================================
+
+/** Dados do formulário de agendamento */
+interface DadosFormulario {
+    patientId: string;
+    date: string;
+    time: string;
+    duration: string;
+    type: AppointmentType;
+    notes: string;
+}
+
+/** Estado do diálogo de agendamento */
+interface EstadoDialogo {
+    aberto: boolean;
+    salvando: boolean;
+    consultaEditando: Appointment | null;
+}
+
+/** Estado do calendário (mês atual e data selecionada) */
+interface EstadoCalendario {
+    dataAtual: Date;
+    dataSelecionada: string | null;
+}
+
+/** Props do componente de cabeçalho */
+interface PropsCabecalho {
+    aoClicarHoje: () => void;
+    dialogoAberto: boolean;
+    aoMudarDialogo: (aberto: boolean) => void;
+    aoClicarNovaConsulta: () => void;
+    consultaEditando: Appointment | null;
+    dadosFormulario: DadosFormulario;
+    aoAtualizarFormulario: (dados: Partial<DadosFormulario>) => void;
+    pacientes: Patient[];
+    salvando: boolean;
+    aoSalvar: () => void;
+    aoFecharDialogo: () => void;
+}
+
+/** Props do componente de célula do calendário */
+interface PropsCelulaDia {
+    dia: number;
+    consultasDoDia: Appointment[];
+    selecionado: boolean;
+    ehHoje: boolean;
+    ehPassado: boolean;
+    aoClicar: (dia: number) => void;
+}
+
+/** Props do card de consulta individual */
+interface PropsCartaoConsulta {
+    consulta: Appointment;
+    aoMudarStatus: (id: string, status: AppointmentStatus) => void;
+    aoEditar: (consulta: Appointment) => void;
+    aoExcluir: (id: string) => void;
+}
+
+/** Props do painel lateral de consultas do dia */
+interface PropsPainelDia {
+    dataSelecionada: string | null;
+    consultas: Appointment[];
+    ehDataPassada: boolean;
+    aoClicarAgendar: () => void;
+    aoMudarStatus: (id: string, status: AppointmentStatus) => void;
+    aoEditar: (consulta: Appointment) => void;
+    aoExcluir: (id: string) => void;
+}
+
+
+// =============================================================================
+// FUNÇÕES UTILITÁRIAS — Responsabilidade Única (S do SOLID)
+// Cada função tem uma única razão para existir.
+// =============================================================================
+
+/** Converte horário "HH:mm" para total de minutos desde meia-noite */
+function horarioParaMinutos(horario: string): number {
+    const [h, m] = horario.split(":").map(Number);
+    return h * 60 + m;
+}
+
+/** Formata dia em string de data ISO (YYYY-MM-DD) */
+function formatarDataISO(dataAtual: Date, dia: number): string {
+    const ano = dataAtual.getFullYear();
+    const mes = String(dataAtual.getMonth() + 1).padStart(2, "0");
+    const diaStr = String(dia).padStart(2, "0");
+    return `${ano}-${mes}-${diaStr}`;
+}
+
+/** Verifica se um dia é hoje */
+function verificarSeEhHoje(dataAtual: Date, dia: number): boolean {
+    const hoje = new Date();
+    return (
+        dia === hoje.getDate() &&
+        dataAtual.getMonth() === hoje.getMonth() &&
+        dataAtual.getFullYear() === hoje.getFullYear()
+    );
+}
+
+/** Verifica se um dia já passou */
+function verificarSeEhPassado(dataAtual: Date, dia: number): boolean {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataVerificar = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia);
+    return dataVerificar < hoje;
+}
+
+/** Gera o array de dias do calendário (com nulls para espaços antes do dia 1) */
+function gerarDiasCalendario(dataAtual: Date): (number | null)[] {
+    const ano = dataAtual.getFullYear();
+    const mes = dataAtual.getMonth();
+    const primeiroDia = new Date(ano, mes, 1);
+    const ultimoDia = new Date(ano, mes + 1, 0);
+    const diaSemanaInicial = primeiroDia.getDay();
+    const totalDias = ultimoDia.getDate();
+
+    const dias: (number | null)[] = [];
+
+    for (let i = 0; i < diaSemanaInicial; i++) {
+        dias.push(null);
+    }
+
+    for (let i = 1; i <= totalDias; i++) {
+        dias.push(i);
+    }
+
+    return dias;
+}
+
+/**
+ * Verifica conflito de horário entre uma nova consulta e as existentes.
+ * Retorna a consulta conflitante ou null.
+ */
+function verificarConflitoHorario(
+    consultas: Appointment[],
+    data: string,
+    horario: string,
+    duracao: number,
+    idExcluir?: string
+): Appointment | null {
+    const novoInicio = horarioParaMinutos(horario);
+    const novoFim = novoInicio + duracao;
+
+    return consultas.find(c => {
+        if (idExcluir && c.id === idExcluir) return false;
+        if (c.status === "Cancelada" || c.status === "Concluída") return false;
+        if (c.date !== data) return false;
+
+        const inicioExistente = horarioParaMinutos(c.time);
+        const fimExistente = inicioExistente + (c.duration || 30);
+
+        return novoInicio < fimExistente && novoFim > inicioExistente;
+    }) || null;
+}
+
+/** Valida se a data/hora selecionada não está no passado */
+function validarDataHoraFutura(data: string, horario: string): boolean {
+    const agora = new Date();
+    const [ano, mes, dia] = data.split("-").map(Number);
+    const [horas, minutos] = horario.split(":").map(Number);
+    const dataHoraSelecionada = new Date(ano, mes - 1, dia, horas, minutos);
+    return dataHoraSelecionada >= agora;
+}
+
+
+// =============================================================================
+// HOOKS CUSTOMIZADOS — Inversão de Dependência (D do SOLID)
+// A página depende de abstrações (hooks) e não de implementações concretas.
+// =============================================================================
+
+/**
+ * Hook: useDadosAgenda
+ * Responsabilidade Única (S): carregar consultas e pacientes do backend.
+ */
+function useDadosAgenda() {
     const { user } = useAuth();
     const { effectiveUserId } = useClinic();
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
-    // Calendar state
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [consultas, setConsultas] = useState<Appointment[]>([]);
+    const [pacientes, setPacientes] = useState<Patient[]>([]);
+    const [carregando, setCarregando] = useState(true);
 
-    // Form state
-    const [formData, setFormData] = useState({
-        patientId: "",
-        date: "",
-        time: "",
-        duration: "30",
-        type: "Consulta" as AppointmentType,
-        notes: "",
-    });
-
-    // Load data
     useEffect(() => {
-        const loadData = async () => {
+        const carregarDados = async () => {
             if (!user || !effectiveUserId) return;
 
             try {
-                setLoading(true);
-                const [appointmentsData, patientsData] = await Promise.all([
+                setCarregando(true);
+                const [dadosConsultas, dadosPacientes] = await Promise.all([
                     getAppointments(effectiveUserId),
                     getPatients(effectiveUserId),
                 ]);
-                setAppointments(appointmentsData);
-                setPatients(patientsData);
-            } catch (error) {
-                console.error("Error loading data:", error);
+                setConsultas(dadosConsultas);
+                setPacientes(dadosPacientes);
+            } catch (erro) {
+                console.error("Erro ao carregar dados:", erro);
                 toast({
                     title: "Erro ao carregar dados",
                     description: "Não foi possível carregar a agenda.",
                     variant: "destructive",
                 });
             } finally {
-                setLoading(false);
+                setCarregando(false);
             }
         };
 
-        loadData();
+        carregarDados();
     }, [user, effectiveUserId]);
 
-    // Calendar helpers
-    const calendarDays = useMemo(() => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startingDay = firstDay.getDay();
-        const totalDays = lastDay.getDate();
+    const recarregar = async () => {
+        if (!effectiveUserId) return;
+        const atualizadas = await getAppointments(effectiveUserId);
+        setConsultas(atualizadas);
+    };
 
-        const days: (number | null)[] = [];
+    return { consultas, pacientes, carregando, recarregar, user, effectiveUserId };
+}
 
-        // Empty cells before first day
-        for (let i = 0; i < startingDay; i++) {
-            days.push(null);
+/**
+ * Hook: useCalendario
+ * Responsabilidade Única (S): controlar navegação e estado do calendário.
+ */
+function useCalendario() {
+    const [dataAtual, setDataAtual] = useState(new Date());
+    const [dataSelecionada, setDataSelecionada] = useState<string | null>(null);
+
+    const diasCalendario = useMemo(() => gerarDiasCalendario(dataAtual), [dataAtual]);
+
+    const irMesAnterior = () => {
+        setDataAtual(new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 1, 1));
+    };
+
+    const irProximoMes = () => {
+        setDataAtual(new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 1));
+    };
+
+    const irParaHoje = () => {
+        setDataAtual(new Date());
+        setDataSelecionada(new Date().toISOString().split("T")[0]);
+    };
+
+    const selecionarDia = (dia: number) => {
+        setDataSelecionada(formatarDataISO(dataAtual, dia));
+    };
+
+    const ehDataSelecionadaPassada = useMemo(() => {
+        if (!dataSelecionada) return false;
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const selecionada = new Date(dataSelecionada + "T00:00:00");
+        return selecionada < hoje;
+    }, [dataSelecionada]);
+
+    return {
+        dataAtual,
+        dataSelecionada,
+        diasCalendario,
+        irMesAnterior,
+        irProximoMes,
+        irParaHoje,
+        selecionarDia,
+        ehDataSelecionadaPassada,
+    };
+}
+
+/**
+ * Hook: useFormularioConsulta
+ * Responsabilidade Única (S): gerenciar estado e ações do formulário de agendamento.
+ */
+function useFormularioConsulta(dataSelecionada: string | null) {
+    const FORMULARIO_VAZIO: DadosFormulario = {
+        patientId: "",
+        date: "",
+        time: "",
+        duration: "30",
+        type: "Consulta",
+        notes: "",
+    };
+
+    const [dadosFormulario, setDadosFormulario] = useState<DadosFormulario>(FORMULARIO_VAZIO);
+    const [dialogoAberto, setDialogoAberto] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+    const [consultaEditando, setConsultaEditando] = useState<Appointment | null>(null);
+
+    const resetarFormulario = () => {
+        setDadosFormulario({ ...FORMULARIO_VAZIO, date: dataSelecionada || "" });
+        setConsultaEditando(null);
+    };
+
+    const abrirNovaConsulta = () => {
+        resetarFormulario();
+        if (dataSelecionada) {
+            setDadosFormulario(prev => ({ ...prev, date: dataSelecionada }));
         }
-
-        // Days of the month
-        for (let i = 1; i <= totalDays; i++) {
-            days.push(i);
-        }
-
-        return days;
-    }, [currentDate]);
-
-    const getAppointmentsForDate = (day: number) => {
-        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        return appointments.filter(apt => apt.date === dateStr);
+        setDialogoAberto(true);
     };
 
-    const selectedDateAppointments = useMemo(() => {
-        if (!selectedDate) return [];
-        return appointments.filter(apt => apt.date === selectedDate)
-            .sort((a, b) => a.time.localeCompare(b.time));
-    }, [selectedDate, appointments]);
-
-    // Navigation
-    const goToPrevMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-    };
-
-    const goToNextMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-    };
-
-    const goToToday = () => {
-        setCurrentDate(new Date());
-        const today = new Date().toISOString().split("T")[0];
-        setSelectedDate(today);
-    };
-
-    // Form handlers
-    const resetForm = () => {
-        setFormData({
-            patientId: "",
-            date: selectedDate || "",
-            time: "",
-            duration: "30",
-            type: "Consulta",
-            notes: "",
+    const abrirEdicao = (consulta: Appointment) => {
+        setConsultaEditando(consulta);
+        setDadosFormulario({
+            patientId: consulta.patientId,
+            date: consulta.date,
+            time: consulta.time,
+            duration: consulta.duration.toString(),
+            type: consulta.type,
+            notes: consulta.notes || "",
         });
-        setEditingAppointment(null);
+        setDialogoAberto(true);
     };
 
-    const handleEditClick = (appointment: Appointment) => {
-        setEditingAppointment(appointment);
-        setFormData({
-            patientId: appointment.patientId,
-            date: appointment.date,
-            time: appointment.time,
-            duration: appointment.duration.toString(),
-            type: appointment.type,
-            notes: appointment.notes || "",
-        });
-        setIsDialogOpen(true);
+    const aoMudarDialogo = (aberto: boolean) => {
+        setDialogoAberto(aberto);
+        if (!aberto) resetarFormulario();
     };
 
-    // Helper: converte "HH:mm" em minutos desde meia-noite
-    const timeToMinutes = (time: string) => {
-        const [h, m] = time.split(":").map(Number);
-        return h * 60 + m;
+    const atualizarFormulario = (dados: Partial<DadosFormulario>) => {
+        setDadosFormulario(prev => ({ ...prev, ...dados }));
     };
 
-    // Verifica se há conflito de horário com consultas existentes
-    const checkTimeConflict = (date: string, time: string, duration: number, excludeId?: string) => {
-        const newStart = timeToMinutes(time);
-        const newEnd = newStart + duration;
-
-        const conflicting = appointments.find(apt => {
-            // Ignorar a própria consulta que está sendo editada
-            if (excludeId && apt.id === excludeId) return false;
-            // Ignorar canceladas e concluídas
-            if (apt.status === "Cancelada" || apt.status === "Concluída") return false;
-            // Só verificar no mesmo dia
-            if (apt.date !== date) return false;
-
-            const existingStart = timeToMinutes(apt.time);
-            const existingEnd = existingStart + (apt.duration || 30);
-
-            // Verifica sobreposição: novo começa antes do existente acabar E novo acaba depois do existente começar
-            return newStart < existingEnd && newEnd > existingStart;
-        });
-
-        return conflicting || null;
+    return {
+        dadosFormulario,
+        atualizarFormulario,
+        dialogoAberto,
+        setDialogoAberto,
+        salvando,
+        setSalvando,
+        consultaEditando,
+        resetarFormulario,
+        abrirNovaConsulta,
+        abrirEdicao,
+        aoMudarDialogo,
     };
+}
 
-    const handleSaveAppointment = async () => {
+/**
+ * Hook: useAcoesConsulta
+ * Responsabilidade Única (S): operações CRUD sobre consultas (salvar, excluir, mudar status).
+ */
+function useAcoesConsulta(
+    consultas: Appointment[],
+    pacientes: Patient[],
+    formulario: ReturnType<typeof useFormularioConsulta>,
+    recarregar: () => Promise<void>,
+    user: any,
+    effectiveUserId: string | undefined
+) {
+    const { dadosFormulario, consultaEditando, setSalvando, setDialogoAberto, resetarFormulario } = formulario;
+
+    const salvarConsulta = async () => {
         if (!user) return;
 
-        if (!formData.patientId || !formData.date || !formData.time) {
+        // Validar campos obrigatórios
+        if (!dadosFormulario.patientId || !dadosFormulario.date || !dadosFormulario.time) {
             toast({
                 title: "Campos obrigatórios",
                 description: "Selecione paciente, data e horário.",
@@ -245,13 +446,8 @@ export default function Appointments() {
             return;
         }
 
-        // Verificar se a data ou horário são no passado
-        const now = new Date();
-        const [year, month, day] = formData.date.split("-").map(Number);
-        const [hours, minutes] = formData.time.split(":").map(Number);
-        const selectedDateTime = new Date(year, month - 1, day, hours, minutes);
-
-        if (selectedDateTime < now) {
+        // Validar se não é no passado
+        if (!validarDataHoraFutura(dadosFormulario.date, dadosFormulario.time)) {
             toast({
                 title: "Horário inválido",
                 description: "Não é possível agendar consultas em horários que já passaram.",
@@ -261,486 +457,732 @@ export default function Appointments() {
         }
 
         // Verificar conflito de horário
-        const conflict = checkTimeConflict(
-            formData.date,
-            formData.time,
-            parseInt(formData.duration),
-            editingAppointment?.id
+        const conflito = verificarConflitoHorario(
+            consultas,
+            dadosFormulario.date,
+            dadosFormulario.time,
+            parseInt(dadosFormulario.duration),
+            consultaEditando?.id
         );
 
-        if (conflict) {
+        if (conflito) {
             toast({
                 title: "Conflito de horário",
-                description: `Já existe uma consulta com ${conflict.patientName} às ${conflict.time} (${conflict.duration} min) neste horário. Escolha outro horário.`,
+                description: `Já existe uma consulta com ${conflito.patientName} às ${conflito.time} (${conflito.duration} min) neste horário. Escolha outro horário.`,
                 variant: "destructive",
             });
             return;
         }
 
         try {
-            setSaving(true);
-            const patient = patients.find(p => p.id === formData.patientId);
+            setSalvando(true);
+            const paciente = pacientes.find(p => p.id === dadosFormulario.patientId);
 
-            const appointmentData: Appointment = {
-                id: editingAppointment?.id,
-                patientId: formData.patientId,
-                patientName: patient?.name || "Paciente",
-                date: formData.date,
-                time: formData.time,
-                duration: parseInt(formData.duration),
-                type: formData.type,
-                status: editingAppointment?.status || "Agendada",
-                notes: formData.notes || undefined,
+            const dadosConsulta: Appointment = {
+                id: consultaEditando?.id,
+                patientId: dadosFormulario.patientId,
+                patientName: paciente?.name || "Paciente",
+                date: dadosFormulario.date,
+                time: dadosFormulario.time,
+                duration: parseInt(dadosFormulario.duration),
+                type: dadosFormulario.type,
+                status: consultaEditando?.status || "Agendada",
+                notes: dadosFormulario.notes || undefined,
             };
 
-            await saveAppointment(appointmentData, effectiveUserId);
+            await saveAppointment(dadosConsulta, effectiveUserId!);
 
             toast({
-                title: editingAppointment ? "Consulta atualizada!" : "Consulta agendada!",
-                description: `${patient?.name} - ${formData.date} às ${formData.time}`,
+                title: consultaEditando ? "Consulta atualizada!" : "Consulta agendada!",
+                description: `${paciente?.name} - ${dadosFormulario.date} às ${dadosFormulario.time}`,
             });
 
-            const updatedAppointments = await getAppointments(effectiveUserId);
-            setAppointments(updatedAppointments);
-            setIsDialogOpen(false);
-            resetForm();
-        } catch (error) {
-            console.error("Error saving appointment:", error);
+            await recarregar();
+            setDialogoAberto(false);
+            resetarFormulario();
+        } catch (erro) {
+            console.error("Erro ao salvar consulta:", erro);
             toast({
                 title: "Erro ao salvar",
                 description: "Não foi possível salvar a consulta.",
                 variant: "destructive",
             });
         } finally {
-            setSaving(false);
+            setSalvando(false);
         }
     };
 
-    const handleDeleteAppointment = async (appointmentId: string) => {
+    const excluirConsulta = async (idConsulta: string) => {
         if (!user) return;
-
         if (!confirm("Tem certeza que deseja excluir esta consulta?")) return;
 
         try {
-            await deleteAppointment(appointmentId, effectiveUserId);
+            await deleteAppointment(idConsulta, effectiveUserId!);
             toast({ title: "Consulta excluída" });
-            const updatedAppointments = await getAppointments(effectiveUserId);
-            setAppointments(updatedAppointments);
-        } catch (error) {
-            console.error("Error deleting appointment:", error);
-            toast({
-                title: "Erro ao excluir",
-                variant: "destructive",
-            });
+            await recarregar();
+        } catch (erro) {
+            console.error("Erro ao excluir consulta:", erro);
+            toast({ title: "Erro ao excluir", variant: "destructive" });
         }
     };
 
-    const handleStatusChange = async (appointmentId: string, status: AppointmentStatus) => {
+    const mudarStatusConsulta = async (idConsulta: string, status: AppointmentStatus) => {
         if (!user) return;
 
         try {
-            await updateAppointmentStatus(appointmentId, status, effectiveUserId);
+            await updateAppointmentStatus(idConsulta, status, effectiveUserId!);
             toast({ title: `Status atualizado: ${status}` });
-            const updatedAppointments = await getAppointments(effectiveUserId);
-            setAppointments(updatedAppointments);
-        } catch (error) {
-            console.error("Error updating status:", error);
-            toast({
-                title: "Erro ao atualizar status",
-                variant: "destructive",
-            });
+            await recarregar();
+        } catch (erro) {
+            console.error("Erro ao atualizar status:", erro);
+            toast({ title: "Erro ao atualizar status", variant: "destructive" });
         }
     };
 
-    const handleDayClick = (day: number) => {
-        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        setSelectedDate(dateStr);
+    return { salvarConsulta, excluirConsulta, mudarStatusConsulta };
+}
+
+
+// =============================================================================
+// COMPONENTES PUROS — Responsabilidade Única (S) + Aberto/Fechado (O)
+// Cada componente renderiza UMA parte da UI e é extensível via props.
+// =============================================================================
+
+/** Indicador de carregamento */
+function IndicadorCarregamento() {
+    return (
+        <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span className="text-muted-foreground font-medium">Carregando agenda...</span>
+        </div>
+    );
+}
+
+/** Cabeçalho da página com título */
+function Cabecalho() {
+    return (
+        <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+                <CalendarIcon className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                    Agenda
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                    Gerencie consultas e compromissos
+                </p>
+            </div>
+        </div>
+    );
+}
+
+/** Formulário de agendamento dentro do diálogo */
+function FormularioConsulta({
+    dadosFormulario,
+    aoAtualizar,
+    pacientes,
+}: {
+    dadosFormulario: DadosFormulario;
+    aoAtualizar: (dados: Partial<DadosFormulario>) => void;
+    pacientes: Patient[];
+}) {
+    return (
+        <div className="grid gap-4 py-4">
+            {/* Paciente */}
+            <div className="space-y-2">
+                <Label htmlFor="apt-patient">Paciente *</Label>
+                <Select
+                    value={dadosFormulario.patientId}
+                    onValueChange={(value) => aoAtualizar({ patientId: value })}
+                >
+                    <SelectTrigger id="apt-patient">
+                        <SelectValue placeholder="Selecione o paciente..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {pacientes.map(paciente => (
+                            <SelectItem key={paciente.id} value={paciente.id!}>
+                                {paciente.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Data e Horário */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="apt-date">Data *</Label>
+                    <Input
+                        id="apt-date"
+                        type="date"
+                        value={dadosFormulario.date}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={(e) => aoAtualizar({ date: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="apt-time">Horário *</Label>
+                    <Input
+                        id="apt-time"
+                        type="time"
+                        value={dadosFormulario.time}
+                        onChange={(e) => aoAtualizar({ time: e.target.value })}
+                    />
+                </div>
+            </div>
+
+            {/* Duração e Tipo */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="apt-duration">Duração (min)</Label>
+                    <Select
+                        value={dadosFormulario.duration}
+                        onValueChange={(value) => aoAtualizar({ duration: value })}
+                    >
+                        <SelectTrigger id="apt-duration">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="15">15 min</SelectItem>
+                            <SelectItem value="30">30 min</SelectItem>
+                            <SelectItem value="45">45 min</SelectItem>
+                            <SelectItem value="60">1 hora</SelectItem>
+                            <SelectItem value="90">1h30</SelectItem>
+                            <SelectItem value="120">2 horas</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="apt-type">Tipo</Label>
+                    <Select
+                        value={dadosFormulario.type}
+                        onValueChange={(value) => aoAtualizar({ type: value as AppointmentType })}
+                    >
+                        <SelectTrigger id="apt-type">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Consulta">Consulta</SelectItem>
+                            <SelectItem value="Retorno">Retorno</SelectItem>
+                            <SelectItem value="Exame">Exame</SelectItem>
+                            <SelectItem value="Outro">Outro</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Observações */}
+            <div className="space-y-2">
+                <Label htmlFor="apt-notes">Observações</Label>
+                <Textarea
+                    id="apt-notes"
+                    placeholder="Anotações sobre a consulta..."
+                    rows={3}
+                    value={dadosFormulario.notes}
+                    onChange={(e) => aoAtualizar({ notes: e.target.value })}
+                />
+            </div>
+        </div>
+    );
+}
+
+/** Diálogo completo de agendamento/edição */
+function DialogoAgendamento({
+    aberto,
+    aoMudar,
+    aoClicarNovo,
+    consultaEditando,
+    dadosFormulario,
+    aoAtualizar,
+    pacientes,
+    salvando,
+    aoSalvar,
+    aoFechar,
+}: {
+    aberto: boolean;
+    aoMudar: (aberto: boolean) => void;
+    aoClicarNovo: () => void;
+    consultaEditando: Appointment | null;
+    dadosFormulario: DadosFormulario;
+    aoAtualizar: (dados: Partial<DadosFormulario>) => void;
+    pacientes: Patient[];
+    salvando: boolean;
+    aoSalvar: () => void;
+    aoFechar: () => void;
+}) {
+    return (
+        <Dialog open={aberto} onOpenChange={aoMudar}>
+            <DialogTrigger asChild>
+                <Button variant="neuro" onClick={aoClicarNovo}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nova Consulta
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle className="font-display">
+                        {consultaEditando ? "Editar Consulta" : "Agendar Consulta"}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {consultaEditando ? "Atualize os dados da consulta" : "Preencha os dados para agendar"}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <FormularioConsulta
+                    dadosFormulario={dadosFormulario}
+                    aoAtualizar={aoAtualizar}
+                    pacientes={pacientes}
+                />
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={aoFechar} disabled={salvando}>
+                        Cancelar
+                    </Button>
+                    <Button variant="neuro" onClick={aoSalvar} disabled={salvando}>
+                        {salvando ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Salvando...
+                            </>
+                        ) : (
+                            <>
+                                <CalendarIcon className="w-4 h-4 mr-2" />
+                                {consultaEditando ? "Atualizar" : "Agendar"}
+                            </>
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/** Barra de ações do topo (botão Hoje + diálogo) */
+function BarraAcoes({
+    aoClicarHoje,
+    dialogoAberto,
+    aoMudarDialogo,
+    aoClicarNovaConsulta,
+    consultaEditando,
+    dadosFormulario,
+    aoAtualizarFormulario,
+    pacientes,
+    salvando,
+    aoSalvar,
+    aoFecharDialogo,
+}: PropsCabecalho) {
+    return (
+        <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={aoClicarHoje}>
+                Hoje
+            </Button>
+            <DialogoAgendamento
+                aberto={dialogoAberto}
+                aoMudar={aoMudarDialogo}
+                aoClicarNovo={aoClicarNovaConsulta}
+                consultaEditando={consultaEditando}
+                dadosFormulario={dadosFormulario}
+                aoAtualizar={aoAtualizarFormulario}
+                pacientes={pacientes}
+                salvando={salvando}
+                aoSalvar={aoSalvar}
+                aoFechar={aoFecharDialogo}
+            />
+        </div>
+    );
+}
+
+/** Navegação do calendário (mês/ano + setas) */
+function NavegacaoCalendario({
+    dataAtual,
+    aoIrAnterior,
+    aoIrProximo,
+}: {
+    dataAtual: Date;
+    aoIrAnterior: () => void;
+    aoIrProximo: () => void;
+}) {
+    return (
+        <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display text-xl font-semibold">
+                {MESES[dataAtual.getMonth()]} {dataAtual.getFullYear()}
+            </h2>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={aoIrAnterior}>
+                    <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={aoIrProximo}>
+                    <ChevronRight className="w-4 h-4" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+/** Célula individual de um dia no calendário */
+function CelulaDia({ dia, consultasDoDia, selecionado, ehHoje, ehPassado, aoClicar }: PropsCelulaDia) {
+    return (
+        <button
+            onClick={() => aoClicar(dia)}
+            className={cn(
+                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all",
+                "hover:bg-primary/10",
+                ehHoje && "ring-2 ring-primary",
+                selecionado && "bg-primary text-primary-foreground hover:bg-primary/90",
+                !selecionado && "hover:bg-muted",
+                ehPassado && !selecionado && "opacity-40"
+            )}
+        >
+            <span className={cn(
+                "text-sm font-medium",
+                selecionado && "text-primary-foreground"
+            )}>
+                {dia}
+            </span>
+            {consultasDoDia.length > 0 && (
+                <div className="absolute bottom-1 flex gap-0.5">
+                    {consultasDoDia.slice(0, 3).map((_, i) => (
+                        <div
+                            key={i}
+                            className={cn(
+                                "w-1.5 h-1.5 rounded-full",
+                                selecionado ? "bg-primary-foreground" : "bg-primary"
+                            )}
+                        />
+                    ))}
+                </div>
+            )}
+        </button>
+    );
+}
+
+/** Grade completa do calendário mensal */
+function GradeCalendario({
+    dataAtual,
+    diasCalendario,
+    dataSelecionada,
+    consultas,
+    aoSelecionarDia,
+    aoIrAnterior,
+    aoIrProximo,
+}: {
+    dataAtual: Date;
+    diasCalendario: (number | null)[];
+    dataSelecionada: string | null;
+    consultas: Appointment[];
+    aoSelecionarDia: (dia: number) => void;
+    aoIrAnterior: () => void;
+    aoIrProximo: () => void;
+}) {
+    const obterConsultasDoDia = (dia: number) => {
+        const dataStr = formatarDataISO(dataAtual, dia);
+        return consultas.filter(c => c.date === dataStr);
     };
 
-    const openNewAppointmentDialog = () => {
-        resetForm();
-        if (selectedDate) {
-            setFormData(prev => ({ ...prev, date: selectedDate }));
-        }
-        setIsDialogOpen(true);
-    };
+    return (
+        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+            <NavegacaoCalendario
+                dataAtual={dataAtual}
+                aoIrAnterior={aoIrAnterior}
+                aoIrProximo={aoIrProximo}
+            />
 
-    const isToday = (day: number) => {
-        const today = new Date();
-        return (
-            day === today.getDate() &&
-            currentDate.getMonth() === today.getMonth() &&
-            currentDate.getFullYear() === today.getFullYear()
-        );
-    };
+            {/* Cabeçalho dos dias da semana */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+                {DIAS_SEMANA.map(dia => (
+                    <div key={dia} className="text-center text-xs font-medium text-muted-foreground py-2">
+                        {dia}
+                    </div>
+                ))}
+            </div>
 
-    const isPastDay = (day: number) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        return checkDate < today;
-    };
+            {/* Grade de dias */}
+            <div className="grid grid-cols-7 gap-1">
+                {diasCalendario.map((dia, indice) => {
+                    if (dia === null) {
+                        return <div key={`vazio-${indice}`} className="aspect-square" />;
+                    }
 
-    const isSelectedDatePast = useMemo(() => {
-        if (!selectedDate) return false;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const selected = new Date(selectedDate + "T00:00:00");
-        return selected < today;
-    }, [selectedDate]);
+                    const dataStr = formatarDataISO(dataAtual, dia);
+
+                    return (
+                        <CelulaDia
+                            key={dia}
+                            dia={dia}
+                            consultasDoDia={obterConsultasDoDia(dia)}
+                            selecionado={dataSelecionada === dataStr}
+                            ehHoje={verificarSeEhHoje(dataAtual, dia)}
+                            ehPassado={verificarSeEhPassado(dataAtual, dia)}
+                            aoClicar={aoSelecionarDia}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+/** Card individual de uma consulta na lista lateral */
+function CartaoConsulta({ consulta, aoMudarStatus, aoEditar, aoExcluir }: PropsCartaoConsulta) {
+    return (
+        <div className="p-4 rounded-xl border bg-card hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+                        <Clock className="w-4 h-4 text-primary mb-0.5" />
+                        <span className="text-xs font-medium">{consulta.time}</span>
+                    </div>
+                    <div>
+                        <p className="font-medium">{consulta.patientName}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className={ESTILOS_TIPO_CONSULTA[consulta.type]}>
+                                {consulta.type}
+                            </Badge>
+                            <Badge className={ESTILOS_STATUS_CONSULTA[consulta.status]}>
+                                {consulta.status}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+
+                <MenuAcoesConsulta
+                    consulta={consulta}
+                    aoMudarStatus={aoMudarStatus}
+                    aoEditar={aoEditar}
+                    aoExcluir={aoExcluir}
+                />
+            </div>
+
+            {consulta.notes && (
+                <p className="text-sm text-muted-foreground mt-2 pl-15">
+                    {consulta.notes}
+                </p>
+            )}
+
+            <p className="text-xs text-muted-foreground mt-2">
+                Duração: {consulta.duration} min
+            </p>
+        </div>
+    );
+}
+
+/** Menu dropdown de ações de uma consulta */
+function MenuAcoesConsulta({
+    consulta,
+    aoMudarStatus,
+    aoEditar,
+    aoExcluir,
+}: PropsCartaoConsulta) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="w-4 h-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => aoMudarStatus(consulta.id!, "Confirmada")}>
+                    <Check className="w-4 h-4 mr-2" />
+                    Confirmar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => aoMudarStatus(consulta.id!, "Concluída")}>
+                    <Check className="w-4 h-4 mr-2" />
+                    Concluir
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => aoMudarStatus(consulta.id!, "Cancelada")}>
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => aoEditar(consulta)}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => consulta.id && aoExcluir(consulta.id)}
+                >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+/** Estado vazio quando nenhuma data está selecionada */
+function EstadoVazioSemSelecao() {
+    return (
+        <div className="text-center py-8 text-muted-foreground">
+            <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Clique em um dia para ver as consultas</p>
+        </div>
+    );
+}
+
+/** Estado vazio quando o dia selecionado não tem consultas */
+function EstadoVazioSemConsultas({
+    ehDataPassada,
+    aoClicarAgendar,
+}: {
+    ehDataPassada: boolean;
+    aoClicarAgendar: () => void;
+}) {
+    return (
+        <div className="text-center py-8 text-muted-foreground">
+            <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Nenhuma consulta neste dia</p>
+            {!ehDataPassada && (
+                <Button variant="link" className="mt-2" onClick={aoClicarAgendar}>
+                    Agendar consulta
+                </Button>
+            )}
+        </div>
+    );
+}
+
+/** Painel lateral com as consultas do dia selecionado */
+function PainelConsultasDoDia({
+    dataSelecionada,
+    consultas,
+    ehDataPassada,
+    aoClicarAgendar,
+    aoMudarStatus,
+    aoEditar,
+    aoExcluir,
+}: PropsPainelDia) {
+    const consultasOrdenadas = useMemo(() => {
+        if (!dataSelecionada) return [];
+        return consultas
+            .filter(c => c.date === dataSelecionada)
+            .sort((a, b) => a.time.localeCompare(b.time));
+    }, [dataSelecionada, consultas]);
+
+    const tituloData = dataSelecionada
+        ? new Date(dataSelecionada + "T00:00:00").toLocaleDateString("pt-BR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+        })
+        : "Selecione um dia";
+
+    return (
+        <div className="glass-card rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold">{tituloData}</h3>
+            </div>
+
+            {!dataSelecionada ? (
+                <EstadoVazioSemSelecao />
+            ) : consultasOrdenadas.length > 0 ? (
+                <div className="space-y-3">
+                    {consultasOrdenadas.map(consulta => (
+                        <CartaoConsulta
+                            key={consulta.id}
+                            consulta={consulta}
+                            aoMudarStatus={aoMudarStatus}
+                            aoEditar={aoEditar}
+                            aoExcluir={aoExcluir}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <EstadoVazioSemConsultas
+                    ehDataPassada={ehDataPassada}
+                    aoClicarAgendar={aoClicarAgendar}
+                />
+            )}
+        </div>
+    );
+}
+
+/** Layout principal: calendário + painel lateral */
+function LayoutAgenda({
+    calendario,
+    consultas,
+    formulario,
+    acoes,
+}: {
+    calendario: ReturnType<typeof useCalendario>;
+    consultas: Appointment[];
+    formulario: ReturnType<typeof useFormularioConsulta>;
+    acoes: ReturnType<typeof useAcoesConsulta>;
+}) {
+    return (
+        <div className="grid lg:grid-cols-3 gap-6">
+            <GradeCalendario
+                dataAtual={calendario.dataAtual}
+                diasCalendario={calendario.diasCalendario}
+                dataSelecionada={calendario.dataSelecionada}
+                consultas={consultas}
+                aoSelecionarDia={calendario.selecionarDia}
+                aoIrAnterior={calendario.irMesAnterior}
+                aoIrProximo={calendario.irProximoMes}
+            />
+
+            <PainelConsultasDoDia
+                dataSelecionada={calendario.dataSelecionada}
+                consultas={consultas}
+                ehDataPassada={calendario.ehDataSelecionadaPassada}
+                aoClicarAgendar={formulario.abrirNovaConsulta}
+                aoMudarStatus={acoes.mudarStatusConsulta}
+                aoEditar={formulario.abrirEdicao}
+                aoExcluir={acoes.excluirConsulta}
+            />
+        </div>
+    );
+}
+
+
+// =============================================================================
+// COMPONENTE PRINCIPAL — Composição via Inversão de Dependência (D do SOLID)
+// A página é apenas uma composição de hooks e componentes especializados.
+// =============================================================================
+
+export default function Appointments() {
+    const dados = useDadosAgenda();
+    const calendario = useCalendario();
+    const formulario = useFormularioConsulta(calendario.dataSelecionada);
+    const acoes = useAcoesConsulta(
+        dados.consultas,
+        dados.pacientes,
+        formulario,
+        dados.recarregar,
+        dados.user,
+        dados.effectiveUserId
+    );
 
     return (
         <MainLayout>
             <div className="space-y-8 pb-8">
-                {/* Header */}
+                {/* Cabeçalho + Ações */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-                            <CalendarIcon className="w-6 h-6 text-primary-foreground" />
-                        </div>
-                        <div>
-                            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-                                Agenda
-                            </h1>
-                            <p className="text-muted-foreground mt-1">
-                                Gerencie consultas e compromissos
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={goToToday}>
-                            Hoje
-                        </Button>
-                        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-                            setIsDialogOpen(open);
-                            if (!open) resetForm();
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button variant="neuro" onClick={openNewAppointmentDialog}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Nova Consulta
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[500px]">
-                                <DialogHeader>
-                                    <DialogTitle className="font-display">
-                                        {editingAppointment ? "Editar Consulta" : "Agendar Consulta"}
-                                    </DialogTitle>
-                                    <DialogDescription>
-                                        {editingAppointment ? "Atualize os dados da consulta" : "Preencha os dados para agendar"}
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="apt-patient">Paciente *</Label>
-                                        <Select
-                                            value={formData.patientId}
-                                            onValueChange={(value) => setFormData({ ...formData, patientId: value })}
-                                        >
-                                            <SelectTrigger id="apt-patient">
-                                                <SelectValue placeholder="Selecione o paciente..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {patients.map(patient => (
-                                                    <SelectItem key={patient.id} value={patient.id!}>
-                                                        {patient.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="apt-date">Data *</Label>
-                                            <Input
-                                                id="apt-date"
-                                                type="date"
-                                                value={formData.date}
-                                                min={new Date().toISOString().split("T")[0]}
-                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="apt-time">Horário *</Label>
-                                            <Input
-                                                id="apt-time"
-                                                type="time"
-                                                value={formData.time}
-                                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="apt-duration">Duração (min)</Label>
-                                            <Select
-                                                value={formData.duration}
-                                                onValueChange={(value) => setFormData({ ...formData, duration: value })}
-                                            >
-                                                <SelectTrigger id="apt-duration">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="15">15 min</SelectItem>
-                                                    <SelectItem value="30">30 min</SelectItem>
-                                                    <SelectItem value="45">45 min</SelectItem>
-                                                    <SelectItem value="60">1 hora</SelectItem>
-                                                    <SelectItem value="90">1h30</SelectItem>
-                                                    <SelectItem value="120">2 horas</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="apt-type">Tipo</Label>
-                                            <Select
-                                                value={formData.type}
-                                                onValueChange={(value) => setFormData({ ...formData, type: value as AppointmentType })}
-                                            >
-                                                <SelectTrigger id="apt-type">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Consulta">Consulta</SelectItem>
-                                                    <SelectItem value="Retorno">Retorno</SelectItem>
-                                                    <SelectItem value="Exame">Exame</SelectItem>
-                                                    <SelectItem value="Outro">Outro</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="apt-notes">Observações</Label>
-                                        <Textarea
-                                            id="apt-notes"
-                                            placeholder="Anotações sobre a consulta..."
-                                            rows={3}
-                                            value={formData.notes}
-                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={saving}>
-                                        Cancelar
-                                    </Button>
-                                    <Button variant="neuro" onClick={handleSaveAppointment} disabled={saving}>
-                                        {saving ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Salvando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CalendarIcon className="w-4 h-4 mr-2" />
-                                                {editingAppointment ? "Atualizar" : "Agendar"}
-                                            </>
-                                        )}
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
+                    <Cabecalho />
+                    <BarraAcoes
+                        aoClicarHoje={calendario.irParaHoje}
+                        dialogoAberto={formulario.dialogoAberto}
+                        aoMudarDialogo={formulario.aoMudarDialogo}
+                        aoClicarNovaConsulta={formulario.abrirNovaConsulta}
+                        consultaEditando={formulario.consultaEditando}
+                        dadosFormulario={formulario.dadosFormulario}
+                        aoAtualizarFormulario={formulario.atualizarFormulario}
+                        pacientes={dados.pacientes}
+                        salvando={formulario.salvando}
+                        aoSalvar={acoes.salvarConsulta}
+                        aoFecharDialogo={() => formulario.setDialogoAberto(false)}
+                    />
                 </div>
 
-                {loading ? (
-                    <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                        <span className="text-muted-foreground font-medium">Carregando agenda...</span>
-                    </div>
+                {/* Conteúdo Principal */}
+                {dados.carregando ? (
+                    <IndicadorCarregamento />
                 ) : (
-                    <div className="grid lg:grid-cols-3 gap-6">
-                        {/* Calendar */}
-                        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
-                            {/* Month navigation */}
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="font-display text-xl font-semibold">
-                                    {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-                                </h2>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="icon" onClick={goToPrevMonth}>
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" onClick={goToNextMonth}>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Weekday headers */}
-                            <div className="grid grid-cols-7 gap-1 mb-2">
-                                {WEEKDAYS.map(day => (
-                                    <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
-                                        {day}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Calendar grid */}
-                            <div className="grid grid-cols-7 gap-1">
-                                {calendarDays.map((day, index) => {
-                                    if (day === null) {
-                                        return <div key={`empty-${index}`} className="aspect-square" />;
-                                    }
-
-                                    const dayAppointments = getAppointmentsForDate(day);
-                                    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                                    const isSelected = selectedDate === dateStr;
-                                    const isPast = isPastDay(day);
-
-                                    return (
-                                        <button
-                                            key={day}
-                                            onClick={() => handleDayClick(day)}
-                                            className={cn(
-                                                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all",
-                                                "hover:bg-primary/10",
-                                                isToday(day) && "ring-2 ring-primary",
-                                                isSelected && "bg-primary text-primary-foreground hover:bg-primary/90",
-                                                !isSelected && "hover:bg-muted",
-                                                isPast && !isSelected && "opacity-40"
-                                            )}
-                                        >
-                                            <span className={cn(
-                                                "text-sm font-medium",
-                                                isSelected && "text-primary-foreground"
-                                            )}>
-                                                {day}
-                                            </span>
-                                            {dayAppointments.length > 0 && (
-                                                <div className={cn(
-                                                    "absolute bottom-1 flex gap-0.5",
-                                                )}>
-                                                    {dayAppointments.slice(0, 3).map((_, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className={cn(
-                                                                "w-1.5 h-1.5 rounded-full",
-                                                                isSelected ? "bg-primary-foreground" : "bg-primary"
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Selected date appointments */}
-                        <div className="glass-card rounded-2xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-display font-semibold">
-                                    {selectedDate
-                                        ? new Date(selectedDate + "T00:00:00").toLocaleDateString("pt-BR", {
-                                            weekday: "long",
-                                            day: "numeric",
-                                            month: "long",
-                                        })
-                                        : "Selecione um dia"}
-                                </h3>
-                            </div>
-
-                            {selectedDate ? (
-                                selectedDateAppointments.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {selectedDateAppointments.map(apt => (
-                                            <div
-                                                key={apt.id}
-                                                className="p-4 rounded-xl border bg-card hover:shadow-md transition-shadow"
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-                                                            <Clock className="w-4 h-4 text-primary mb-0.5" />
-                                                            <span className="text-xs font-medium">{apt.time}</span>
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium">{apt.patientName}</p>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Badge variant="outline" className={appointmentTypeStyles[apt.type]}>
-                                                                    {apt.type}
-                                                                </Badge>
-                                                                <Badge className={appointmentStatusStyles[apt.status]}>
-                                                                    {apt.status}
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
-                                                                <MoreHorizontal className="w-4 h-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(apt.id!, "Confirmada")}>
-                                                                <Check className="w-4 h-4 mr-2" />
-                                                                Confirmar
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(apt.id!, "Concluída")}>
-                                                                <Check className="w-4 h-4 mr-2" />
-                                                                Concluir
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(apt.id!, "Cancelada")}>
-                                                                <X className="w-4 h-4 mr-2" />
-                                                                Cancelar
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleEditClick(apt)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Editar
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className="text-destructive"
-                                                                onClick={() => apt.id && handleDeleteAppointment(apt.id)}
-                                                            >
-                                                                <Trash2 className="w-4 h-4 mr-2" />
-                                                                Excluir
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-
-                                                {apt.notes && (
-                                                    <p className="text-sm text-muted-foreground mt-2 pl-15">
-                                                        {apt.notes}
-                                                    </p>
-                                                )}
-
-                                                <p className="text-xs text-muted-foreground mt-2">
-                                                    Duração: {apt.duration} min
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                        <p>Nenhuma consulta neste dia</p>
-                                        {!isSelectedDatePast && (
-                                            <Button
-                                                variant="link"
-                                                className="mt-2"
-                                                onClick={openNewAppointmentDialog}
-                                            >
-                                                Agendar consulta
-                                            </Button>
-                                        )}
-                                    </div>
-                                )
-                            ) : (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                    <p>Clique em um dia para ver as consultas</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <LayoutAgenda
+                        calendario={calendario}
+                        consultas={dados.consultas}
+                        formulario={formulario}
+                        acoes={acoes}
+                    />
                 )}
             </div>
         </MainLayout>
