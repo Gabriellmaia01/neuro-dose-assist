@@ -4,6 +4,8 @@ import { formatarPacientesRecentes } from "@/lib/formatadorPacientes";
 import { formatarUltimaDose } from "@/lib/formatadorUltimaDose";
 import type { DoseRecord } from "@/lib/doses";
 
+const horarioLocalDeTeste = new Date(2026, 10, 9, 6).toISOString();
+
 const criarDose = (overrides: Partial<DoseRecord> = {}): DoseRecord => ({
   patientId: "patient-1",
   medicationId: "med-1",
@@ -17,8 +19,8 @@ const criarDose = (overrides: Partial<DoseRecord> = {}): DoseRecord => ({
     efficacyPrediction: 80,
     postDoseInsights: [],
   },
-  timestamp: "2026-11-09T09:00:00.000Z",
-  createdAt: "2026-11-09T09:00:00.000Z",
+  timestamp: horarioLocalDeTeste,
+  createdAt: horarioLocalDeTeste,
   ...overrides,
 });
 
