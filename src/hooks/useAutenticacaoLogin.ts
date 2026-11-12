@@ -15,7 +15,10 @@ export function useAutenticacaoLogin(): RetornoAutenticacaoLogin {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [recuperacaoAberta, setRecuperacaoAberta] = useState(false);
+  const [emailRecuperacao, setEmailRecuperacao] = useState("");
+  const [enviandoRecuperacao, setEnviandoRecuperacao] = useState(false);
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleEntrar = async (e: React.FormEvent) => {
@@ -56,6 +59,25 @@ export function useAutenticacaoLogin(): RetornoAutenticacaoLogin {
     }
   };
 
+  const abrirRecuperacaoSenha = () => {
+    // Reaproveita o email já digitado no login, se houver.
+    setEmailRecuperacao(email);
+    setRecuperacaoAberta(true);
+  };
+
+  const handleEnviarRecuperacao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnviandoRecuperacao(true);
+    try {
+      await resetPassword(emailRecuperacao);
+      setRecuperacaoAberta(false);
+    } catch (error) {
+      // Erro já tratado no contexto; o diálogo permanece aberto para nova tentativa.
+    } finally {
+      setEnviandoRecuperacao(false);
+    }
+  };
+
   return {
     email,
     senha,
@@ -65,5 +87,14 @@ export function useAutenticacaoLogin(): RetornoAutenticacaoLogin {
     handleEntrar,
     handleCriarConta,
     handleEntrarComGoogle,
+    recuperacaoSenha: {
+      aberto: recuperacaoAberta,
+      email: emailRecuperacao,
+      enviando: enviandoRecuperacao,
+      setEmail: setEmailRecuperacao,
+      abrir: abrirRecuperacaoSenha,
+      aoMudarAberto: setRecuperacaoAberta,
+      enviar: handleEnviarRecuperacao,
+    },
   };
 }

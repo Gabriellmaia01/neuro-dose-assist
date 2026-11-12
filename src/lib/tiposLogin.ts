@@ -13,6 +13,8 @@ export interface PropriedadesFormularioLogin {
   aoMudarEmail: (valor: string) => void;
   aoMudarSenha: (valor: string) => void;
   aoEnviar: (e: React.FormEvent) => void;
+  /** Acionado ao clicar em "Esqueceu a senha?". Opcional para não quebrar usos existentes. */
+  aoEsqueceuSenha?: () => void;
 }
 
 /**
@@ -47,4 +49,30 @@ export interface RetornoAutenticacaoLogin {
   handleEntrar: (e: React.FormEvent) => Promise<void>;
   handleCriarConta: (e: React.FormEvent) => Promise<void>;
   handleEntrarComGoogle: () => Promise<void>;
+  recuperacaoSenha: EstadoRecuperacaoSenha;
+}
+
+/**
+ * Estado e handlers do fluxo "Esqueceu a senha?".
+ */
+export interface EstadoRecuperacaoSenha {
+  aberto: boolean;
+  email: string;
+  enviando: boolean;
+  setEmail: (valor: string) => void;
+  abrir: () => void;
+  aoMudarAberto: (aberto: boolean) => void;
+  enviar: (e: React.FormEvent) => Promise<void>;
+}
+
+/**
+ * Props do diálogo de recuperação de senha.
+ */
+export interface PropriedadesDialogoRecuperarSenha {
+  aberto: boolean;
+  email: string;
+  enviando: boolean;
+  aoMudarAberto: (aberto: boolean) => void;
+  aoMudarEmail: (valor: string) => void;
+  aoEnviar: (e: React.FormEvent) => void;
 }
