@@ -5,6 +5,7 @@ import {
   signOut,
   onAuthStateChanged,
   updatePassword,
+  sendPasswordResetEmail,
   reauthenticateWithCredential,
   EmailAuthProvider,
   type User,
@@ -56,6 +57,10 @@ export class FirebaseAuthService implements IAuthService {
     const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
     await reauthenticateWithCredential(currentUser, credential);
     await updatePassword(currentUser, newPassword);
+  }
+
+  async sendPasswordReset(email: string): Promise<void> {
+    await sendPasswordResetEmail(auth, email.trim());
   }
 
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {

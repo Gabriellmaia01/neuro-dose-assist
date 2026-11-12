@@ -15,6 +15,7 @@ export function FormularioLogin({
   aoMudarEmail,
   aoMudarSenha,
   aoEnviar,
+  aoEsqueceuSenha,
 }: PropriedadesFormularioLogin) {
   return (
     <form onSubmit={aoEnviar} className="space-y-4">
@@ -44,6 +45,8 @@ export function FormularioLogin({
           </Label>
           <button
             type="button"
+            onClick={aoEsqueceuSenha}
+            disabled={carregando}
             className="text-xs text-teal-400 hover:text-teal-300 transition-colors"
           >
             Esqueceu a senha?

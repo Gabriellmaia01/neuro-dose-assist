@@ -6,6 +6,7 @@ import { LogoMobileLogin } from "@/components/login/LogoMobileLogin";
 import { FormularioLogin } from "@/components/login/FormularioLogin";
 import { FormularioCadastro } from "@/components/login/FormularioCadastro";
 import { BotaoGoogle } from "@/components/login/BotaoGoogle";
+import { DialogoRecuperarSenha } from "@/components/login/DialogoRecuperarSenha";
 
 /**
  * Página de Login (Autenticação).
@@ -26,6 +27,7 @@ export default function Login() {
     handleEntrar,
     handleCriarConta,
     handleEntrarComGoogle,
+    recuperacaoSenha,
   } = useAutenticacaoLogin();
 
   return (
@@ -74,6 +76,7 @@ export default function Login() {
                     aoMudarEmail={setEmail}
                     aoMudarSenha={setSenha}
                     aoEnviar={handleEntrar}
+                    aoEsqueceuSenha={recuperacaoSenha.abrir}
                   />
                 </TabsContent>
 
@@ -119,6 +122,16 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      {/* Diálogo de recuperação de senha */}
+      <DialogoRecuperarSenha
+        aberto={recuperacaoSenha.aberto}
+        email={recuperacaoSenha.email}
+        enviando={recuperacaoSenha.enviando}
+        aoMudarAberto={recuperacaoSenha.aoMudarAberto}
+        aoMudarEmail={recuperacaoSenha.setEmail}
+        aoEnviar={recuperacaoSenha.enviar}
+      />
     </div>
   );
 }

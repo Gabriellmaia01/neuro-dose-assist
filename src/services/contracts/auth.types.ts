@@ -11,6 +11,7 @@ export interface IAuthService {
   signInWithGoogle(): Promise<AuthUser>;
   signOut(): Promise<void>;
   updatePassword(currentPassword: string, newPassword: string): Promise<void>;
+  sendPasswordReset(email: string): Promise<void>;
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void;
   getCurrentUser(): AuthUser | null;
 }

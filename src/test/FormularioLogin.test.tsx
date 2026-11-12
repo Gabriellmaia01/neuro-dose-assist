@@ -60,4 +60,24 @@ describe("FormularioLogin", () => {
     expect(screen.getByLabelText("Email")).toBeDisabled();
     expect(screen.getByLabelText("Senha")).toBeDisabled();
   });
+
+  it("aciona aoEsqueceuSenha ao clicar em \"Esqueceu a senha?\"", () => {
+    const aoEsqueceuSenha = vi.fn();
+
+    render(
+      <FormularioLogin
+        email=""
+        senha=""
+        carregando={false}
+        aoMudarEmail={vi.fn()}
+        aoMudarSenha={vi.fn()}
+        aoEnviar={vi.fn()}
+        aoEsqueceuSenha={aoEsqueceuSenha}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Esqueceu a senha?" }));
+
+    expect(aoEsqueceuSenha).toHaveBeenCalledTimes(1);
+  });
 });
