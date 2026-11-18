@@ -1,74 +1,101 @@
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { type Appointment } from "@/lib/appointments";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface PropriedadesSecaoConsultas {
   consultas: Appointment[];
 }
 
 /**
- * Seção de próximas consultas do painel.
- * Responsabilidade única: renderizar a lista de consultas agendadas.
+ * SecaoConsultas - Próximas Consultas Agendadas (Swiss Clinical Minimalist).
+ * Padrão Awwwards: Visual cirúrgico de agenda clínica, horário em destaque e tags de status.
  */
 export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
   return (
-    <div className="glass-card rounded-2xl p-5 border border-border/50">
+    <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm">
+      {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-primary" />
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-cyan-400" />
           </div>
-          <h3 className="font-display font-semibold">Próximas Consultas</h3>
+          <div>
+            <h3 className="text-base font-semibold tracking-tight text-foreground">
+              Agenda Clínica
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Próximos atendimentos
+            </p>
+          </div>
         </div>
-        <Link to="/appointments" className="text-sm text-primary hover:underline">
-          Ver todas
+
+        <Link
+          to="/appointments"
+          className="text-xs font-mono text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:hover:text-teal-300 flex items-center gap-1 hover:underline"
+        >
+          <span>Agenda Completa</span>
+          <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 
       {consultas.length > 0 ? (
-        <div className="space-y-3">
-          {consultas.slice(0, 4).map((consulta) => (
-            <div
+        <div className="space-y-2.5">
+          {consultas.slice(0, 3).map((consulta) => (
+            <motion.div
               key={consulta.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+              whileHover={{ x: 2 }}
+              className={cn(
+                "flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200",
+                "bg-muted/20 hover:bg-muted/40 dark:bg-slate-950/40 dark:hover:bg-slate-950/80",
+                "border border-border/40 hover:border-border dark:border-slate-800/60 dark:hover:border-slate-700"
+              )}
             >
-              <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-                <Clock className="w-4 h-4 text-primary mb-0.5" />
-                <span className="text-xs font-medium">{consulta.time}</span>
+              {/* Box de Horário */}
+              <div className="flex flex-col items-center justify-center w-11 h-11 rounded-lg bg-teal-500/10 border border-teal-500/20 shrink-0 font-mono">
+                <Clock className="w-3.5 h-3.5 text-teal-400 mb-0.5" />
+                <span className="text-[11px] font-bold text-foreground">{consulta.time}</span>
               </div>
+
+              {/* Informações do Paciente */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{consulta.patientName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(consulta.date + "T00:00:00"), "dd/MM")} •{" "}
-                  {consulta.type}
+                <p className="text-sm font-semibold truncate text-foreground">
+                  {consulta.patientName}
+                </p>
+                <p className="text-xs text-muted-foreground truncate font-mono">
+                  {format(new Date(consulta.date + "T00:00:00"), "dd/MM")} • {consulta.type}
                 </p>
               </div>
+
+              {/* Status */}
               <Badge
                 variant="outline"
-                className={
+                className={cn(
+                  "font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-full shrink-0",
                   consulta.status === "Confirmada"
-                    ? "bg-success/10 text-success border-success/20"
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                     : consulta.status === "Agendada"
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-primary/10 text-primary border-primary/20"
-                }
+                      ? "bg-teal-500/10 text-teal-400 border-teal-500/30"
+                      : "bg-muted text-muted-foreground border-border"
+                )}
               >
                 {consulta.status}
               </Badge>
-            </div>
+            </motion.div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-6 text-muted-foreground">
-          <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Nenhuma consulta agendada</p>
+        <div className="text-center py-6 text-muted-foreground border border-dashed border-border/60 rounded-xl">
+          <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40 text-teal-400" />
+          <p className="text-xs font-mono uppercase tracking-wider text-foreground">Nenhuma consulta agendada</p>
           <Link
             to="/appointments"
-            className="text-sm text-primary hover:underline mt-1 inline-block"
+            className="text-xs font-mono text-teal-400 hover:underline mt-1 inline-block"
           >
-            Agendar consulta
+            + Agendar novo horário
           </Link>
         </div>
       )}

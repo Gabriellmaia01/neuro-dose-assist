@@ -11,6 +11,10 @@ interface LastDoseCardProps {
   className?: string;
 }
 
+/**
+ * LastDoseCard - Cartão de Detalhes da Última Dose (Swiss Clinical Minimalist).
+ * Padrão Awwwards: Layout assimétrico, indicador de risco farmacológico e anel de eficácia.
+ */
 export function LastDoseCard({
   medication,
   dose,
@@ -21,77 +25,78 @@ export function LastDoseCard({
 }: LastDoseCardProps) {
   const riskStyles = {
     low: {
-      bg: "bg-success/10",
-      text: "text-success",
-      border: "border-success/20",
-      label: "Risco Baixo",
+      bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      dot: "bg-emerald-400",
+      label: "Risco Mínimo",
     },
     medium: {
-      bg: "bg-warning/10",
-      text: "text-warning",
-      border: "border-warning/20",
+      bg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      dot: "bg-amber-400",
       label: "Risco Moderado",
     },
     high: {
-      bg: "bg-destructive/10",
-      text: "text-destructive",
-      border: "border-destructive/20",
-      label: "Risco Alto",
+      bg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+      dot: "bg-rose-400",
+      label: "Risco Elevado",
     },
   };
 
   const risk = riskStyles[riskLevel];
 
   return (
-    <div className={cn("glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 overflow-hidden relative", className)}>
-      {/* Decorative gradient */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+    <div
+      className={cn(
+        "rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm relative overflow-hidden",
+        className
+      )}
+    >
+      {/* Luz ambiente no canto */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4 sm:mb-5 relative z-10">
+      {/* Cabeçalho */}
+      <div className="flex items-start justify-between mb-5 relative z-10">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/10 flex items-center justify-center shrink-0">
-            <Activity className="w-5 h-5 text-teal-500" />
+          <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
+            <Activity className="w-4 h-4 text-teal-400" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
-              Última Dose Registrada
-            </h3>
-            <div className="flex items-center gap-2">
-              <Pill className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-              <span className="font-display font-semibold text-base sm:text-lg truncate">{medication}</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Última Aplicação
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Pill className="w-4 h-4 text-teal-400 shrink-0" />
+              <h3 className="font-semibold text-base text-foreground truncate">
+                {medication}
+              </h3>
             </div>
           </div>
         </div>
-        <EfficacyRing value={efficacy} size="md" />
+
+        <div className="flex flex-col items-center">
+          <EfficacyRing value={efficacy} size="md" />
+        </div>
       </div>
 
-      {/* Details */}
-      <div className="space-y-3 relative z-10">
-        <div className="flex items-center justify-between text-sm p-2.5 sm:p-3 rounded-lg bg-muted/30">
-          <span className="text-muted-foreground">Dosagem</span>
-          <span className="font-medium">{dose}</span>
+      {/* Linhas de Telemetria Posológica */}
+      <div className="space-y-2 relative z-10 font-mono text-xs">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
+          <span className="text-muted-foreground uppercase text-[10px]">Posologia</span>
+          <span className="font-semibold text-foreground">{dose}</span>
         </div>
-        <div className="flex items-center justify-between text-sm p-2.5 sm:p-3 rounded-lg bg-muted/30">
-          <span className="text-muted-foreground">Horário</span>
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="font-medium">{time}</span>
+
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
+          <span className="text-muted-foreground uppercase text-[10px]">Horário</span>
+          <div className="flex items-center gap-1.5 font-medium text-foreground">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>{time}</span>
           </div>
         </div>
-        <div className="flex items-center justify-between text-sm p-2.5 sm:p-3 rounded-lg bg-muted/30">
-          <span className="text-muted-foreground text-xs sm:text-sm">Risco Efeito Colateral</span>
-          <div
-            className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-full border",
-              risk.bg,
-              risk.border
-            )}
-          >
-            <AlertTriangle className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", risk.text)} />
-            <span className={cn("text-xs font-medium", risk.text)}>
-              {risk.label}
-            </span>
+
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
+          <span className="text-muted-foreground uppercase text-[10px]">Efeito Adverso</span>
+          <div className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px]", risk.bg)}>
+            <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
+            <span>{risk.label}</span>
           </div>
         </div>
       </div>

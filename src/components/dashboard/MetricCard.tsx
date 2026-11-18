@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface MetricCardProps {
   title: string;
@@ -15,6 +16,10 @@ interface MetricCardProps {
   className?: string;
 }
 
+/**
+ * MetricCard - Cartão de Métrica de Alta Precisão (Swiss Clinical Minimalist).
+ * Padrão Awwwards: Tipografia contrastante, indicador de tendência cirúrgico e micro-interação.
+ */
 export function MetricCard({
   title,
   value,
@@ -26,24 +31,24 @@ export function MetricCard({
 }: MetricCardProps) {
   const variantStyles = {
     default: {
-      accent: "from-primary/20 to-primary/5",
-      iconBg: "bg-primary/10",
-      iconText: "text-primary",
+      accentBorder: "group-hover:border-teal-500/40",
+      accentLine: "from-teal-400 to-transparent",
+      iconBg: "bg-teal-500/10 text-teal-400 border border-teal-500/20",
     },
     success: {
-      accent: "from-success/20 to-success/5",
-      iconBg: "bg-success/10",
-      iconText: "text-success",
+      accentBorder: "group-hover:border-emerald-500/40",
+      accentLine: "from-emerald-400 to-transparent",
+      iconBg: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
     },
     warning: {
-      accent: "from-warning/20 to-warning/5",
-      iconBg: "bg-warning/10",
-      iconText: "text-warning",
+      accentBorder: "group-hover:border-amber-500/40",
+      accentLine: "from-amber-400 to-transparent",
+      iconBg: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
     },
     danger: {
-      accent: "from-destructive/20 to-destructive/5",
-      iconBg: "bg-destructive/10",
-      iconText: "text-destructive",
+      accentBorder: "group-hover:border-rose-500/40",
+      accentLine: "from-rose-400 to-transparent",
+      iconBg: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
     },
   };
 
@@ -57,55 +62,72 @@ export function MetricCard({
         : Minus
     : null;
 
-  const trendColor = trend
-    ? trend.value > 0
-      ? "text-success"
-      : trend.value < 0
-        ? "text-destructive"
-        : "text-muted-foreground"
-    : "";
-
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        "relative overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border/50 p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 group",
+        "relative overflow-hidden rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 sm:p-5 transition-all duration-300 shadow-sm hover:shadow-lg group",
+        styles.accentBorder,
         className
       )}
     >
-      {/* Gradient accent */}
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300", styles.accent)} />
+      {/* Linha superior de acento com gradiente no hover */}
+      <div
+        className={cn(
+          "absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+          styles.accentLine
+        )}
+      />
 
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      <div className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1 min-w-0 flex-1">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
-            <p className="text-2xl sm:text-3xl font-display font-bold tracking-tight">
-              {value}
-            </p>
-            {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</p>
+      <div className="relative z-10 flex flex-col justify-between h-full space-y-3">
+        {/* Cabeçalho do Card: Rótulo e Ícone */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-mono tracking-wider uppercase text-muted-foreground truncate">
+            {title}
+          </span>
+          <div
+            className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110",
+              styles.iconBg
             )}
-          </div>
-          <div className={cn(
-            "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110",
-            styles.iconBg,
-            styles.iconText
-          )}>
+          >
             {icon}
           </div>
         </div>
 
-        {trend && TrendIcon && (
-          <div className={cn("flex items-center gap-1 mt-3 sm:mt-4 text-xs sm:text-sm", trendColor)}>
-            <TrendIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="font-medium">{Math.abs(trend.value)}%</span>
-            <span className="text-muted-foreground truncate hidden sm:inline">{trend.label}</span>
+        {/* Valor Principal Tipográfico */}
+        <div>
+          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-mono">
+            {value}
+          </div>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>
+          )}
+        </div>
+
+        {/* Rodapé com Tendência em Telemetria */}
+        {trend && (
+          <div className="pt-2 border-t border-border/40 dark:border-slate-800/60 flex items-center gap-1.5 text-[11px] font-mono">
+            {TrendIcon && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 font-semibold",
+                  trend.value > 0
+                    ? "text-emerald-500 dark:text-emerald-400"
+                    : trend.value < 0
+                      ? "text-rose-500 dark:text-rose-400"
+                      : "text-muted-foreground"
+                )}
+              >
+                <TrendIcon className="w-3.5 h-3.5" />
+                {trend.value > 0 ? `+${trend.value}%` : `${trend.value}%`}
+              </span>
+            )}
+            <span className="text-muted-foreground/70 truncate">{trend.label}</span>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

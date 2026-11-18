@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Activity } from "lucide-react";
 
 interface DataPoint {
   date: string;
@@ -21,97 +21,145 @@ interface EfficacyChartProps {
   className?: string;
 }
 
+/**
+ * CustomTooltip - Tooltip cirúrgico de telemetria médica.
+ */
+function CustomTooltip({ active, payload, label }: any) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-xl bg-slate-950/95 border border-slate-800 p-3 shadow-2xl backdrop-blur-xl font-mono text-xs space-y-1.5 z-50">
+        <div className="text-[10px] uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800 pb-1">
+          Data: {label}
+        </div>
+        {payload.map((item: any) => (
+          <div key={item.name} className="flex items-center justify-between gap-4">
+            <span
+              className="text-[11px]"
+              style={{ color: item.color || item.stroke }}
+            >
+              {item.name === "efficacy" ? "Eficácia" : "Dose"}:
+            </span>
+            <span className="text-white font-bold">
+              {item.value}
+              {item.name === "efficacy" ? "%" : " mg"}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
+/**
+ * EfficacyChart - Gráfico de Curva de Eficácia e Farmacocinética (Swiss Minimalist).
+ * Padrão Awwwards: Visual de telemetria analítica com gradientes luminescentes e precisão matemática.
+ */
 export function EfficacyChart({ data, className }: EfficacyChartProps) {
   return (
-    <div className={cn("glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6", className)}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
-            <TrendingUp className="w-5 h-5 text-primary" />
+    <div
+      className={cn(
+        "rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm",
+        className
+      )}
+    >
+      {/* Cabeçalho do Gráfico */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
+            <TrendingUp className="w-4 h-4 text-teal-400" />
           </div>
           <div>
-            <h3 className="font-display font-semibold text-base sm:text-lg">
-              Eficácia ao Longo do Tempo
-            </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Análise dos últimos 7 dias
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Curva de Eficácia Farmacológica
+              </h3>
+              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 font-mono text-[10px]">
+                TELEMETRIA 7D
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Correlação entre dosagens administradas e resposta terapêutica
             </p>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+        {/* Legenda Estilo Telemetria */}
+        <div className="flex items-center gap-4 text-xs font-mono">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-chart-efficacy" />
-            <span className="text-muted-foreground">Eficácia</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-teal-400 ring-2 ring-teal-400/20" />
+            <span className="text-muted-foreground">Eficácia (%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-chart-dose" />
-            <span className="text-muted-foreground">Dose</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 ring-2 ring-cyan-400/20" />
+            <span className="text-muted-foreground">Dose (mg)</span>
           </div>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-48 sm:h-64">
+      {/* Gráfico Recharts */}
+      <div className="h-56 sm:h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="efficacyGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-efficacy))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(var(--chart-efficacy))" stopOpacity={0} />
+              <linearGradient id="efficacyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.0} />
               </linearGradient>
-              <linearGradient id="doseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-dose))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(var(--chart-dose))" stopOpacity={0} />
+              <linearGradient id="doseGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
               </linearGradient>
             </defs>
+
             <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
+              strokeDasharray="2 4"
+              stroke="currentColor"
+              className="text-border/40 dark:text-slate-800/60"
               vertical={false}
             />
+
             <XAxis
               dataKey="date"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+              tick={{ fill: "currentColor", fontSize: 11 }}
+              className="text-muted-foreground font-mono"
               dy={8}
             />
+
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+              tick={{ fill: "currentColor", fontSize: 11 }}
+              className="text-muted-foreground font-mono"
               domain={[0, 100]}
               width={35}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "0.75rem",
-                boxShadow: "0 10px 25px -5px hsl(var(--primary) / 0.1)",
-                padding: "12px",
-              }}
-              labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600, marginBottom: "4px" }}
-              itemStyle={{ padding: "2px 0" }}
-            />
+
+            <Tooltip content={<CustomTooltip />} />
+
             <Area
               type="monotone"
               dataKey="efficacy"
-              stroke="hsl(var(--chart-efficacy))"
-              strokeWidth={2}
-              fill="url(#efficacyGradient)"
-              name="Eficácia (%)"
+              name="efficacy"
+              stroke="#14b8a6"
+              strokeWidth={2.5}
+              fillOpacity={1}
+              fill="url(#efficacyGrad)"
+              activeDot={{ r: 5, fill: "#14b8a6", stroke: "#ffffff", strokeWidth: 2 }}
             />
+
             <Area
               type="monotone"
               dataKey="dose"
-              stroke="hsl(var(--chart-dose))"
-              strokeWidth={2}
-              fill="url(#doseGradient)"
-              name="Dose (mg)"
+              name="dose"
+              stroke="#06b6d4"
+              strokeWidth={1.5}
+              strokeDasharray="3 3"
+              fillOpacity={1}
+              fill="url(#doseGrad)"
+              activeDot={{ r: 4, fill: "#06b6d4", stroke: "#ffffff", strokeWidth: 1.5 }}
             />
           </AreaChart>
         </ResponsiveContainer>

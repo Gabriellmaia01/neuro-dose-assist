@@ -325,43 +325,40 @@ export default function Patients() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 pb-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-              <User className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
+      <div className="space-y-6 pb-8 select-none">
+        {/* Header Cirúrgico Suíço */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 font-mono text-[11px] mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+              <span>REGISTRO CLÍNICO // BANCO DE PACIENTES</span>
             </div>
-            <div className="min-w-0">
-              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance">
-                Pacientes
-              </h1>
-              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                Gerencie cadastro, perfil e histórico clínico
-              </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display">
+              Catálogo de Pacientes
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              Gestão de prontuários neurológicos, esquemas farmacológicos e acompanhamento terapêutico.
+            </p>
           </div>
-
-
 
           <div className="flex items-center gap-2">
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
               setIsDialogOpen(open);
-              if (!open) resetForm(); // Resetar ao fechar se não salvou
+              if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
-                <Button variant="neuro" onClick={resetForm} className="h-11">
-                  <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-                  Novo Paciente
+                <Button onClick={resetForm} className="h-10 bg-gradient-to-r from-teal-500 via-teal-400 to-cyan-400 hover:from-teal-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg shadow-md shadow-teal-500/20 transition-all flex items-center gap-2 text-xs font-mono uppercase tracking-wider">
+                  <Plus className="w-4 h-4 text-slate-950" aria-hidden="true" />
+                  <span>Cadastrar Paciente</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-card/95 backdrop-blur-2xl border-border/80 rounded-2xl shadow-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-display">
-                    {editingPatient ? "Editar Paciente" : "Cadastrar Paciente"}
+                  <DialogTitle className="font-display text-xl font-bold">
+                    {editingPatient ? "Atualizar Prontuário" : "Cadastrar Novo Paciente"}
                   </DialogTitle>
-                  <DialogDescription>
-                    {editingPatient ? "Atualize os dados do paciente" : "Preencha os dados do novo paciente"}
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    {editingPatient ? "Atualize as informações clínicas e prescritivas do paciente." : "Preencha a ficha clínica para inclusão no sistema neural."}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -635,103 +632,103 @@ export default function Patients() {
 
         </div>
 
-        {/* Filters */}
-        <div className="glass-card rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Filter className="w-4 h-4 text-primary" aria-hidden="true" />
-            </div>
-            <h2 className="font-display font-semibold text-lg">Busca e Filtros</h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
-            <div className="lg:col-span-8 space-y-2">
-              <Label htmlFor="patient-search" className="text-sm font-semibold">Busca</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                <Input
-                  id="patient-search"
-                  name="patientSearch"
-                  autoComplete="off"
-                  placeholder="Buscar por nome do paciente…"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11"
-                />
+        {/* Grid de Métricas do Catálogo (Bento Grid Suíço) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Total Cadastrado</p>
+                <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-foreground">{patients.length}</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                <User className="w-4 h-4 text-teal-400" aria-hidden="true" />
               </div>
             </div>
+          </div>
 
-            <div className="lg:col-span-4 flex items-center gap-2">
+          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Filtrados</p>
+                <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-foreground">{filteredPatients.length}</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <Search className="w-4 h-4 text-cyan-400" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Monitoramento</p>
+                <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-emerald-400">Ativo</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Eye className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Protocolo</p>
+                <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-teal-400">CFM/LGPD</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                <Filter className="w-4 h-4 text-violet-400" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de Busca Minimalista */}
+        <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 sm:p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Input
+                id="patient-search"
+                name="patientSearch"
+                autoComplete="off"
+                placeholder="Filtrar por nome de paciente, prontuário ou identificador..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 bg-background/50 border-border/80 text-sm rounded-lg focus:border-teal-400"
+              />
+            </div>
+            {searchTerm && (
               <Button
                 type="button"
                 variant="ghost"
-                className="h-11"
+                size="sm"
+                className="h-10 text-xs font-mono uppercase text-muted-foreground hover:text-foreground"
                 onClick={() => setSearchTerm("")}
-                disabled={!searchTerm}
               >
-                Limpar
+                Limpar Busca
               </Button>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums">{patients.length}</p>
-              </div>
-              <User className="w-8 h-8 text-primary/60" aria-hidden="true" />
-            </div>
-          </div>
-          <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Exibindo</p>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums">{filteredPatients.length}</p>
-              </div>
-              <Search className="w-8 h-8 text-success/60" aria-hidden="true" />
-            </div>
-          </div>
-          <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Perfis</p>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums">{patients.length}</p>
-              </div>
-              <Eye className="w-8 h-8 text-info/60" aria-hidden="true" />
-            </div>
-          </div>
-          <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ações</p>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums">—</p>
-              </div>
-              <Edit className="w-8 h-8 text-warning/60" aria-hidden="true" />
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
+        {/* Tabela de Prontuários Cirúrgica */}
         {loading ? (
-          <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
-            <span className="text-muted-foreground font-medium">Carregando pacientes…</span>
+          <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 p-12 flex items-center justify-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-teal-400" aria-hidden="true" />
+            <span className="text-muted-foreground font-mono text-xs uppercase tracking-wider">Carregando prontuários...</span>
           </div>
         ) : (
-          <div className="glass-card rounded-2xl overflow-hidden">
+          <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl overflow-hidden shadow-sm">
             <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>Condição</TableHead>
-                  <TableHead>Medicamentos</TableHead>
-                  <TableHead>Última Visita</TableHead>
-                  <TableHead>Eficácia</TableHead>
-                  <TableHead>Status</TableHead>
+              <TableHeader className="bg-muted/30 dark:bg-slate-950/40">
+                <TableRow className="border-border/60 hover:bg-transparent">
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Paciente</TableHead>
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Condição</TableHead>
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Medicamentos</TableHead>
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Cadastro</TableHead>
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Eficácia</TableHead>
+                  <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -744,18 +741,18 @@ export default function Patients() {
                   </TableRow>
                 ) : (
                   filteredPatients.map((patient) => (
-                    <TableRow key={patient.id} className="cursor-pointer">
+                    <TableRow key={patient.id} className="cursor-pointer hover:bg-muted/40 transition-colors border-border/60">
                       <TableCell onClick={() => handleViewClick(patient)}>
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10">
+                          <Avatar className="w-9 h-9 ring-1 ring-border">
                             <AvatarImage src={patient.photoURL} alt={patient.name} />
-                            <AvatarFallback className="bg-neuro-gradient">
-                              <User className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
+                            <AvatarFallback className="bg-teal-500/10 text-teal-400 font-mono text-xs font-bold">
+                              {patient.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{patient.name}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-semibold text-sm text-foreground">{patient.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">
                               {patient.age} anos • {patient.gender}
                             </p>
                           </div>

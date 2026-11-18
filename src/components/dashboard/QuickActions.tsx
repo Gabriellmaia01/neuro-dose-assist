@@ -1,108 +1,130 @@
-import { Plus, History, FileText, Brain, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, History, FileText, Brain, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
+/**
+ * QuickActions - Bloco de Atalhos de Decisão e Ação Rápida (Swiss Clinical Minimalist).
+ * Padrão Awwwards: Bento cards interativos com micro-ícones de ação e hover refinado.
+ */
 export function QuickActions() {
   const actions = [
     {
       icon: Plus,
       label: "Registrar Dose",
-      description: "Nova entrada",
+      description: "Nova entrada farmacológica",
       href: "/dose",
-      gradient: "from-teal-500 to-cyan-500",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      bgGlow: "bg-teal-500/20",
+      iconBg: "bg-teal-500/10 text-teal-400 border border-teal-500/30",
+      accentBorder: "hover:border-teal-500/40",
       primary: true,
+      tag: "NOVO REGISTRO",
     },
     {
       icon: Brain,
       label: "Consultar IA",
-      description: "Recomendações",
+      description: "Recomendações preditivas",
       href: "/dose",
-      gradient: "from-violet-500 to-purple-500",
-      iconColor: "text-violet-600 dark:text-violet-400",
-      bgGlow: "bg-violet-500/10",
+      iconBg: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
+      accentBorder: "hover:border-violet-500/40",
+      primary: false,
+      tag: "BAYESIAN ENGINE",
     },
     {
       icon: History,
-      label: "Histórico",
-      description: "Ver registros",
+      label: "Histórico Clínico",
+      description: "Consultar logs e posologias",
       href: "/history",
-      gradient: "from-blue-500 to-indigo-500",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      bgGlow: "bg-blue-500/10",
+      iconBg: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
+      accentBorder: "hover:border-cyan-500/40",
+      primary: false,
+      tag: "LOG DE EVENTOS",
     },
     {
       icon: FileText,
-      label: "Relatório",
-      description: "Exportar PDF",
+      label: "Relatório Médico",
+      description: "Exportar dossiê em PDF",
       href: "/reports",
-      gradient: "from-amber-500 to-orange-500",
-      iconColor: "text-amber-600 dark:text-amber-400",
-      bgGlow: "bg-amber-500/10",
+      iconBg: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+      accentBorder: "hover:border-amber-500/40",
+      primary: false,
+      tag: "DOCS CLÍNICOS",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      {actions.map((action) => (
-        <Link key={action.label} to={action.href} className="group">
-          <div
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 select-none">
+      {actions.map((action, idx) => (
+        <motion.div
+          key={action.label}
+          whileHover={{ y: -3 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Link
+            to={action.href}
             className={cn(
-              "relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-5 transition-all duration-300",
-              "border border-border/50 hover:border-border",
-              "hover:shadow-lg hover:-translate-y-0.5",
+              "block relative h-full overflow-hidden rounded-xl p-4 sm:p-5 transition-all duration-300 group",
+              "border backdrop-blur-xl shadow-sm hover:shadow-lg",
               action.primary
-                ? "bg-gradient-to-br from-slate-900 to-slate-800 border-white/10"
-                : "bg-card"
+                ? "bg-slate-900/90 dark:bg-slate-900/90 border-teal-500/30 text-white"
+                : "bg-card/90 dark:bg-slate-900/60 border-border/80 dark:border-slate-800/80 text-foreground",
+              action.accentBorder
             )}
           >
-            {/* Background glow */}
-            <div className={cn(
-              "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-              action.bgGlow
-            )} />
-
-            {/* Icon with gradient */}
-            <div className={cn(
-              "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:scale-110",
-              action.primary ? "bg-white/10" : "bg-muted/50"
-            )}>
-              <action.icon className={cn(
-                "w-5 h-5 sm:w-6 sm:h-6",
-                action.primary ? "text-white" : action.iconColor
-              )} />
+            {/* Tag em Monospace no topo */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span
+                className={cn(
+                  "text-[9px] font-mono tracking-widest uppercase",
+                  action.primary ? "text-teal-300/90 font-medium" : "text-muted-foreground/70"
+                )}
+              >
+                {action.tag}
+              </span>
+              <ArrowUpRight
+                className={cn(
+                  "w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+                  action.primary ? "text-teal-400" : "text-muted-foreground group-hover:text-foreground"
+                )}
+              />
             </div>
 
-            {/* Text */}
-            <div className="relative z-10">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className={cn(
-                  "font-semibold text-sm sm:text-base",
-                  action.primary ? "text-white" : "text-foreground"
-                )}>
+            {/* Ícone e Títulos */}
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105",
+                  action.iconBg
+                )}
+              >
+                <action.icon className="w-5 h-5" />
+              </div>
+
+              <div className="min-w-0">
+                <h3
+                  className={cn(
+                    "text-sm font-semibold tracking-tight truncate",
+                    action.primary ? "text-white" : "text-foreground"
+                  )}
+                >
                   {action.label}
                 </h3>
-                <ArrowRight className={cn(
-                  "w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300",
-                  action.primary ? "text-white/60" : "text-muted-foreground"
-                )} />
+                <p
+                  className={cn(
+                    "text-xs mt-0.5 truncate",
+                    action.primary ? "text-slate-400" : "text-muted-foreground"
+                  )}
+                >
+                  {action.description}
+                </p>
               </div>
-              <p className={cn(
-                "text-xs sm:text-sm mt-0.5",
-                action.primary ? "text-white/60" : "text-muted-foreground"
-              )}>
-                {action.description}
-              </p>
             </div>
 
-            {/* Primary action indicator */}
+            {/* Borda inferior sutil */}
             {action.primary && (
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-500/30 to-cyan-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-teal-400 via-cyan-400 to-transparent" />
             )}
-          </div>
-        </Link>
+          </Link>
+        </motion.div>
       ))}
     </div>
   );

@@ -1,7 +1,15 @@
 import { Suspense, lazy } from "react";
-import { Brain, Activity, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Activity,
+  ShieldCheck,
+  Zap,
+  Cpu,
+  ArrowUpRight,
+  Loader2,
+} from "lucide-react";
 
-// Lazy load Three.js component to reduce initial bundle size
+// Lazy load do componente visual
 const NeuralBrainScene = lazy(() =>
   import("@/components/3d/NeuralBrainScene").then((m) => ({
     default: m.NeuralBrainScene,
@@ -9,101 +17,159 @@ const NeuralBrainScene = lazy(() =>
 );
 
 /**
- * Lado esquerdo da tela de login com hero section, cena 3D e features.
- * Responsabilidade única: renderizar o conteúdo visual explicativo do sistema.
+ * LadoHeroLogin - Seção Hero de Apresentação Clínica (Swiss Minimalist / Awwwards Standard)
+ * Apresenta a rede neural, métricas de precisão clínica e telemetria do sistema com Framer Motion.
  */
 export function LadoHeroLogin() {
   return (
-    <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-950/80 z-10" />
+    <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden bg-slate-950 border-r border-slate-800/60 select-none">
+      {/* Grade estrutural de fundo (Swiss Grid) */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+          backgroundSize: "64px 64px",
+        }}
+      />
 
-      {/* 3D Neural Brain Scene */}
+      {/* Marcadores de precisão cirúrgica (Swiss Crosshairs) */}
+      <div className="absolute top-6 left-6 font-mono text-[10px] text-slate-500 tracking-widest z-30 flex items-center gap-2">
+        <span className="text-teal-400 font-bold">+</span>
+        <span>SYS.SPEC // NEURO-DOSE CLINICAL ENCLAVE</span>
+      </div>
+
+      <div className="absolute top-6 right-8 font-mono text-[10px] text-slate-500 tracking-widest z-30 flex items-center gap-2">
+        <span>LATENCY: 12ms</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-ping" />
+        <span className="text-teal-400 font-bold">+</span>
+      </div>
+
+      {/* Canvas da Rede Neural Sináptica */}
       <Suspense
         fallback={
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <Loader2 className="w-10 h-10 animate-spin text-teal-400/50" />
           </div>
         }
       >
         <NeuralBrainScene />
       </Suspense>
 
-      {/* Overlay content */}
-      <div className="absolute inset-0 flex items-center p-12 z-20">
-        <div className="max-w-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
-              <Brain className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">
-                NeuroDose
-              </h1>
-              <p className="text-teal-400/80 text-sm font-medium">
-                Decisão Clínica IA
-              </p>
-            </div>
+      {/* Gradiente de transição para o formulário */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none z-10" />
+      <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-950 via-slate-950/70 to-transparent pointer-events-none z-10" />
+
+      {/* Conteúdo Hero Tipográfico com Framer Motion */}
+      <div className="relative z-20 flex flex-col justify-between w-full h-full p-12 xl:p-16">
+        {/* Espaçador superior para acomodar o cabeçalho técnico */}
+        <div className="pt-6" />
+
+        {/* Bloco Central Tipográfico Suíço */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-xl space-y-6"
+        >
+          {/* Badge de status clínico */}
+          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/80 backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+            </span>
+            <span className="font-mono text-xs font-medium tracking-wider uppercase text-slate-300">
+              Protocolo IA // Ativo v2.4
+            </span>
           </div>
 
-          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
-            Transformando
-            <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-400 to-violet-400">
-              decisões médicas
+          {/* Título Principal de Impacto Tipográfico */}
+          <h1 className="text-4xl xl:text-5xl font-bold tracking-tight text-white leading-[1.12]">
+            Precisão Algorítmica na{" "}
+            <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-300 to-white">
+              Neurologia Clínica.
             </span>
-          </h2>
+          </h1>
 
-          <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-            Sistema inteligente de suporte à decisão clínica para profissionais de
-            neurologia. Análise em tempo real com IA.
+          {/* Subtítulo Técnico e Elegante */}
+          <p className="text-slate-400 text-base xl:text-lg leading-relaxed max-w-lg font-normal">
+            Modelagem farmacocinética e suporte à dosagem em tempo real. Desenvolvido para
+            neurologistas que exigem rigor computacional e total conformidade com diretrizes clínicas.
           </p>
 
-          {/* Features list */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-teal-400" />
+          {/* Bento Grid de Telemetria Clínica (3 Cards estilo Awwwards) */}
+          <div className="grid grid-cols-3 gap-3.5 pt-4">
+            {/* Card 1: Precisão */}
+            <motion.div
+              whileHover={{ y: -4, borderColor: "rgba(20, 184, 166, 0.4)" }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl group relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                  Eficiência
+                </span>
+                <Activity className="w-3.5 h-3.5 text-teal-400" />
               </div>
-              <div>
-                <p className="text-white font-medium text-sm">
-                  Análise Preditiva
-                </p>
-                <p className="text-slate-500 text-xs">IA em tempo real</p>
-              </div>
-            </div>
+              <div className="text-2xl font-bold text-white tracking-tight">99.4%</div>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Precisão em curvas de dosagem
+              </p>
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-teal-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-violet-400" />
+            {/* Card 2: Latência de Resposta */}
+            <motion.div
+              whileHover={{ y: -4, borderColor: "rgba(6, 182, 212, 0.4)" }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl group relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                  Latência
+                </span>
+                <Zap className="w-3.5 h-3.5 text-cyan-400" />
               </div>
-              <div>
-                <p className="text-white font-medium text-sm">100% Seguro</p>
-                <p className="text-slate-500 text-xs">LGPD Compliant</p>
-              </div>
-            </div>
+              <div className="text-2xl font-bold text-white tracking-tight">&lt;120ms</div>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Processamento preditivo instantâneo
+              </p>
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
+            {/* Card 3: Segurança de Nível Médico */}
+            <motion.div
+              whileHover={{ y: -4, borderColor: "rgba(139, 92, 246, 0.4)" }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl group relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                  Conformidade
+                </span>
+                <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
               </div>
-              <div>
-                <p className="text-white font-medium text-sm">
-                  Machine Learning
-                </p>
-                <p className="text-slate-500 text-xs">Aprendizado contínuo</p>
-              </div>
-            </div>
+              <div className="text-2xl font-bold text-white tracking-tight">LGPD</div>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Criptografia e sigilo médico ponta a ponta
+              </p>
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
+          </div>
+        </motion.div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                <Brain className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-white font-medium text-sm">Neurologia</p>
-                <p className="text-slate-500 text-xs">Especializado</p>
-              </div>
-            </div>
+        {/* Rodapé Técnico com Padrões Suíços */}
+        <div className="pt-8 border-t border-slate-900 flex items-center justify-between font-mono text-[11px] text-slate-500">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <Cpu className="w-3.5 h-3.5 text-teal-400" />
+              NEURAL CORE ENGINE
+            </span>
+            <span>•</span>
+            <span>CALIBRAÇÃO BAYESIANA</span>
+          </div>
+          <div className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors cursor-default">
+            <span>DOCS CLÍNICAS</span>
+            <ArrowUpRight className="w-3 h-3 text-slate-500" />
           </div>
         </div>
       </div>

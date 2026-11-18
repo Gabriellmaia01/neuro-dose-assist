@@ -558,21 +558,20 @@ function IndicadorCarregamento() {
     );
 }
 
-/** Cabeçalho da página com título */
+/** Cabeçalho cirúrgico da página de agenda */
 function Cabecalho() {
     return (
-        <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-                <CalendarIcon className="w-6 h-6 text-primary-foreground" />
+        <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 font-mono text-[11px] mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                <span>AGENDA CLÍNICA // COMPROMISSOS & RETORNOS</span>
             </div>
-            <div>
-                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-                    Agenda
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                    Gerencie consultas e compromissos
-                </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display">
+                Agenda & Consultas
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+                Agendamento de sessões neurológicas, retornos terapêuticos e avaliações pós-dose.
+            </p>
         </div>
     );
 }
@@ -714,18 +713,18 @@ function DialogoAgendamento({
     return (
         <Dialog open={aberto} onOpenChange={aoMudar}>
             <DialogTrigger asChild>
-                <Button variant="neuro" onClick={aoClicarNovo}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nova Consulta
+                <Button onClick={aoClicarNovo} className="h-10 bg-gradient-to-r from-teal-500 via-teal-400 to-cyan-400 hover:from-teal-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg shadow-md shadow-teal-500/20 transition-all flex items-center gap-2 text-xs font-mono uppercase tracking-wider">
+                    <Plus className="w-4 h-4 text-slate-950" />
+                    <span>Nova Consulta</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-2xl border-border/80 rounded-2xl shadow-2xl">
                 <DialogHeader>
-                    <DialogTitle className="font-display">
-                        {consultaEditando ? "Editar Consulta" : "Agendar Consulta"}
+                    <DialogTitle className="font-display text-xl font-bold">
+                        {consultaEditando ? "Atualizar Consulta" : "Agendar Consulta"}
                     </DialogTitle>
-                    <DialogDescription>
-                        {consultaEditando ? "Atualize os dados da consulta" : "Preencha os dados para agendar"}
+                    <DialogDescription className="text-xs text-muted-foreground">
+                        {consultaEditando ? "Atualize as informações do atendimento." : "Defina o horário e detalhes da consulta clínica."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -881,7 +880,7 @@ function GradeCalendario({
     };
 
     return (
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+        <div className="lg:col-span-2 rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-6 shadow-sm">
             <NavegacaoCalendario
                 dataAtual={dataAtual}
                 aoIrAnterior={aoIrAnterior}
@@ -1067,7 +1066,7 @@ function PainelConsultasDoDia({
         : "Selecione um dia";
 
     return (
-        <div className="glass-card rounded-2xl p-6">
+        <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-semibold">{tituloData}</h3>
             </div>

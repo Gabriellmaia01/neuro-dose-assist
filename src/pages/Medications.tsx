@@ -416,26 +416,25 @@ export default function Medications() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 pb-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-              <Pill className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
+      <div className="space-y-6 pb-8 select-none">
+        {/* Header Cirúrgico Suíço */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 font-mono text-[11px] mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+              <span>CATÁLOGO FARMACOLÓGICO // POSOLOGIA & MEIA-VIDA</span>
             </div>
-            <div className="min-w-0">
-              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance">
-                Medicamentos
-              </h1>
-              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                Catálogo de medicamentos com classes, dosagens e formas farmacêuticas
-              </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display">
+              Formulário Terapêutico
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              Mapeamento de fármacos neuropsiquiátricos, limites de dosagem e prevenção de interações.
+            </p>
           </div>
 
           {/* Alertas de Interação Medicamentosa */}
           {interactionAlerts.length > 0 && (
-            <div className="glass-card rounded-2xl p-6">
+            <div className="rounded-2xl p-4 bg-amber-500/10 border border-amber-500/20">
               <InteractionAlertPanel
                 alerts={interactionAlerts}
                 onDismiss={handleDismissAlert}
@@ -451,18 +450,18 @@ export default function Medications() {
             }}
           >
             <DialogTrigger asChild>
-              <Button variant="neuro" className="h-11">
-                <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-                Novo Medicamento
+              <Button className="h-10 bg-gradient-to-r from-teal-500 via-teal-400 to-cyan-400 hover:from-teal-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg shadow-md shadow-teal-500/20 transition-all flex items-center gap-2 text-xs font-mono uppercase tracking-wider">
+                <Plus className="w-4 h-4 text-slate-950" aria-hidden="true" />
+                <span>Novo Medicamento</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[650px]">
+            <DialogContent className="sm:max-w-[650px] bg-card/95 backdrop-blur-2xl border-border/80 rounded-2xl shadow-2xl">
               <DialogHeader>
-                <DialogTitle className="font-display">
-                  {editingId ? "Editar Medicamento" : "Cadastrar Medicamento"}
+                <DialogTitle className="font-display text-xl font-bold">
+                  {editingId ? "Atualizar Fármaco" : "Cadastrar Medicamento"}
                 </DialogTitle>
-                <DialogDescription>
-                  {editingId ? "Atualize os dados do medicamento." : "Adicione um novo medicamento ao catálogo."}
+                <DialogDescription className="text-xs text-muted-foreground">
+                  {editingId ? "Atualize as diretrizes posológicas do medicamento." : "Cadastre uma nova substância farmacológica no formulário."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -707,43 +706,56 @@ export default function Medications() {
           </Dialog>
         </div>
 
-        {/* Stats */}
+        {/* Grid de Métricas Farmacológicas (Bento Grid Suíço) */}
         {!loading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
-                  <p className="text-2xl font-display font-bold mt-1 tabular-nums">{totalMedications}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Fármacos Totais</p>
+                  <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-foreground">{totalMedications}</p>
                 </div>
-                <Pill className="w-8 h-8 text-primary/60" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                  <Pill className="w-4 h-4 text-teal-400" aria-hidden="true" />
+                </div>
               </div>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
+
+            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Classes</p>
-                  <p className="text-2xl font-display font-bold mt-1 tabular-nums">{uniqueClasses}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Classes Ativas</p>
+                  <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-foreground">{uniqueClasses}</p>
                 </div>
-                <Beaker className="w-8 h-8 text-info/60" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                  <Beaker className="w-4 h-4 text-cyan-400" aria-hidden="true" />
+                </div>
               </div>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
+
+            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Exibindo</p>
-                  <p className="text-2xl font-display font-bold mt-1 tabular-nums">{filteredTotal}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Visíveis</p>
+                  <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-foreground">{filteredTotal}</p>
                 </div>
-                <Search className="w-8 h-8 text-success/60" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <Search className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                </div>
               </div>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
+
+            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Filtros</p>
-                  <p className="text-2xl font-display font-bold mt-1 tabular-nums">{hasActiveFilters ? selectedClasses.length + (searchTerm ? 1 : 0) : 0}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Filtros Ativos</p>
+                  <p className="text-2xl font-bold font-mono tracking-tight mt-1 text-teal-400">
+                    {hasActiveFilters ? selectedClasses.length + (searchTerm ? 1 : 0) : 0}
+                  </p>
                 </div>
-                <Filter className="w-8 h-8 text-warning/60" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                  <Filter className="w-4 h-4 text-violet-400" aria-hidden="true" />
+                </div>
               </div>
             </div>
           </div>
@@ -877,25 +889,26 @@ export default function Medications() {
               <div
                 key={med.id}
                 className={cn(
-                  "glass-card rounded-2xl p-6",
-                  "transition-[transform,box-shadow,background-color] duration-200",
-                  "hover:shadow-lg hover:bg-card/90"
+                  "rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5",
+                  "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group"
                 )}
                 style={{ contentVisibility: "auto" }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Pill className="w-6 h-6 text-primary" aria-hidden="true" />
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
+                      <Pill className="w-5 h-5 text-teal-400" aria-hidden="true" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display font-semibold truncate">{med.name}</h3>
-                      <p className="text-sm text-muted-foreground truncate">{med.brandName}</p>
+                      <h3 className="font-semibold text-base tracking-tight truncate text-foreground group-hover:text-teal-400 transition-colors">
+                        {med.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate font-mono">{med.brandName}</p>
                     </div>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label={`Ações para ${med.name}`}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Ações para ${med.name}`}>
                         <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -921,34 +934,34 @@ export default function Medications() {
 
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Beaker className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                    <span className="text-sm text-muted-foreground line-clamp-2 break-words">{med.activeIngredient}</span>
+                    <Beaker className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                    <span className="text-xs text-muted-foreground line-clamp-2 break-words font-mono">{med.activeIngredient}</span>
                   </div>
 
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-xs",
+                      "text-[10px] font-mono uppercase tracking-wider",
                       therapeuticClassColors[med.therapeuticClass] || "bg-muted"
                     )}
                   >
                     {med.therapeuticClass}
                   </Badge>
 
-                  <div className="pt-3 border-t border-border space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Forma</span>
-                      <span className="font-medium">{med.form}</span>
+                  <div className="pt-3 border-t border-border/60 space-y-1.5 font-mono text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-[11px] uppercase">Forma</span>
+                      <span className="font-medium text-foreground">{med.form}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Dose</span>
-                      <span className="font-medium tabular-nums">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-[11px] uppercase">Dosagem Segura</span>
+                      <span className="font-semibold text-teal-400 tabular-nums">
                         {med.minDose} - {med.maxDose} {med.unit}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Cadastrado em</span>
-                      <span className="font-medium tabular-nums">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-[11px] uppercase">Cadastrado</span>
+                      <span className="font-medium text-foreground tabular-nums">
                         {med.createdAt ? dtf.format(new Date(med.createdAt)) : "—"}
                       </span>
                     </div>
