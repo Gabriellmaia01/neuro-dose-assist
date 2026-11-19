@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -373,5 +373,505 @@
 
   .xs\:inline {
     display: inline;
+  }
+}
+
+/* ==========================================================================
+   Neuro-Dose Clinical Login — Design Tokens & Sober Hospital Aesthetics
+   ========================================================================== */
+
+:root {
+  /* Motion tokens */
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-press: 80ms;
+  --dur-enter: 300ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Clinical palette tokens */
+  --login-dark-bg: #0F1E2E;
+  --login-dark-surface: #152738;
+  --login-dark-border: rgba(255, 255, 255, 0.08);
+  --login-dark-text: #EAF0F5;
+  --login-dark-text-secondary: #9AABBA;
+  --login-dark-accent-soft: #7FBFBF;
+  --login-dark-title-accent: #A9C9CC;
+
+  --login-light-bg: #F7F9FB;
+  --login-light-surface: #FFFFFF;
+  --login-light-border: #D9E1E8;
+  --login-light-text: #0F1E2E;
+  --login-light-text-secondary: #5B6B7A;
+  --login-light-label: #3B4A59;
+  --login-light-icon: #7A8A99;
+  --login-light-placeholder: #6B7A89;
+  --login-segmented-bg: #EEF2F6;
+
+  --login-primary: #1B4965;
+  --login-primary-hover: #153A52;
+  --login-accent: #2C7A7B;
+  --login-focus-ring: rgba(44, 122, 123, 0.15);
+  --login-error: #B42318;
+  --login-success: #1E7A4D;
+
+  /* Geometry & spacing tokens (8px grid) */
+  --login-radius: 8px;
+  --login-radius-lg: 12px;
+  --login-shadow-sm: 0 1px 2px rgba(15, 30, 46, 0.06);
+  --login-space-1: 8px;
+  --login-space-2: 16px;
+  --login-space-3: 24px;
+  --login-space-4: 32px;
+  --login-space-5: 40px;
+  --login-space-6: 48px;
+  --login-space-7: 56px;
+  --login-space-9: 72px;
+
+  /* Typography token */
+  --login-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--login-font);
+  background-color: var(--login-light-bg);
+  color: var(--login-light-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.login-shell h1,
+.login-shell h2,
+.login-shell h3,
+.login-shell h4,
+.login-shell button,
+.login-shell input,
+.login-shell label,
+.login-shell a,
+.login-shell p,
+.login-shell span {
+  font-family: var(--login-font);
+}
+
+.login-panel-left {
+  display: none;
+}
+
+.login-panel-right {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--login-light-bg);
+  padding: var(--login-space-3);
+}
+
+.login-mobile-header {
+  display: flex;
+}
+
+@media (min-width: 900px) {
+  .login-shell {
+    flex-direction: row;
+  }
+
+  .login-panel-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 55%;
+    min-height: 100vh;
+    background-color: var(--login-dark-bg);
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+    padding: var(--login-space-6) var(--login-space-5);
+    color: var(--login-dark-text);
+  }
+
+  .login-panel-right {
+    width: 45%;
+    padding: var(--login-space-6) var(--login-space-4);
+  }
+
+  .login-mobile-header {
+    display: none;
+  }
+}
+
+@media (min-width: 1180px) {
+  .login-panel-left {
+    padding: var(--login-space-7) var(--login-space-9);
+  }
+
+  .login-panel-right {
+    padding: var(--login-space-7) var(--login-space-6);
+  }
+}
+
+/* Form container */
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding: var(--login-space-4) 0;
+}
+
+/* Panel entrance (single subtle fade-in, no stagger, no translation) */
+@keyframes login-panel-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-panel-enter {
+  animation: login-panel-fade var(--dur-enter) var(--ease) both;
+}
+
+/* Segmented tabs */
+.login-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 40px;
+  padding: 4px;
+  background-color: var(--login-segmented-bg);
+  border-radius: var(--login-radius);
+}
+
+.login-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background-color: var(--login-light-surface);
+  border: 1px solid var(--login-light-border);
+  border-radius: 6px;
+  box-shadow: var(--login-shadow-sm);
+  transition: transform var(--dur-base) var(--ease);
+  pointer-events: none;
+}
+
+.login-tab-trigger {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--login-light-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.login-tab-trigger:hover {
+  color: var(--login-light-text);
+}
+
+.login-tab-trigger[aria-selected="true"] {
+  color: var(--login-light-text);
+}
+
+.login-tab-trigger:focus-visible {
+  outline: 2px solid var(--login-accent);
+  outline-offset: -2px;
+}
+
+@keyframes login-tab-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-tab-panel {
+  animation: login-tab-fade var(--dur-fast) var(--ease) both;
+}
+
+/* Inputs */
+.login-input {
+  width: 100%;
+  height: 48px;
+  background-color: var(--login-light-surface);
+  border: 1px solid var(--login-light-border);
+  border-radius: var(--login-radius);
+  color: var(--login-light-text);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+.login-input::placeholder {
+  color: var(--login-light-placeholder);
+  opacity: 1;
+}
+
+.login-input:hover:not(:disabled):not(:focus) {
+  border-color: #C2CDD8;
+}
+
+.login-input:focus {
+  border-color: var(--login-accent);
+  box-shadow: 0 0 0 3px var(--login-focus-ring);
+  outline: none;
+}
+
+.login-input:disabled {
+  background-color: #F1F4F8;
+  color: var(--login-light-text-secondary);
+  cursor: not-allowed;
+}
+
+.login-input[aria-invalid="true"],
+.login-input.login-input-error {
+  border-color: var(--login-error);
+}
+
+.login-input[aria-invalid="true"]:focus,
+.login-input.login-input-error:focus {
+  border-color: var(--login-error);
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.14);
+}
+
+@keyframes login-error-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-error-text {
+  color: var(--login-error);
+  font-size: 13px;
+  line-height: 1.4;
+  animation: login-error-enter var(--dur-base) var(--ease) both;
+}
+
+@keyframes login-shake-once {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.login-shake {
+  animation: login-shake-once 250ms var(--ease) 1;
+}
+
+/* Buttons */
+.login-btn-primary {
+  width: 100%;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--login-primary);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  border-radius: var(--login-radius);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur-press) var(--ease);
+}
+
+.login-btn-primary:hover:not(:disabled) {
+  background-color: var(--login-primary-hover);
+}
+
+.login-btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.login-btn-primary:focus-visible {
+  outline: 2px solid var(--login-accent);
+  outline-offset: 2px;
+}
+
+.login-btn-primary:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.login-btn-google {
+  width: 100%;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--login-light-surface);
+  color: var(--login-light-text);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--login-light-border);
+  border-radius: var(--login-radius);
+  box-shadow: var(--login-shadow-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur-press) var(--ease);
+}
+
+.login-btn-google:hover:not(:disabled) {
+  background-color: var(--login-light-bg);
+}
+
+.login-btn-google:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.login-btn-google:focus-visible {
+  outline: 2px solid var(--login-accent);
+  outline-offset: 2px;
+}
+
+.login-btn-google:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Interactive links & icon buttons */
+.login-link {
+  color: var(--login-accent);
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.login-link:hover {
+  color: var(--login-primary);
+}
+
+.login-link:focus-visible {
+  outline: 2px solid var(--login-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.login-dark-link {
+  color: var(--login-dark-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.login-dark-link:hover {
+  color: var(--login-dark-text);
+}
+
+.login-dark-link:focus-visible {
+  outline: 2px solid var(--login-dark-accent-soft);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.login-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--login-light-icon);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.login-icon-btn:hover {
+  color: var(--login-light-label);
+}
+
+.login-icon-btn:focus-visible {
+  outline: 2px solid var(--login-accent);
+  outline-offset: 1px;
+}
+
+/* Loading spinner (only permitted loop, active strictly while loading) */
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  border-top-color: #FFFFFF;
+  animation: login-spin 700ms linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.login-spinner-dark {
+  border-color: rgba(27, 73, 101, 0.22);
+  border-top-color: var(--login-primary);
+}
+
+/* Tabular numbers for clinical metrics */
+.login-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .login-panel-enter,
+  .login-tab-panel,
+  .login-error-text,
+  .login-shake {
+    animation: none;
+  }
+
+  .login-tab-indicator {
+    transition: none;
+  }
+
+  .login-btn-primary:active:not(:disabled),
+  .login-btn-google:active:not(:disabled) {
+    transform: none;
   }
 }
