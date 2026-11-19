@@ -1,86 +1,55 @@
 import { Users, Pill, Activity, Brain } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { type EstatisticasPainel } from "@/lib/tiposPainel";
-import { motion } from "framer-motion";
 
 interface PropriedadesGradeMetricas {
   estatisticas: EstatisticasPainel;
 }
 
 /**
- * GradeMetricas - Grade dos 4 cartões de métricas do painel com animação escalonada.
- * Padrão Awwwards: Entrada suave escalonada e responsividade fluida.
+ * GradeMetricas - Grade dos 4 KPIs principais do painel.
+ * 4 colunas em >=1280px, 2 colunas entre 900px e 1279px, 1 coluna abaixo de 900px.
  */
 export function GradeMetricas({ estatisticas }: PropriedadesGradeMetricas) {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 12 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
-  };
-
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-    >
-      <motion.div variants={item}>
+    <section aria-label="Indicadores clínicos">
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-2 xl:grid-cols-4 gap-6">
         <MetricCard
-          title="Pacientes Ativos"
+          title="Pacientes ativos"
           value={estatisticas.pacientesAtivos.toString()}
           subtitle={
             estatisticas.pacientesAtivosNovos > 0
               ? `+${estatisticas.pacientesAtivosNovos} novos (30d)`
               : "Sem novos cadastros"
           }
-          icon={<Users className="w-4 h-4 sm:w-5 sm:h-5" />}
+          icon={<Users className="w-4 h-4" strokeWidth={1.5} />}
           trend={{ value: estatisticas.tendenciaPacientes, label: "vs. mês anterior" }}
-          variant="default"
         />
-      </motion.div>
 
-      <motion.div variants={item}>
         <MetricCard
-          title="Doses Registradas"
+          title="Doses registradas"
           value={estatisticas.dosesUltimos7Dias.toString()}
           subtitle="Últimos 7 dias"
-          icon={<Pill className="w-4 h-4 sm:w-5 sm:h-5" />}
-          trend={{ value: estatisticas.tendenciaDoses, label: "vs. semana ant." }}
-          variant="success"
+          icon={<Pill className="w-4 h-4" strokeWidth={1.5} />}
+          trend={{ value: estatisticas.tendenciaDoses, label: "vs. semana anterior" }}
         />
-      </motion.div>
 
-      <motion.div variants={item}>
         <MetricCard
-          title="Eficácia Média"
+          title="Eficácia média"
           value={`${estatisticas.eficaciaMedia}%`}
           subtitle="Índice clínico geral"
-          icon={<Activity className="w-4 h-4 sm:w-5 sm:h-5" />}
-          trend={{ value: estatisticas.tendenciaEficacia, label: "vs. semana ant." }}
-          variant="default"
+          icon={<Activity className="w-4 h-4" strokeWidth={1.5} />}
+          trend={{ value: estatisticas.tendenciaEficacia, label: "vs. semana anterior" }}
         />
-      </motion.div>
 
-      <motion.div variants={item}>
         <MetricCard
           title="Inferências IA"
           value={estatisticas.inferenciasIA.toString()}
           subtitle="Total processado"
-          icon={<Brain className="w-4 h-4 sm:w-5 sm:h-5" />}
-          trend={{ value: estatisticas.tendenciaIA, label: "vs. semana ant." }}
-          variant="warning"
+          icon={<Brain className="w-4 h-4" strokeWidth={1.5} />}
+          trend={{ value: estatisticas.tendenciaIA, label: "vs. semana anterior" }}
         />
-      </motion.div>
-    </motion.div>
+      </div>
+    </section>
   );
 }

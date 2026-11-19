@@ -1,11 +1,10 @@
 import { Plus, History, FileText, Brain, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 /**
- * QuickActions - Bloco de Atalhos de Decisão e Ação Rápida (Swiss Clinical Minimalist).
- * Padrão Awwwards: Bento cards interativos com micro-ícones de ação e hover refinado.
+ * QuickActions - 4 atalhos rápidos de ação clínica.
+ * "Registrar Dose" recebe o único destaque em cor primária (#1B4965); os demais são neutros.
  */
 export function QuickActions() {
   const actions = [
@@ -14,118 +13,88 @@ export function QuickActions() {
       label: "Registrar Dose",
       description: "Nova entrada farmacológica",
       href: "/dose",
-      iconBg: "bg-teal-500/10 text-teal-400 border border-teal-500/30",
-      accentBorder: "hover:border-teal-500/40",
       primary: true,
-      tag: "NOVO REGISTRO",
     },
     {
       icon: Brain,
       label: "Consultar IA",
       description: "Recomendações preditivas",
       href: "/dose",
-      iconBg: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
-      accentBorder: "hover:border-violet-500/40",
       primary: false,
-      tag: "BAYESIAN ENGINE",
     },
     {
       icon: History,
       label: "Histórico Clínico",
       description: "Consultar logs e posologias",
       href: "/history",
-      iconBg: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
-      accentBorder: "hover:border-cyan-500/40",
       primary: false,
-      tag: "LOG DE EVENTOS",
     },
     {
       icon: FileText,
       label: "Relatório Médico",
       description: "Exportar dossiê em PDF",
       href: "/reports",
-      iconBg: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-      accentBorder: "hover:border-amber-500/40",
       primary: false,
-      tag: "DOCS CLÍNICOS",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 select-none">
-      {actions.map((action, idx) => (
-        <motion.div
-          key={action.label}
-          whileHover={{ y: -3 }}
-          transition={{ duration: 0.2 }}
-        >
+    <section aria-label="Ações rápidas">
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-2 xl:grid-cols-4 gap-6">
+        {actions.map((action) => (
           <Link
+            key={action.label}
             to={action.href}
             className={cn(
-              "block relative h-full overflow-hidden rounded-xl p-4 sm:p-5 transition-all duration-300 group",
-              "border backdrop-blur-xl shadow-sm hover:shadow-lg",
-              action.primary
-                ? "bg-slate-900/90 dark:bg-slate-900/90 border-teal-500/30 text-white"
-                : "bg-card/90 dark:bg-slate-900/60 border-border/80 dark:border-slate-800/80 text-foreground",
-              action.accentBorder
+              "relative flex items-start gap-3.5 p-4 h-full",
+              action.primary ? "nd-shortcut-primary" : "nd-card-interactive"
             )}
           >
-            {/* Tag em Monospace no topo */}
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span
-                className={cn(
-                  "text-[9px] font-mono tracking-widest uppercase",
-                  action.primary ? "text-teal-300/90 font-medium" : "text-muted-foreground/70"
-                )}
-              >
-                {action.tag}
-              </span>
-              <ArrowUpRight
-                className={cn(
-                  "w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
-                  action.primary ? "text-teal-400" : "text-muted-foreground group-hover:text-foreground"
-                )}
-              />
+            {/* Quadrado neutro de 36px com ícone de linha de 20px */}
+            <div
+              className={cn(
+                "w-9 h-9 rounded-[var(--nd-radius)] flex items-center justify-center shrink-0",
+                action.primary
+                  ? "bg-white/10 text-white"
+                  : "bg-[var(--nd-muted)] text-[var(--nd-primary)]"
+              )}
+              aria-hidden="true"
+            >
+              <action.icon className="w-5 h-5" strokeWidth={1.5} />
             </div>
 
-            {/* Ícone e Títulos */}
-            <div className="flex items-center gap-3">
-              <div
+            <div className="min-w-0 flex-1 pr-5">
+              <h2
                 className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105",
-                  action.iconBg
+                  "text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] truncate",
+                  action.primary ? "text-white" : "text-[var(--nd-text)]"
                 )}
               >
-                <action.icon className="w-5 h-5" />
-              </div>
-
-              <div className="min-w-0">
-                <h3
-                  className={cn(
-                    "text-sm font-semibold tracking-tight truncate",
-                    action.primary ? "text-white" : "text-foreground"
-                  )}
-                >
-                  {action.label}
-                </h3>
-                <p
-                  className={cn(
-                    "text-xs mt-0.5 truncate",
-                    action.primary ? "text-slate-400" : "text-muted-foreground"
-                  )}
-                >
-                  {action.description}
-                </p>
-              </div>
+                {action.label}
+              </h2>
+              <p
+                className={cn(
+                  "text-[13px] font-normal leading-[1.4] mt-1 truncate",
+                  action.primary
+                    ? "text-white/80"
+                    : "text-[var(--nd-text-secondary)]"
+                )}
+              >
+                {action.description}
+              </p>
             </div>
 
-            {/* Borda inferior sutil */}
-            {action.primary && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-teal-400 via-cyan-400 to-transparent" />
-            )}
+            <ArrowUpRight
+              className={cn(
+                "w-4 h-4 absolute top-4 right-4 shrink-0",
+                action.primary ? "text-white/80" : "text-[var(--nd-icon)]"
+              )}
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
           </Link>
-        </motion.div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </section>
   );
 }

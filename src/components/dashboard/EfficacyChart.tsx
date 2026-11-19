@@ -1,14 +1,15 @@
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { TrendingUp, Activity } from "lucide-react";
+import { Activity, Plus } from "lucide-react";
 
 interface DataPoint {
   date: string;
@@ -21,149 +22,258 @@ interface EfficacyChartProps {
   className?: string;
 }
 
-/**
- * CustomTooltip - Tooltip cirúrgico de telemetria médica.
- */
-function CustomTooltip({ active, payload, label }: any) {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-xl bg-slate-950/95 border border-slate-800 p-3 shadow-2xl backdrop-blur-xl font-mono text-xs space-y-1.5 z-50">
-        <div className="text-[10px] uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800 pb-1">
-          Data: {label}
-        </div>
-        {payload.map((item: any) => (
-          <div key={item.name} className="flex items-center justify-between gap-4">
-            <span
-              className="text-[11px]"
-              style={{ color: item.color || item.stroke }}
-            >
-              {item.name === "efficacy" ? "Eficácia" : "Dose"}:
-            </span>
-            <span className="text-white font-bold">
-              {item.value}
-              {item.name === "efficacy" ? "%" : " mg"}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
+interface TooltipPayloadItem {
+  name?: string;
+  value?: number;
+  color?: string;
+  stroke?: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string;
 }
 
 /**
- * EfficacyChart - Gráfico de Curva de Eficácia e Farmacocinética (Swiss Minimalist).
- * Padrão Awwwards: Visual de telemetria analítica com gradientes luminescentes e precisão matemática.
+ * Gera ticks estritamente crescentes e únicos para o eixo de doses (mg).
  */
-export function EfficacyChart({ data, className }: EfficacyChartProps) {
+function buildDoseTicks(maxDose: number): number[] {
+  const safeMax = Math.max(maxDose, 4);
+  const rawStep = Math.ceil(safeMax / 4);
+  const step = rawStep <= 5 ? rawStep : Math.ceil(rawStep / 5) * 5;
+  return [0, step, step * 2, step * 3, step * 4];
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
   return (
-    <div
-      className={cn(
-        "rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm",
-        className
-      )}
-    >
-      {/* Cabeçalho do Gráfico */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-            <TrendingUp className="w-4 h-4 text-teal-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Curva de Eficácia Farmacológica
-              </h3>
-              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 font-mono text-[10px]">
-                TELEMETRIA 7D
+    <div className="nd-tooltip-surface p-3 text-[12px] min-w-[164px] nd-tabular">
+      <div className="font-medium text-[var(--nd-text)] pb-1.5 mb-1.5 border-b border-[var(--nd-border)]">
+        Data: {label}
+      </div>
+      <div className="space-y-1">
+        {payload.map((item) => {
+          const isEfficacy = item.name === "efficacy";
+          return (
+            <div
+              key={item.name}
+              className="flex items-center justify-between gap-4"
+            >
+              <span className="inline-flex items-center gap-2 text-[var(--nd-text-secondary)]">
+                <span
+                  aria-hidden="true"
+                  className={
+                    isEfficacy
+                      ? "w-3 h-0.5 bg-[#1B4965]"
+                      : "w-3 border-t-2 border-dashed border-[#2C7A7B]"
+                  }
+                />
+                <span>{isEfficacy ? "Eficácia" : "Dose"}</span>
+              </span>
+              <span className="font-semibold text-[var(--nd-text)]">
+                {item.value}
+                {isEfficacy ? "%" : " mg"}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Correlação entre dosagens administradas e resposta terapêutica
-            </p>
-          </div>
-        </div>
-
-        {/* Legenda Estilo Telemetria */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-400 ring-2 ring-teal-400/20" />
-            <span className="text-muted-foreground">Eficácia (%)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 ring-2 ring-cyan-400/20" />
-            <span className="text-muted-foreground">Dose (mg)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Gráfico Recharts */}
-      <div className="h-56 sm:h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="efficacyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.0} />
-              </linearGradient>
-              <linearGradient id="doseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
-
-            <CartesianGrid
-              strokeDasharray="2 4"
-              stroke="currentColor"
-              className="text-border/40 dark:text-slate-800/60"
-              vertical={false}
-            />
-
-            <XAxis
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "currentColor", fontSize: 11 }}
-              className="text-muted-foreground font-mono"
-              dy={8}
-            />
-
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "currentColor", fontSize: 11 }}
-              className="text-muted-foreground font-mono"
-              domain={[0, 100]}
-              width={35}
-            />
-
-            <Tooltip content={<CustomTooltip />} />
-
-            <Area
-              type="monotone"
-              dataKey="efficacy"
-              name="efficacy"
-              stroke="#14b8a6"
-              strokeWidth={2.5}
-              fillOpacity={1}
-              fill="url(#efficacyGrad)"
-              activeDot={{ r: 5, fill: "#14b8a6", stroke: "#ffffff", strokeWidth: 2 }}
-            />
-
-            <Area
-              type="monotone"
-              dataKey="dose"
-              name="dose"
-              stroke="#06b6d4"
-              strokeWidth={1.5}
-              strokeDasharray="3 3"
-              fillOpacity={1}
-              fill="url(#doseGrad)"
-              activeDot={{ r: 4, fill: "#06b6d4", stroke: "#ffffff", strokeWidth: 1.5 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+/**
+ * EfficacyChart - Curva de Eficácia Farmacológica dos últimos 7 dias.
+ * Eixo esquerdo em % (0–100%), eixo direito em mg, sem animação de desenho e com estado vazio explícito.
+ */
+export function EfficacyChart({ data, className }: EfficacyChartProps) {
+  const hasData =
+    data.length > 0 && data.some((point) => point.efficacy > 0 || point.dose > 0);
+
+  const maxDose = data.reduce((max, p) => Math.max(max, p.dose), 0);
+  const doseTicks = buildDoseTicks(maxDose);
+  const doseMaxDomain = doseTicks[doseTicks.length - 1];
+
+  // Resumo textual acessível para leitores de tela
+  const activePoints = data.filter((p) => p.efficacy > 0 || p.dose > 0);
+  const avgEfficacy =
+    activePoints.length > 0
+      ? Math.round(
+          activePoints.reduce((sum, p) => sum + p.efficacy, 0) / activePoints.length
+        )
+      : 0;
+
+  const accessibleSummary = hasData
+    ? `Gráfico de curva de eficácia farmacológica nos últimos 7 dias. ${activePoints.length} dia(s) com registro de dose, eficácia média de ${avgEfficacy}% e dose máxima de ${maxDose} mg.`
+    : "Gráfico de curva de eficácia farmacológica nos últimos 7 dias: sem doses registradas no período.";
+
+  return (
+    <section
+      aria-label="Curva de Eficácia Farmacológica"
+      className={cn("nd-card p-6 flex flex-col justify-between", className)}
+    >
+      {/* Cabeçalho */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+              Curva de Eficácia Farmacológica
+            </h2>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-[var(--nd-muted)] text-[var(--nd-label)] text-[12px] font-medium">
+              Telemetria 7d
+            </span>
+          </div>
+          <p className="text-[13px] font-normal text-[var(--nd-text-secondary)]">
+            Correlação entre dosagens administradas e resposta terapêutica
+          </p>
+        </div>
+
+        {/* Legenda diferenciada por estilo de linha e cor */}
+        <div className="flex items-center gap-5 text-[12px] font-medium text-[var(--nd-label)] shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-0.5 bg-[#1B4965]" aria-hidden="true" />
+            <span>Eficácia (%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className="w-4 border-t-2 border-dashed border-[#2C7A7B]"
+              aria-hidden="true"
+            />
+            <span>Dose (mg)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Resumo textual para leitores de tela */}
+      <p className="sr-only">{accessibleSummary}</p>
+
+      {/* Área do gráfico ou estado vazio */}
+      {!hasData ? (
+        <div className="h-64 flex flex-col items-center justify-center text-center px-4">
+          <Activity
+            className="w-6 h-6 text-[var(--nd-icon)] mb-3"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <p className="text-[14px] font-normal text-[var(--nd-text-secondary)]">
+            Sem doses registradas nos últimos 7 dias
+          </p>
+          <Link to="/dose" className="nd-btn-secondary mt-4">
+            <Plus className="w-4 h-4 text-[var(--nd-primary)]" strokeWidth={1.5} aria-hidden="true" />
+            <span>Registrar dose</span>
+          </Link>
+        </div>
+      ) : (
+        <div
+          role="img"
+          aria-label={accessibleSummary}
+          className="h-64 w-full overflow-x-auto"
+        >
+          <div className="h-full min-w-[340px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={data}
+                margin={{ top: 10, right: 16, left: 4, bottom: 4 }}
+              >
+                <CartesianGrid
+                  stroke="#E3E9EF"
+                  strokeDasharray="0"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="date"
+                  axisLine={{ stroke: "#E3E9EF" }}
+                  tickLine={false}
+                  padding={{ left: 12, right: 18 }}
+                  tick={{
+                    fill: "#5B6B7A",
+                    fontSize: 12,
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                  dy={8}
+                />
+
+                <YAxis
+                  yAxisId="efficacy"
+                  orientation="left"
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tickFormatter={(value: number) => `${value}%`}
+                  axisLine={false}
+                  tickLine={false}
+                  width={46}
+                  tick={{
+                    fill: "#5B6B7A",
+                    fontSize: 12,
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                />
+
+                <YAxis
+                  yAxisId="dose"
+                  orientation="right"
+                  domain={[0, doseMaxDomain]}
+                  ticks={doseTicks}
+                  tickFormatter={(value: number) => `${value} mg`}
+                  axisLine={false}
+                  tickLine={false}
+                  width={56}
+                  tick={{
+                    fill: "#5B6B7A",
+                    fontSize: 12,
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                />
+
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: "#D9E1E8", strokeWidth: 1 }}
+                />
+
+                <Line
+                  yAxisId="efficacy"
+                  type="monotone"
+                  dataKey="efficacy"
+                  name="efficacy"
+                  stroke="#1B4965"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    fill: "#1B4965",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 2,
+                  }}
+                  isAnimationActive={false}
+                />
+
+                <Line
+                  yAxisId="dose"
+                  type="monotone"
+                  dataKey="dose"
+                  name="dose"
+                  stroke="#2C7A7B"
+                  strokeWidth={2}
+                  strokeDasharray="5 4"
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    fill: "#2C7A7B",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 2,
+                  }}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

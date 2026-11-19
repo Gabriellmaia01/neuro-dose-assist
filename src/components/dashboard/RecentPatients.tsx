@@ -1,10 +1,8 @@
-import { User, ChevronRight, UserCircle, Activity } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { User, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { EfficacyRing } from "./EfficacyRing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion } from "framer-motion";
 
 interface Patient {
   id: string;
@@ -22,101 +20,107 @@ interface RecentPatientsProps {
 }
 
 /**
- * RecentPatients - Lista de Pacientes Recentes (Swiss Clinical Minimalist).
- * Padrão Awwwards: Linhas com espaçamento cirúrgico, indicadores táteis e telemetria por paciente.
+ * RecentPatients - Lista clínica de pacientes recentes em acompanhamento.
+ * Linhas de 72px separadas por divisórias de 1px, sem caixas internas escuras.
  */
 export function RecentPatients({ patients, className }: RecentPatientsProps) {
   const navigate = useNavigate();
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm",
-        className
-      )}
+    <section
+      aria-label="Pacientes recentes"
+      className={cn("nd-card overflow-hidden", className)}
     >
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-            <UserCircle className="w-4 h-4 text-violet-400" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold tracking-tight text-foreground">
-              Pacientes Recentes
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Monitoramento posológico ativo
-            </p>
-          </div>
+      <div className="px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[var(--nd-border)]">
+        <div>
+          <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+            Pacientes recentes
+          </h2>
+          <p className="text-[13px] font-normal text-[var(--nd-text-secondary)] mt-0.5">
+            Monitoramento posológico ativo
+          </p>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:hover:text-teal-300 font-mono text-xs hover:bg-teal-500/10 rounded-lg"
-          onClick={() => navigate("/patients")}
+        <Link
+          to="/patients"
+          className="nd-link inline-flex items-center gap-1.5 shrink-0"
         >
-          <span>Catálogo Completo</span>
-          <ChevronRight className="w-3.5 h-3.5 ml-1" />
-        </Button>
+          <span>Catálogo completo</span>
+          <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+        </Link>
       </div>
 
-      {/* Lista de Pacientes */}
-      <div className="space-y-2.5">
-        {patients.length === 0 ? (
-          <div className="py-10 text-center text-muted-foreground border border-dashed border-border/60 rounded-xl">
-            <User className="w-8 h-8 mx-auto mb-2 opacity-40 text-teal-400" />
-            <p className="text-xs font-mono uppercase tracking-wider text-foreground">Nenhum paciente registrado</p>
-            <p className="text-xs text-muted-foreground mt-1">Cadastre pacientes para iniciar o acompanhamento neural.</p>
-          </div>
-        ) : (
-          patients.map((patient) => (
-            <motion.div
-              key={patient.id}
-              whileHover={{ x: 2 }}
-              onClick={() => navigate("/patients")}
-              className={cn(
-                "flex items-center gap-3 sm:gap-4 p-3 rounded-xl transition-all duration-200 cursor-pointer group",
-                "bg-muted/20 hover:bg-muted/40 dark:bg-slate-950/40 dark:hover:bg-slate-950/80",
-                "border border-border/40 hover:border-border dark:border-slate-800/60 dark:hover:border-slate-700"
-              )}
-            >
-              {/* Avatar com Anel */}
-              <Avatar className="w-10 h-10 ring-1 ring-border shrink-0">
-                <AvatarImage src={patient.photoURL} alt={patient.name} />
-                <AvatarFallback className="bg-teal-500/10 text-teal-400 font-mono text-xs font-bold">
-                  {patient.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+      {/* Lista de pacientes com rolagem horizontal contida no card em telas estreitas */}
+      {patients.length === 0 ? (
+        <div className="px-6 py-12 text-center">
+          <User
+            className="w-6 h-6 mx-auto mb-3 text-[var(--nd-icon)]"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <p className="text-[14px] font-medium text-[var(--nd-text)]">
+            Nenhum paciente cadastrado
+          </p>
+          <p className="text-[13px] text-[var(--nd-text-secondary)] mt-1">
+            Cadastre pacientes para acompanhar as dosagens aqui.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <ul className="divide-y divide-[var(--nd-border)] min-w-[460px]">
+            {patients.map((patient) => (
+              <li key={patient.id}>
+                <button
+                  type="button"
+                  onClick={() => navigate("/patients")}
+                  className="nd-list-row min-h-[72px] px-6 py-3 gap-4"
+                >
+                  {/* Avatar circular neutro */}
+                  <Avatar className="w-10 h-10 shrink-0">
+                    <AvatarImage src={patient.photoURL} alt={patient.name} />
+                    <AvatarFallback className="bg-[var(--nd-muted)] text-[var(--nd-primary)] text-[14px] font-semibold">
+                      {patient.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
 
-              {/* Informações Clínicas */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate group-hover:text-teal-400 transition-colors">
-                  {patient.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate font-mono">
-                  {patient.age} anos • <span className="text-teal-400/80">{patient.medication}</span>
-                </p>
-              </div>
+                  {/* Nome + idade e medicamento */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-semibold text-[var(--nd-text)] leading-[1.3] truncate">
+                      {patient.name}
+                    </p>
+                    <p className="text-[13px] text-[var(--nd-text-secondary)] leading-[1.4] mt-0.5 truncate nd-tabular">
+                      {patient.age} anos • {patient.medication}
+                    </p>
+                  </div>
 
-              {/* Última dose */}
-              <div className="text-right hidden sm:block font-mono">
-                <p className="text-[10px] text-muted-foreground uppercase">Última dose</p>
-                <p className="text-xs font-medium text-foreground">{patient.lastDose}</p>
-              </div>
+                  {/* Última dose alinhada à direita */}
+                  <div className="text-right shrink-0 nd-tabular">
+                    <p className="text-[12px] text-[var(--nd-text-secondary)]">
+                      Última dose
+                    </p>
+                    <p className="text-[13px] font-medium text-[var(--nd-text)] mt-0.5">
+                      {patient.lastDose}
+                    </p>
+                  </div>
 
-              {/* Anel de Eficácia */}
-              <div className="shrink-0 flex items-center gap-2">
-                <EfficacyRing value={patient.efficacy} size="sm" showLabel={false} />
-                <span className="font-mono text-xs font-semibold text-foreground hidden xs:inline">
-                  {patient.efficacy}%
-                </span>
-              </div>
-            </motion.div>
-          ))
-        )}
-      </div>
-    </div>
+                  {/* Indicador circular de 40px + porcentagem ao lado */}
+                  <div className="flex items-center gap-2.5 shrink-0 pl-2">
+                    <EfficacyRing
+                      value={patient.efficacy}
+                      size="sm"
+                      showLabel={false}
+                    />
+                    <span className="text-[13px] font-semibold text-[var(--nd-text)] nd-tabular w-9 text-right">
+                      {Math.round(patient.efficacy)}%
+                    </span>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
   );
 }

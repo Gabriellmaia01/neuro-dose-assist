@@ -1,5 +1,4 @@
-import { Bell, LogOut, Mail, Menu, ShieldCheck, Activity } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bell, LogOut, Mail, Menu, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,20 +9,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { ModeToggle } from "@/components/mode-toggle";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
+const ROUTE_TITLES: Record<string, string> = {
+  "/": "Dashboard",
+  "/patients": "Pacientes",
+  "/appointments": "Agenda",
+  "/medications": "Medicamentos",
+  "/dose": "Registrar Dose",
+  "/history": "Histórico",
+  "/analytics": "Analytics",
+  "/reports": "Relatórios",
+  "/clinic": "Clínica",
+  "/settings": "Configurações",
+};
+
 /**
- * Header - Barra de navegação superior cirúrgica (Swiss Clinical Minimalist).
- * Apresenta status de sincronização em tempo real, telemetria e perfil do profissional.
+ * Header - Barra superior clínica (#FFFFFF, 64px, borda inferior 1px #E3E9EF).
+ * Contém breadcrumb à esquerda e status operacional, notificações e perfil à direita.
  */
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentSection = ROUTE_TITLES[location.pathname] ?? "Dashboard";
 
   const handleLogout = async () => {
     await logout();
@@ -46,122 +60,111 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-background/80 backdrop-blur-2xl border-b border-border/60 px-4 sm:px-6 flex items-center justify-between transition-colors">
-      {/* Botão de Menu Mobile & Identificação */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden h-9 w-9 text-foreground/80 hover:bg-muted/60 rounded-lg"
+    <header className="sticky top-0 z-30 h-16 bg-[var(--nd-surface)] border-b border-[var(--nd-border)] px-4 min-[900px]:px-8 flex items-center justify-between gap-4 shrink-0">
+      {/* Esquerda: botão menu mobile + breadcrumb simples */}
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
           onClick={onMenuClick}
+          className="nd-mobile-only items-center justify-center w-9 h-9 rounded-[var(--nd-radius)] text-[var(--nd-label)] hover:bg-[var(--nd-muted)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] shrink-0"
           aria-label="Abrir menu lateral"
         >
-          <Menu className="w-5 h-5" />
-        </Button>
+          <Menu className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+        </button>
 
-        {/* Logo Mobile */}
-        <div className="lg:hidden flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-teal-500/20 border border-teal-500/30 flex items-center justify-center">
-            <Activity className="w-4 h-4 text-teal-400" />
-          </div>
-          <span className="font-bold text-sm tracking-tight text-foreground font-mono">
-            NEURO<span className="text-teal-400 font-normal">DOSE</span>
-          </span>
-        </div>
-
-        {/* Telemetria de Estação (Desktop) */}
-        <div className="hidden lg:flex items-center gap-3 font-mono text-[11px] text-muted-foreground/80 border-l border-border/60 pl-3">
-          <span className="flex items-center gap-1.5 text-foreground/80 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-            ESTAÇÃO CLÍNICA
-          </span>
-          <span>•</span>
-          <span className="text-muted-foreground/70">CANAL SEGURO TLS 1.3</span>
-        </div>
+        <nav aria-label="Localização atual" className="min-w-0">
+          <ol className="flex items-center gap-1.5 text-[13px] text-[var(--nd-text-secondary)] truncate">
+            <li>Painel</li>
+            <li aria-hidden="true" className="text-[var(--nd-icon)]">/</li>
+            <li aria-current="page" className="font-medium text-[var(--nd-text)] truncate">
+              {currentSection}
+            </li>
+          </ol>
+        </nav>
       </div>
 
-      {/* Espaçador central */}
-      <div className="flex-1" />
-
-      {/* Ações da Barra Superior */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Status de Operação da IA (Awwwards Live Badge) */}
-        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400" />
-          </span>
-          <span className="font-medium tracking-wide">MOTOR IA OPERACIONAL</span>
+      {/* Direita: chip status IA · sino · perfil (gap 20px, sem alternador de tema) */}
+      <div className="flex items-center gap-5 shrink-0">
+        {/* Chip Motor IA operacional (ponto estático 8px #1E7A4D, sem pulso nem glow) */}
+        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-[var(--nd-radius)] bg-[var(--nd-bg)] border border-[var(--nd-border)] text-[13px] font-medium text-[var(--nd-label)]">
+          <span
+            className="w-2 h-2 rounded-full bg-[var(--nd-success)] shrink-0"
+            aria-hidden="true"
+          />
+          <span>Motor IA operacional</span>
         </div>
 
-        {/* Notificações Clínicas */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
+        {/* Sino com bolinha estática de notificação */}
+        <button
+          type="button"
+          className="relative inline-flex items-center justify-center w-9 h-9 rounded-[var(--nd-radius)] text-[var(--nd-icon)] hover:text-[var(--nd-text)] hover:bg-[var(--nd-bg)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)]"
           aria-label="Notificações"
         >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-teal-400" />
-        </Button>
+          <Bell className="w-[18px] h-[18px]" strokeWidth={1.5} aria-hidden="true" />
+          <span
+            className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[var(--nd-accent)]"
+            aria-hidden="true"
+          />
+        </button>
 
-        {/* Alternador de Tema (Dark / Light) */}
-        <ModeToggle />
-
-        {/* Divisor vertical sutil */}
-        <div className="hidden sm:block w-px h-5 bg-border/60 mx-1" />
-
-        {/* Menu do Médico / Usuário */}
+        {/* Avatar com nome e especialidade */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex items-center gap-2.5 h-9 pl-1 pr-2.5 rounded-full hover:bg-muted/50 border border-transparent hover:border-border/60 transition-all"
+            <button
+              type="button"
+              className="flex items-center gap-2.5 py-1 pl-1 pr-2 rounded-[var(--nd-radius)] hover:bg-[var(--nd-bg)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)]"
+              aria-label="Menu do perfil"
             >
-              <Avatar className="w-7 h-7 ring-1 ring-border">
-                <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Usuário"} />
-                <AvatarFallback className="bg-teal-500/20 text-teal-400 text-[11px] font-bold font-mono">
+              <Avatar className="w-8 h-8 border border-[var(--nd-border)]">
+                <AvatarImage
+                  src={user?.photoURL || undefined}
+                  alt={user?.displayName || "Profissional"}
+                />
+                <AvatarFallback className="bg-[var(--nd-muted)] text-[var(--nd-primary)] text-[12px] font-semibold">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col text-left">
-                <span className="text-xs font-medium text-foreground leading-none">
+                <span className="text-[14px] font-medium text-[var(--nd-text)] leading-[1.2]">
                   {user?.displayName || "Dr(a). Especialista"}
                 </span>
-                <span className="text-[10px] font-mono text-muted-foreground leading-none mt-1">
+                <span className="text-[12px] text-[var(--nd-text-secondary)] leading-[1.2] mt-0.5">
                   Neurologia
                 </span>
               </div>
-            </Button>
+            </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-60 p-2 bg-popover/95 backdrop-blur-2xl border-border/80 rounded-xl shadow-xl">
-            <DropdownMenuLabel className="font-normal px-2 py-2">
+          <DropdownMenuContent
+            align="end"
+            className="w-64 p-1.5 bg-[var(--nd-surface)] border border-[var(--nd-border)] rounded-[var(--nd-radius)] shadow-[var(--nd-shadow-popover)]"
+          >
+            <DropdownMenuLabel className="font-normal px-2.5 py-2">
               <div className="flex flex-col space-y-1">
-                <p className="text-xs font-semibold text-foreground">
+                <p className="text-[14px] font-medium text-[var(--nd-text)]">
                   {user?.displayName || "Dr(a). Especialista"}
                 </p>
                 {user?.email && (
-                  <p className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 truncate">
-                    <Mail className="w-3 h-3 text-teal-400 shrink-0" />
+                  <p className="text-[12px] text-[var(--nd-text-secondary)] flex items-center gap-1.5 truncate">
+                    <Mail className="w-3.5 h-3.5 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 )}
-                <div className="pt-1.5 flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>Sessão Verificada LGPD</span>
+                <div className="pt-1 flex items-center gap-1.5 text-[12px] text-[var(--nd-success)]">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+                  <span>Sessão verificada LGPD</span>
                 </div>
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuSeparator className="my-1 border-border/60" />
+            <DropdownMenuSeparator className="my-1 bg-[var(--nd-border)]" />
 
             <DropdownMenuItem
               onClick={handleLogout}
-              className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg text-xs font-medium py-2 flex items-center gap-2"
+              className="cursor-pointer rounded-[6px] px-2.5 py-2 text-[13px] font-medium text-[var(--nd-label)] focus:bg-[var(--nd-bg)] focus:text-[var(--nd-text)] flex items-center gap-2"
             >
-              <LogOut className="w-4 h-4" />
-              <span>Encerrar Sessão Clínica</span>
+              <LogOut className="w-4 h-4 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
+              <span>Desconectar</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

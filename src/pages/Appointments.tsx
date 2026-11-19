@@ -880,7 +880,7 @@ function GradeCalendario({
     };
 
     return (
-        <div className="lg:col-span-2 rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-6 shadow-sm">
+        <div className="lg:col-span-2 nd-card p-6">
             <NavegacaoCalendario
                 dataAtual={dataAtual}
                 aoIrAnterior={aoIrAnterior}
@@ -1066,7 +1066,7 @@ function PainelConsultasDoDia({
         : "Selecione um dia";
 
     return (
-        <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-6 shadow-sm">
+        <div className="nd-card p-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-semibold">{tituloData}</h3>
             </div>

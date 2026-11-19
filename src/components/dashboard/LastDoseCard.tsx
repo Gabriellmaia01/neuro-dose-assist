@@ -1,4 +1,4 @@
-import { Clock, Pill, AlertTriangle, Activity } from "lucide-react";
+import { Check, AlertTriangle, AlertCircle } from "lucide-react";
 import { EfficacyRing } from "./EfficacyRing";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +12,17 @@ interface LastDoseCardProps {
 }
 
 /**
- * LastDoseCard - Cartão de Detalhes da Última Dose (Swiss Clinical Minimalist).
- * Padrão Awwwards: Layout assimétrico, indicador de risco farmacológico e anel de eficácia.
+ * Normaliza a exibição da posologia garantindo unidade (ex.: "5mg" -> "5 mg", "5" -> "5 mg").
+ */
+function formatDoseDisplay(dose: string): string {
+  const trimmed = dose.trim();
+  if (!trimmed) return "—";
+  if (/^\d+([.,]\d+)?$/.test(trimmed)) return `${trimmed} mg`;
+  return trimmed.replace(/^(\d+(?:[.,]\d+)?)(mg|mcg|ml|g)$/i, "$1 $2");
+}
+
+/**
+ * LastDoseCard - Resumo clínico da última aplicação registrada.
  */
 export function LastDoseCard({
   medication,
@@ -23,83 +32,87 @@ export function LastDoseCard({
   riskLevel,
   className,
 }: LastDoseCardProps) {
-  const riskStyles = {
+  const riskConfig = {
     low: {
-      bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      dot: "bg-emerald-400",
-      label: "Risco Mínimo",
+      bg: "bg-[var(--nd-success-bg)]",
+      text: "text-[var(--nd-success)]",
+      icon: Check,
+      label: "Risco mínimo",
     },
     medium: {
-      bg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      dot: "bg-amber-400",
-      label: "Risco Moderado",
+      bg: "bg-[var(--nd-warning-bg)]",
+      text: "text-[var(--nd-warning)]",
+      icon: AlertTriangle,
+      label: "Risco moderado",
     },
     high: {
-      bg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-      dot: "bg-rose-400",
-      label: "Risco Elevado",
+      bg: "bg-[var(--nd-error-bg)]",
+      text: "text-[var(--nd-error)]",
+      icon: AlertCircle,
+      label: "Risco elevado",
     },
   };
 
-  const risk = riskStyles[riskLevel];
+  const risk = riskConfig[riskLevel];
+  const RiskIcon = risk.icon;
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm relative overflow-hidden",
-        className
-      )}
+    <section
+      aria-label="Última aplicação"
+      className={cn("nd-card p-6 flex flex-col justify-between h-full", className)}
     >
-      {/* Luz ambiente no canto */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
+      {/* Cabeçalho: rótulo + medicamento à esquerda, anel de 56px à direita */}
+      <div className="flex items-start justify-between gap-4 pb-5">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
+            Última aplicação
+          </p>
+          <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.01em] text-[var(--nd-text)] truncate">
+            {medication}
+          </h2>
+        </div>
 
-      {/* Cabeçalho */}
-      <div className="flex items-start justify-between mb-5 relative z-10">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-            <Activity className="w-4 h-4 text-teal-400" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Última Aplicação
+        <EfficacyRing value={efficacy} size="md" showLabel />
+      </div>
+
+      {/* Lista de detalhes com divisórias finas de 1px */}
+      <dl className="divide-y divide-[var(--nd-border)] border-t border-[var(--nd-border)] text-[13px]">
+        <div className="flex items-center justify-between gap-4 py-3.5">
+          <dt className="font-medium text-[var(--nd-text-secondary)]">
+            Posologia
+          </dt>
+          <dd className="font-medium text-[14px] text-[var(--nd-text)] nd-tabular">
+            {formatDoseDisplay(dose)}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 py-3.5">
+          <dt className="font-medium text-[var(--nd-text-secondary)]">
+            Horário
+          </dt>
+          <dd className="font-medium text-[14px] text-[var(--nd-text)] nd-tabular">
+            {time}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 pt-3.5">
+          <dt className="font-medium text-[var(--nd-text-secondary)]">
+            Efeito adverso
+          </dt>
+          <dd>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--nd-radius)] text-[12px] font-medium",
+                risk.bg,
+                risk.text
+              )}
+            >
+              <RiskIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+              <span>{risk.label}</span>
             </span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <Pill className="w-4 h-4 text-teal-400 shrink-0" />
-              <h3 className="font-semibold text-base text-foreground truncate">
-                {medication}
-              </h3>
-            </div>
-          </div>
+          </dd>
         </div>
-
-        <div className="flex flex-col items-center">
-          <EfficacyRing value={efficacy} size="md" />
-        </div>
-      </div>
-
-      {/* Linhas de Telemetria Posológica */}
-      <div className="space-y-2 relative z-10 font-mono text-xs">
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
-          <span className="text-muted-foreground uppercase text-[10px]">Posologia</span>
-          <span className="font-semibold text-foreground">{dose}</span>
-        </div>
-
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
-          <span className="text-muted-foreground uppercase text-[10px]">Horário</span>
-          <div className="flex items-center gap-1.5 font-medium text-foreground">
-            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>{time}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 dark:bg-slate-950/40 border border-border/40 dark:border-slate-800/60">
-          <span className="text-muted-foreground uppercase text-[10px]">Efeito Adverso</span>
-          <div className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px]", risk.bg)}>
-            <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
-            <span>{risk.label}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+      </dl>
+    </section>
   );
 }

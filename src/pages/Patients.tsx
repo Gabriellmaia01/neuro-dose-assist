@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTheme } from "next-themes";
 import {
   Table,
   TableBody,
@@ -42,8 +41,6 @@ import {
   Upload,
   Loader2,
   Image as ImageIcon,
-  Moon,
-  Sun,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -72,7 +69,6 @@ const statusStyles = {
 };
 
 export default function Patients() {
-  const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { effectiveUserId } = useClinic();
   const [searchTerm, setSearchTerm] = useState("");
@@ -634,7 +630,7 @@ export default function Patients() {
 
         {/* Grid de Métricas do Catálogo (Bento Grid Suíço) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+          <div className="nd-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Total Cadastrado</p>
@@ -646,7 +642,7 @@ export default function Patients() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+          <div className="nd-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Filtrados</p>
@@ -658,7 +654,7 @@ export default function Patients() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+          <div className="nd-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Monitoramento</p>
@@ -670,7 +666,7 @@ export default function Patients() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+          <div className="nd-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Protocolo</p>
@@ -684,7 +680,7 @@ export default function Patients() {
         </div>
 
         {/* Barra de Busca Minimalista */}
-        <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 sm:p-5 shadow-sm">
+        <div className="nd-card p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -714,14 +710,14 @@ export default function Patients() {
 
         {/* Tabela de Prontuários Cirúrgica */}
         {loading ? (
-          <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 p-12 flex items-center justify-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-teal-400" aria-hidden="true" />
-            <span className="text-muted-foreground font-mono text-xs uppercase tracking-wider">Carregando prontuários...</span>
+          <div className="nd-card p-12 flex items-center justify-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--nd-primary)]" aria-hidden="true" />
+            <span className="text-[var(--nd-text-secondary)] text-sm">Carregando prontuários...</span>
           </div>
         ) : (
-          <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl overflow-hidden shadow-sm">
+          <div className="nd-card overflow-hidden">
             <Table>
-              <TableHeader className="bg-muted/30 dark:bg-slate-950/40">
+              <TableHeader className="bg-[var(--nd-bg)]">
                 <TableRow className="border-border/60 hover:bg-transparent">
                   <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Paciente</TableHead>
                   <TableHead className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Condição</TableHead>

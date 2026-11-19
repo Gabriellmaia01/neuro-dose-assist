@@ -709,7 +709,7 @@ export default function Medications() {
         {/* Grid de Métricas Farmacológicas (Bento Grid Suíço) */}
         {!loading && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="nd-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Fármacos Totais</p>
@@ -721,7 +721,7 @@ export default function Medications() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="nd-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Classes Ativas</p>
@@ -733,7 +733,7 @@ export default function Medications() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="nd-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Visíveis</p>
@@ -745,7 +745,7 @@ export default function Medications() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-4 shadow-sm">
+            <div className="nd-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Filtros Ativos</p>
@@ -889,8 +889,7 @@ export default function Medications() {
               <div
                 key={med.id}
                 className={cn(
-                  "rounded-xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5",
-                  "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group"
+                  "nd-card-interactive p-5 group"
                 )}
                 style={{ contentVisibility: "auto" }}
               >

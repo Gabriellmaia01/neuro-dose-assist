@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,7 +18,6 @@ import {
   LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
@@ -43,14 +42,26 @@ interface SidebarProps {
 }
 
 /**
- * Sidebar - Menu de navegação lateral (Swiss Clinical Minimalist / Awwwards)
- * Estrutura com hairlines cirúrgicos, estados de foco táteis e design responsivo.
+ * Sidebar - Navegação lateral escura e sóbria (#0F1E2E).
+ * Colapsa automaticamente para ícones entre 900px e 1279px e vira drawer abaixo de 900px.
  */
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth >= 900 && window.innerWidth < 1280;
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 900px) and (max-width: 1279px)");
+    const handleViewportChange = (e: MediaQueryListEvent) => {
+      setCollapsed(e.matches);
+    };
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -58,148 +69,159 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   };
 
   const handleNavClick = () => {
-    if (onClose && window.innerWidth < 1024) {
+    if (onClose && window.innerWidth < 900) {
       onClose();
     }
   };
 
+  // No drawer mobile (<900px), sempre exibe os rótulos; no desktop respeita collapsed
+  const showLabels = !collapsed || isOpen;
+
   return (
     <aside
-      className={cn(
-        "fixed left-0 top-0 z-50 h-screen bg-sidebar/95 backdrop-blur-2xl border-r border-sidebar-border/80 transition-all duration-300 flex flex-col select-none",
-        "lg:translate-x-0",
-        isOpen ? "translate-x-0" : "-translate-x-full",
-        collapsed ? "lg:w-20" : "lg:w-64",
-        "w-72"
-      )}
+      aria-label="Menu lateral"
+      data-open={isOpen ? "true" : "false"}
+      data-collapsed={collapsed ? "true" : "false"}
+      className="nd-sidebar"
     >
-      {/* Cabeçalho do Brand / Identidade */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-border/80">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/20 via-cyan-500/10 to-violet-500/20 border border-teal-500/30 flex items-center justify-center shrink-0 shadow-sm shadow-teal-500/10">
-            <Brain className="w-5 h-5 text-teal-400" />
+      {/* Topo: marca Neuro-Dose */}
+      <div
+        className={cn(
+          "h-16 flex items-center border-b border-[var(--nd-dark-border)] shrink-0",
+          showLabels ? "justify-between px-4" : "justify-center px-2"
+        )}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className="w-8 h-8 rounded-[var(--nd-radius)] border border-[var(--nd-dark-accent-soft)] flex items-center justify-center shrink-0"
+            aria-hidden="true"
+          >
+            <Brain
+              className="w-[18px] h-[18px] text-[var(--nd-dark-accent-soft)]"
+              strokeWidth={1.5}
+            />
           </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="font-bold text-base tracking-tight text-sidebar-foreground">
-                Neuro<span className="text-teal-400">Dose</span>
-              </span>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-sidebar-foreground/50">
-                Decision OS v2.4
-              </span>
-            </div>
+          {showLabels && (
+            <span className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--nd-dark-text)] truncate">
+              Neuro-Dose
+            </span>
           )}
         </div>
 
-        {/* Botão de Fechar no Mobile */}
+        {/* Botão de fechar no drawer mobile */}
         <button
+          type="button"
           onClick={onClose}
-          className="lg:hidden p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
-          aria-label="Fechar menu"
+          className="nd-mobile-only items-center justify-center w-8 h-8 rounded-[var(--nd-radius)] text-[var(--nd-dark-text-secondary)] hover:text-[var(--nd-dark-text)] hover:bg-[var(--nd-dark-hover)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-dark-accent-soft)]"
+          aria-label="Fechar menu lateral"
         >
-          <X className="w-5 h-5" />
+          <X className="w-[18px] h-[18px]" strokeWidth={1.5} aria-hidden="true" />
         </button>
       </div>
 
-      {/* Lista de Navegação Principal */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {!collapsed && (
-          <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/40">
-            Módulos Clínicos
-          </div>
+      {/* Navegação principal */}
+      <nav
+        aria-label="Navegação principal"
+        className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4"
+      >
+        {showLabels && (
+          <p className="px-3 mb-2 text-[12px] font-medium text-[var(--nd-dark-text-secondary)]">
+            Módulos clínicos
+          </p>
         )}
 
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              onClick={handleNavClick}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group relative",
-                isActive
-                  ? "bg-teal-500/15 text-teal-300 font-semibold border border-teal-500/30 shadow-sm shadow-teal-500/10"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
-              )}
-            >
-              {/* Barra lateral ativa */}
-              {isActive && (
-                <span className="absolute left-0 top-2 bottom-2 w-1 bg-teal-400 rounded-r-full" />
-              )}
-              <item.icon
-                className={cn(
-                  "w-4 h-4 sm:w-5 sm:h-5 shrink-0 transition-colors",
-                  isActive ? "text-teal-400" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground"
-                )}
-              />
-              {!collapsed && <span className="truncate">{item.name}</span>}
-            </NavLink>
-          );
-        })}
-
-        {/* Seção Secundária */}
-        <div className="pt-4 mt-4 border-t border-sidebar-border/60">
-          {!collapsed && (
-            <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/40">
-              Sistema
-            </div>
-          )}
-          {secondaryNavigation.map((item) => {
+        <ul className="space-y-1">
+          {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                onClick={handleNavClick}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group relative",
-                  isActive
-                    ? "bg-teal-500/15 text-teal-300 font-semibold border border-teal-500/30"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
-                )}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-1 bg-teal-400 rounded-r-full" />
-                )}
-                <item.icon
+              <li key={item.name}>
+                <NavLink
+                  to={item.href}
+                  onClick={handleNavClick}
+                  aria-current={isActive ? "page" : undefined}
+                  title={!showLabels ? item.name : undefined}
                   className={cn(
-                    "w-4 h-4 sm:w-5 sm:h-5 shrink-0 transition-colors",
-                    isActive ? "text-teal-400" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground"
+                    "nd-nav-item",
+                    !showLabels && "justify-center px-0"
                   )}
-                />
-                {!collapsed && <span className="truncate">{item.name}</span>}
-              </NavLink>
+                >
+                  <item.icon
+                    className="w-[18px] h-[18px] shrink-0"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                  {showLabels && <span className="truncate">{item.name}</span>}
+                </NavLink>
+              </li>
             );
           })}
+        </ul>
+
+        {/* Grupo Sistema */}
+        <div className="mt-6 pt-4 border-t border-[var(--nd-dark-border)]">
+          {showLabels && (
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--nd-dark-text-secondary)]">
+              Sistema
+            </p>
+          )}
+          <ul className="space-y-1">
+            {secondaryNavigation.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <li key={item.name}>
+                  <NavLink
+                    to={item.href}
+                    onClick={handleNavClick}
+                    aria-current={isActive ? "page" : undefined}
+                    title={!showLabels ? item.name : undefined}
+                    className={cn(
+                      "nd-nav-item",
+                      !showLabels && "justify-center px-0"
+                    )}
+                  >
+                    <item.icon
+                      className="w-[18px] h-[18px] shrink-0"
+                      strokeWidth={1.5}
+                      aria-hidden="true"
+                    />
+                    {showLabels && <span className="truncate">{item.name}</span>}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </nav>
 
-      {/* Rodapé com Logout */}
-      <div className="p-3 border-t border-sidebar-border/80">
-        <Button
-          variant="ghost"
+      {/* Rodapé: Desconectar (neutro, sem vermelho) */}
+      <div className="p-3 border-t border-[var(--nd-dark-border)] shrink-0">
+        <button
+          type="button"
           onClick={handleLogout}
-          className={cn(
-            "w-full text-xs font-mono tracking-wider uppercase text-sidebar-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-xl h-10 transition-colors",
-            collapsed ? "justify-center px-0" : "justify-start px-3"
-          )}
+          title={!showLabels ? "Desconectar" : undefined}
+          className={cn("nd-logout-btn", !showLabels && "justify-center px-0")}
         >
-          <LogOut className="w-4 h-4 shrink-0 text-destructive/80" />
-          {!collapsed && <span className="ml-2.5">Desconectar</span>}
-        </Button>
+          <LogOut
+            className="w-[18px] h-[18px] shrink-0"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          {showLabels && <span>Desconectar</span>}
+        </button>
       </div>
 
-      {/* Alternador de Recolhimento - Desktop */}
+      {/* Botão de recolher/expandir sidebar no desktop (>=900px) */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-sidebar border border-sidebar-border items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground transition-all shadow-md z-50 hover:scale-110 active:scale-95"
+        type="button"
+        onClick={() => setCollapsed((prev) => !prev)}
+        className="nd-desktop-only items-center justify-center absolute -right-3 top-[20px] w-6 h-6 rounded-full bg-[var(--nd-surface)] border border-[var(--nd-border-input)] text-[var(--nd-label)] hover:border-[var(--nd-border-hover)] hover:text-[var(--nd-text)] shadow-[var(--nd-shadow-sm)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] z-50"
         aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+        aria-expanded={!collapsed}
       >
         {collapsed ? (
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         ) : (
-          <ChevronLeft className="w-3.5 h-3.5" />
+          <ChevronLeft className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         )}
       </button>
     </aside>

@@ -20,22 +20,22 @@ const iconMap = {
 
 const priorityStyles = {
     info: {
-        bg: "bg-sky-500/10 dark:bg-sky-400/10",
-        border: "border-sky-500/20 dark:border-sky-400/20",
-        icon: "text-sky-600 dark:text-sky-400",
-        badge: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
+        bg: "bg-[var(--nd-bg)]",
+        border: "border-[var(--nd-border)]",
+        icon: "text-[var(--nd-primary)]",
+        badge: "bg-[var(--nd-muted)] text-[var(--nd-label)]",
     },
     warning: {
-        bg: "bg-amber-500/10 dark:bg-amber-400/10",
-        border: "border-amber-500/20 dark:border-amber-400/20",
-        icon: "text-amber-600 dark:text-amber-400",
-        badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+        bg: "bg-[var(--nd-warning-bg)]",
+        border: "border-[var(--nd-border)]",
+        icon: "text-[var(--nd-warning)]",
+        badge: "bg-[var(--nd-warning-bg)] text-[var(--nd-warning)]",
     },
     success: {
-        bg: "bg-emerald-500/10 dark:bg-emerald-400/10",
-        border: "border-emerald-500/20 dark:border-emerald-400/20",
-        icon: "text-emerald-600 dark:text-emerald-400",
-        badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+        bg: "bg-[var(--nd-success-bg)]",
+        border: "border-[var(--nd-border)]",
+        icon: "text-[var(--nd-success)]",
+        badge: "bg-[var(--nd-success-bg)] text-[var(--nd-success)]",
     },
 };
 

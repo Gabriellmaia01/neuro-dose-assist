@@ -1,104 +1,108 @@
-import { Calendar, Clock, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, Check, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { type Appointment } from "@/lib/appointments";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface PropriedadesSecaoConsultas {
   consultas: Appointment[];
 }
 
 /**
- * SecaoConsultas - Próximas Consultas Agendadas (Swiss Clinical Minimalist).
- * Padrão Awwwards: Visual cirúrgico de agenda clínica, horário em destaque e tags de status.
+ * SecaoConsultas - Próximos atendimentos da agenda clínica.
+ * Estado vazio sóbrio sem caixa tracejada; lista com divisórias de 1px.
  */
 export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
   return (
-    <div className="rounded-2xl bg-card/90 dark:bg-slate-900/70 border border-border/80 dark:border-slate-800/90 backdrop-blur-xl p-5 sm:p-6 shadow-sm">
+    <section
+      aria-label="Agenda clínica"
+      className="nd-card overflow-hidden"
+    >
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-cyan-400" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold tracking-tight text-foreground">
-              Agenda Clínica
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Próximos atendimentos
-            </p>
-          </div>
+      <div className="px-6 pt-6 pb-4 flex items-center justify-between gap-3 border-b border-[var(--nd-border)]">
+        <div>
+          <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+            Agenda clínica
+          </h2>
+          <p className="text-[13px] font-normal text-[var(--nd-text-secondary)] mt-0.5">
+            Próximos atendimentos
+          </p>
         </div>
 
         <Link
           to="/appointments"
-          className="text-xs font-mono text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:hover:text-teal-300 flex items-center gap-1 hover:underline"
+          className="nd-link inline-flex items-center gap-1 shrink-0"
         >
-          <span>Agenda Completa</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <span>Agenda completa</span>
+          <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         </Link>
       </div>
 
+      {/* Lista ou estado vazio sóbrio */}
       {consultas.length > 0 ? (
-        <div className="space-y-2.5">
-          {consultas.slice(0, 3).map((consulta) => (
-            <motion.div
-              key={consulta.id}
-              whileHover={{ x: 2 }}
-              className={cn(
-                "flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200",
-                "bg-muted/20 hover:bg-muted/40 dark:bg-slate-950/40 dark:hover:bg-slate-950/80",
-                "border border-border/40 hover:border-border dark:border-slate-800/60 dark:hover:border-slate-700"
-              )}
-            >
-              {/* Box de Horário */}
-              <div className="flex flex-col items-center justify-center w-11 h-11 rounded-lg bg-teal-500/10 border border-teal-500/20 shrink-0 font-mono">
-                <Clock className="w-3.5 h-3.5 text-teal-400 mb-0.5" />
-                <span className="text-[11px] font-bold text-foreground">{consulta.time}</span>
-              </div>
+        <ul className="divide-y divide-[var(--nd-border)]">
+          {consultas.slice(0, 3).map((consulta) => {
+            const isConfirmed = consulta.status === "Confirmada";
 
-              {/* Informações do Paciente */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate text-foreground">
-                  {consulta.patientName}
-                </p>
-                <p className="text-xs text-muted-foreground truncate font-mono">
-                  {format(new Date(consulta.date + "T00:00:00"), "dd/MM")} • {consulta.type}
-                </p>
-              </div>
-
-              {/* Status */}
-              <Badge
-                variant="outline"
-                className={cn(
-                  "font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-full shrink-0",
-                  consulta.status === "Confirmada"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                    : consulta.status === "Agendada"
-                      ? "bg-teal-500/10 text-teal-400 border-teal-500/30"
-                      : "bg-muted text-muted-foreground border-border"
-                )}
+            return (
+              <li
+                key={consulta.id}
+                className="px-6 py-3.5 flex items-center justify-between gap-3"
               >
-                {consulta.status}
-              </Badge>
-            </motion.div>
-          ))}
-        </div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex flex-col items-center justify-center w-12 h-11 rounded-[var(--nd-radius)] bg-[var(--nd-muted)] shrink-0 nd-tabular">
+                    <span className="text-[13px] font-semibold text-[var(--nd-text)] leading-none">
+                      {consulta.time}
+                    </span>
+                    <span className="text-[12px] text-[var(--nd-text-secondary)] leading-none mt-1">
+                      {format(new Date(consulta.date + "T00:00:00"), "dd/MM")}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-semibold text-[var(--nd-text)] truncate">
+                      {consulta.patientName}
+                    </p>
+                    <p className="text-[13px] text-[var(--nd-text-secondary)] truncate">
+                      {consulta.type}
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--nd-radius)] text-[12px] font-medium shrink-0",
+                    isConfirmed
+                      ? "bg-[var(--nd-success-bg)] text-[var(--nd-success)]"
+                      : "bg-[var(--nd-muted)] text-[var(--nd-label)]"
+                  )}
+                >
+                  {isConfirmed ? (
+                    <Check className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+                  ) : (
+                    <Clock className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
+                  )}
+                  <span>{consulta.status}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       ) : (
-        <div className="text-center py-6 text-muted-foreground border border-dashed border-border/60 rounded-xl">
-          <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40 text-teal-400" />
-          <p className="text-xs font-mono uppercase tracking-wider text-foreground">Nenhuma consulta agendada</p>
-          <Link
-            to="/appointments"
-            className="text-xs font-mono text-teal-400 hover:underline mt-1 inline-block"
-          >
+        <div className="px-6 py-10 flex flex-col items-center justify-center text-center">
+          <Calendar
+            className="w-6 h-6 text-[var(--nd-icon)] mb-3"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <p className="text-[14px] font-medium text-[var(--nd-text)]">
+            Nenhuma consulta agendada
+          </p>
+          <Link to="/appointments" className="nd-link mt-2">
             + Agendar novo horário
           </Link>
         </div>
       )}
-    </div>
+    </section>
   );
 }

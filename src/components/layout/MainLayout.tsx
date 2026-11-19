@@ -1,35 +1,34 @@
-import { ReactNode, useState, lazy, Suspense } from "react";
+import { ReactNode, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-
-// Lazy load Three.js component to reduce initial bundle size
-const DashboardBackground = lazy(() => import("@/components/3d/DashboardBackground"));
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * MainLayout - Estrutura principal da aplicação.
+ * Sidebar escura à esquerda (#0F1E2E) + Topbar e conteúdo claros à direita (#F7F9FB).
+ */
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Suspense fallback={null}>
-        <DashboardBackground />
-      </Suspense>
-      {/* Mobile overlay */}
+    <div className="nd-shell">
+      {/* Overlay do drawer mobile (<900px) */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="nd-sidebar-backdrop"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="lg:pl-64 transition-all duration-300">
+      <div className="nd-main-column">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="p-4 sm:p-6">{children}</main>
+        <main className="nd-content-area nd-page-enter">{children}</main>
       </div>
     </div>
   );
