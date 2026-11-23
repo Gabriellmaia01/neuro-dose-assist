@@ -11,6 +11,7 @@ export interface Medication {
   minDose: number;
   maxDose: number;
   unit: string;
+  halfLifeHours?: number;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;

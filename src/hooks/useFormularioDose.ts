@@ -20,7 +20,7 @@ export interface EstadoFormularioDose {
   indicacao: string;
   setIndicacao: (valor: string) => void;
 
-  // Etapa 2 — Estado Subjetivo
+  // Etapa 2 — Estado Subjetivo & Escalas Clínicas Opcionais
   humor: number[];
   setHumor: (valor: number[]) => void;
   energia: number[];
@@ -29,6 +29,14 @@ export interface EstadoFormularioDose {
   setSono: (valor: number[]) => void;
   efeitos: string;
   setEfeitos: (valor: string) => void;
+  usarEscalasClinicas: boolean;
+  setUsarEscalasClinicas: (valor: boolean) => void;
+  phq2Score: number;
+  setPhq2Score: (valor: number) => void;
+  gad2Score: number;
+  setGad2Score: (valor: number) => void;
+  cgiSeverity: number;
+  setCgiSeverity: (valor: number) => void;
 
   // Controle de navegação
   etapa: number;
@@ -52,12 +60,20 @@ export function useFormularioDose(): EstadoFormularioDose {
   const [energia, setEnergia] = useState([5]);
   const [sono, setSono] = useState([7]);
   const [efeitos, setEfeitos] = useState("");
+  const [usarEscalasClinicas, setUsarEscalasClinicas] = useState(false);
+  const [phq2Score, setPhq2Score] = useState(0);
+  const [gad2Score, setGad2Score] = useState(0);
+  const [cgiSeverity, setCgiSeverity] = useState(1);
 
   // Navegação
   const [etapa, setEtapa] = useState(1);
 
   const reiniciarFormulario = () => {
     setEtapa(1);
+    setUsarEscalasClinicas(false);
+    setPhq2Score(0);
+    setGad2Score(0);
+    setCgiSeverity(1);
   };
 
   return {
@@ -81,6 +97,14 @@ export function useFormularioDose(): EstadoFormularioDose {
     setSono,
     efeitos,
     setEfeitos,
+    usarEscalasClinicas,
+    setUsarEscalasClinicas,
+    phq2Score,
+    setPhq2Score,
+    gad2Score,
+    setGad2Score,
+    cgiSeverity,
+    setCgiSeverity,
     etapa,
     setEtapa,
     reiniciarFormulario,

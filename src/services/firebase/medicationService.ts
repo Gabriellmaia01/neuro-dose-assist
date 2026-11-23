@@ -33,6 +33,7 @@ export class FirebaseMedicationService implements IMedicationService {
           minDose: medication.minDose,
           maxDose: medication.maxDose,
           unit: medication.unit,
+          halfLifeHours: medication.halfLifeHours,
           updatedAt: new Date().toISOString(),
         });
         await set(medicationRef, updateData);
@@ -61,6 +62,7 @@ export class FirebaseMedicationService implements IMedicationService {
           minDose: medication.minDose,
           maxDose: medication.maxDose,
           unit: medication.unit,
+          halfLifeHours: medication.halfLifeHours,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           createdBy: userId,

@@ -19,6 +19,10 @@ interface PropriedadesConfirmacao {
   humor: number[];
   energia: number[];
   sono: number[];
+  usarEscalasClinicas?: boolean;
+  phq2Score?: number;
+  gad2Score?: number;
+  cgiSeverity?: number;
 }
 
 export function EtapaConfirmacao({
@@ -29,6 +33,10 @@ export function EtapaConfirmacao({
   humor,
   energia,
   sono,
+  usarEscalasClinicas,
+  phq2Score,
+  gad2Score,
+  cgiSeverity,
 }: PropriedadesConfirmacao) {
   return (
     <div className="space-y-6 animate-fade-up">
@@ -96,6 +104,20 @@ export function EtapaConfirmacao({
               <span className="text-muted-foreground">Sono</span>
               <span className="font-medium tabular-nums">{sono[0]}/10</span>
             </div>
+            {usarEscalasClinicas && (
+              <>
+                <div className="flex justify-between pt-2 border-t border-border/60">
+                  <span className="text-muted-foreground">PHQ-2 / GAD-2</span>
+                  <span className="font-medium tabular-nums">
+                    {phq2Score ?? 0}/6 • {gad2Score ?? 0}/6
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">CGI-S</span>
+                  <span className="font-medium tabular-nums">{cgiSeverity ?? 1}/7</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

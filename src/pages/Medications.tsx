@@ -3,12 +3,15 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useClinic } from "@/contexts/ClinicContext";
 import {
   saveMedication,
   getMedications,
   deleteMedication,
   type Medication,
 } from "@/lib/medications";
+import { getMissingStandardMedications } from "@/services/standardFormulary";
+import { BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { checkInteractions, InteractionAlert } from "@/services/drugInteractions";
 import { InteractionAlertPanel } from "@/components/alerts/InteractionAlert";
@@ -86,11 +89,14 @@ import { Check, ChevronDown } from "lucide-react";
 
 export default function Medications() {
   const { user } = useAuth();
+  const { effectiveUserId } = useClinic();
+  const targetUserId = effectiveUserId || user?.uid;
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [importingFormulary, setImportingFormulary] = useState(false);
 
   // Estados para ações
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -129,11 +135,11 @@ export default function Medications() {
   // Carregar medicamentos do Firebase
   useEffect(() => {
     const loadMedications = async () => {
-      if (!user) return;
+      if (!user || !targetUserId) return;
 
       try {
         setLoading(true);
-        const medicationsData = await getMedications(user.uid);
+        const medicationsData = await getMedications(targetUserId);
         setMedications(medicationsData);
       } catch (error: unknown) {
         console.error("Erro ao carregar medicamentos:", error);
@@ -163,7 +169,45 @@ export default function Medications() {
     };
 
     loadMedications();
-  }, [user]);
+  }, [user, targetUserId]);
+
+  const missingStandardMedications = useMemo(
+    () => getMissingStandardMedications(medications),
+    [medications]
+  );
+
+  const handleImportStandardFormulary = async () => {
+    if (!user || !targetUserId || missingStandardMedications.length === 0) return;
+
+    try {
+      setImportingFormulary(true);
+      const userInfo = {
+        name: user.displayName || undefined,
+        email: user.email || undefined,
+      };
+
+      for (const template of missingStandardMedications) {
+        await saveMedication({ ...template }, targetUserId, userInfo);
+      }
+
+      const updatedList = await getMedications(targetUserId);
+      setMedications(updatedList);
+
+      toast({
+        title: "Bulário padrão importado",
+        description: `${missingStandardMedications.length} fármaco(s) neuropsiquiátrico(s) adicionados ao catálogo.`,
+      });
+    } catch (error) {
+      console.error("Erro ao importar bulário padrão:", error);
+      toast({
+        title: "Erro ao importar bulário",
+        description: "Não foi possível importar os medicamentos padrão.",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingFormulary(false);
+    }
+  };
 
   // Toggle de seleção de classe
   const toggleClass = (className: string) => {
@@ -250,11 +294,11 @@ export default function Medications() {
 
   // Confirmar exclusão
   const confirmDelete = async () => {
-    if (!user || !medicationToDelete?.id) return;
+    if (!user || !targetUserId || !medicationToDelete?.id) return;
 
     try {
       const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-      await deleteMedication(medicationToDelete.id, user.uid, medicationToDelete.name, userInfo);
+      await deleteMedication(medicationToDelete.id, targetUserId, medicationToDelete.name, userInfo);
 
       toast({
         title: "Medicamento excluído",
@@ -370,8 +414,9 @@ export default function Medications() {
       };
 
       // Salvar medicamento no Realtime Database
+      const effectiveTarget = targetUserId || user.uid;
       const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-      await saveMedication(medicationData, user.uid, userInfo);
+      await saveMedication(medicationData, effectiveTarget, userInfo);
 
       toast({
         title: editingId ? "Medicamento atualizado!" : "Medicamento cadastrado!",
@@ -379,7 +424,7 @@ export default function Medications() {
       });
 
       // Recarregar lista de medicamentos
-      const medicationsData = await getMedications(user.uid);
+      const medicationsData = await getMedications(effectiveTarget);
       setMedications(medicationsData);
 
       // Fechar dialog e resetar formulário
@@ -432,15 +477,28 @@ export default function Medications() {
             </p>
           </div>
 
-          {/* Alertas de Interação Medicamentosa */}
-          {interactionAlerts.length > 0 && (
-            <div className="rounded-2xl p-4 bg-amber-500/10 border border-amber-500/20">
-              <InteractionAlertPanel
-                alerts={interactionAlerts}
-                onDismiss={handleDismissAlert}
-              />
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {missingStandardMedications.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleImportStandardFormulary}
+                disabled={importingFormulary}
+                className="h-10 text-xs font-medium"
+              >
+                {importingFormulary ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                    <span>Importando bulário...</span>
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+                    <span>Importar Bulário Padrão ({missingStandardMedications.length})</span>
+                  </>
+                )}
+              </Button>
+            )}
 
           <Dialog
             open={isDialogOpen}
@@ -704,7 +762,20 @@ export default function Medications() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
+
+        {/* Matriz de Interações teóricas entre as classes disponíveis no formulário */}
+        {interactionAlerts.length > 0 && (
+          <div className="nd-card p-5">
+            <InteractionAlertPanel
+              alerts={interactionAlerts}
+              onDismiss={handleDismissAlert}
+              title="Matriz de Interações do Formulário Cadastrado"
+              subtitle="Referência farmacológica entre classes presentes no catálogo. Alertas individuais são verificados exclusivamente sobre as prescrições ativas de cada paciente."
+            />
+          </div>
+        )}
 
         {/* Grid de Métricas Farmacológicas (Bento Grid Suíço) */}
         {!loading && (
@@ -876,7 +947,28 @@ export default function Medications() {
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilters ? "Tente ajustar a busca ou remover filtros." : "Cadastre o primeiro medicamento para começar."}
             </p>
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {!hasActiveFilters && missingStandardMedications.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleImportStandardFormulary}
+                  disabled={importingFormulary}
+                  className="h-11"
+                >
+                  {importingFormulary ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                      Importando bulário…
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+                      Importar Bulário Padrão ({missingStandardMedications.length})
+                    </>
+                  )}
+                </Button>
+              )}
               <Button variant="neuro" onClick={() => setIsDialogOpen(true)} className="h-11">
                 <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                 Cadastrar Medicamento
@@ -958,6 +1050,14 @@ export default function Medications() {
                         {med.minDose} - {med.maxDose} {med.unit}
                       </span>
                     </div>
+                    {med.halfLifeHours && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground text-[11px] uppercase">Meia-vida (t½)</span>
+                        <span className="font-medium text-foreground tabular-nums">
+                          ~{med.halfLifeHours} h
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground text-[11px] uppercase">Cadastrado</span>
                       <span className="font-medium text-foreground tabular-nums">

@@ -122,4 +122,37 @@ describe("Motor Determinístico de Análise Clínica (aiService.ts)", () => {
     ).toBe(true);
     expect(resultadoAlergia.recommendation).toContain("Conflito de alergia detectado");
   });
+
+  it("deve incorporar escalas clínicas padronizadas (PHQ-2 >= 3, GAD-2 >= 3 e CGI-S >= 5) na análise de risco e eficácia", async () => {
+    const semEscalas = await analyzeDose(doseBase, estadoBom, medSertralina);
+    const comEscalasPositivas = await analyzeDose(
+      doseBase,
+      {
+        ...estadoBom,
+        phq2Score: 5,
+        gad2Score: 4,
+        cgiSeverity: 6,
+      },
+      medSertralina
+    );
+
+    expect(comEscalasPositivas.efficacyPrediction).toBeLessThan(
+      semEscalas.efficacyPrediction
+    );
+    expect(
+      comEscalasPositivas.riskAssessment.some((r) =>
+        r.category.includes("PHQ-2")
+      )
+    ).toBe(true);
+    expect(
+      comEscalasPositivas.riskAssessment.some((r) =>
+        r.category.includes("GAD-2")
+      )
+    ).toBe(true);
+    expect(
+      comEscalasPositivas.riskAssessment.some((r) =>
+        r.category.includes("CGI-S")
+      )
+    ).toBe(true);
+  });
 });

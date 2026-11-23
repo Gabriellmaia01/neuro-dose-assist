@@ -91,7 +91,7 @@ export function DialogoDetalhesRegistro({
                   <Badge variant="outline" className="bg-secondary/50">
                     Energia:{" "}
                     <span className="ml-1 font-semibold tabular-nums">
-                      {itemSelecionado.subjectiveState.energy}/5
+                      {itemSelecionado.subjectiveState.energy}/10
                     </span>
                   </Badge>
                 )}
@@ -99,7 +99,31 @@ export function DialogoDetalhesRegistro({
                   <Badge variant="outline" className="bg-secondary/50">
                     Sono:{" "}
                     <span className="ml-1 font-semibold tabular-nums">
-                      {itemSelecionado.subjectiveState.sleep}/5
+                      {itemSelecionado.subjectiveState.sleep}/10
+                    </span>
+                  </Badge>
+                )}
+                {typeof itemSelecionado.subjectiveState?.phq2Score === "number" && (
+                  <Badge variant="outline" className="bg-secondary/50">
+                    PHQ-2:{" "}
+                    <span className="ml-1 font-semibold tabular-nums">
+                      {itemSelecionado.subjectiveState.phq2Score}/6
+                    </span>
+                  </Badge>
+                )}
+                {typeof itemSelecionado.subjectiveState?.gad2Score === "number" && (
+                  <Badge variant="outline" className="bg-secondary/50">
+                    GAD-2:{" "}
+                    <span className="ml-1 font-semibold tabular-nums">
+                      {itemSelecionado.subjectiveState.gad2Score}/6
+                    </span>
+                  </Badge>
+                )}
+                {typeof itemSelecionado.subjectiveState?.cgiSeverity === "number" && (
+                  <Badge variant="outline" className="bg-secondary/50">
+                    CGI-S:{" "}
+                    <span className="ml-1 font-semibold tabular-nums">
+                      {itemSelecionado.subjectiveState.cgiSeverity}/7
                     </span>
                   </Badge>
                 )}

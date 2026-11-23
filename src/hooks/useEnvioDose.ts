@@ -26,6 +26,10 @@ export interface ParametrosEnvio {
   energia: number[];
   sono: number[];
   efeitos: string;
+  usarEscalasClinicas?: boolean;
+  phq2Score?: number;
+  gad2Score?: number;
+  cgiSeverity?: number;
   pacienteSelecionado: Patient | undefined;
   medicamentoSelecionado: Medication | undefined;
   todosMedicamentos: Medication[];
@@ -58,6 +62,10 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
     energia,
     sono,
     efeitos,
+    usarEscalasClinicas,
+    phq2Score,
+    gad2Score,
+    cgiSeverity,
     pacienteSelecionado,
     medicamentoSelecionado,
     todosMedicamentos,
@@ -106,6 +114,20 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
         medicamentoSelecionado
       );
 
+      const estadoSubjetivoPayload = {
+        mood: humor[0],
+        energy: energia[0],
+        sleep: sono[0],
+        effects: efeitos,
+        ...(usarEscalasClinicas
+          ? {
+              phq2Score,
+              gad2Score,
+              cgiSeverity,
+            }
+          : {}),
+      };
+
       const resultado = await analyzeDose(
         {
           patientId: pacienteIdSelecionado,
@@ -114,12 +136,7 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
           time: horarioDose,
           indication: indicacao,
         },
-        {
-          mood: humor[0],
-          energy: energia[0],
-          sleep: sono[0],
-          effects: efeitos,
-        },
+        estadoSubjetivoPayload,
         contextoMedicamento,
         medicamentosParaChecagem,
         nivelConfianca,
@@ -136,12 +153,7 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
             doseAmount: quantidadeDose,
             time: horarioDose,
             indication: indicacao,
-            subjectiveState: {
-              mood: humor[0],
-              energy: energia[0],
-              sleep: sono[0],
-              effects: efeitos,
-            },
+            subjectiveState: estadoSubjetivoPayload,
             analysis: resultado,
             timestamp: new Date().toISOString(),
             createdAt: new Date().toISOString(),

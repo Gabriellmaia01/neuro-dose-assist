@@ -31,7 +31,13 @@ export interface DoseData {
     indication: string;
 }
 
-export interface SubjectiveState {
+export interface ClinicalScales {
+    phq2Score?: number; // 0-6 (corte >= 3 sugere rastreio positivo para depressão -> PHQ-9)
+    gad2Score?: number; // 0-6 (corte >= 3 sugere rastreio positivo para ansiedade -> GAD-7)
+    cgiSeverity?: number; // 1-7 (Clinical Global Impression - Severity)
+}
+
+export interface SubjectiveState extends ClinicalScales {
     mood: number; // 1-5
     energy: number; // 0-10
     sleep: number; // 0-10
@@ -97,6 +103,21 @@ export function calculateDeterministicEfficacy(
             score -= 5;
         } else if (medInfo.timeGuidance.ideal.includes(period)) {
             score += 2;
+        }
+    }
+
+    // Ponderação pelas escalas clínicas validadas quando preenchidas
+    if (typeof state.phq2Score === 'number' && state.phq2Score >= 3) {
+        score -= state.phq2Score >= 5 ? 7 : 4;
+    }
+    if (typeof state.gad2Score === 'number' && state.gad2Score >= 3) {
+        score -= state.gad2Score >= 5 ? 6 : 3;
+    }
+    if (typeof state.cgiSeverity === 'number') {
+        if (state.cgiSeverity >= 5) {
+            score -= 8;
+        } else if (state.cgiSeverity <= 2) {
+            score += 3;
         }
     }
 
@@ -197,6 +218,49 @@ export const analyzeDose = async (
             category: "Energia",
             level: "Baixo",
             description: "Baixa energia relatada.",
+        });
+    }
+
+    // ── 1.b Avaliação das escalas clínicas padronizadas (PHQ-2, GAD-2, CGI-S) ──
+    if (typeof state.phq2Score === 'number' && state.phq2Score >= 3) {
+        insights.push({
+            icon: 'alert',
+            title: `PHQ-2 positivo (${state.phq2Score}/6)`,
+            description: 'Rastreio positivo para sintomas depressivos clinicamente relevantes (corte ≥ 3). Recomenda-se aplicação completa do PHQ-9.',
+            priority: 'warning',
+        });
+        risks.push({
+            category: 'Rastreio Depressivo (PHQ-2)',
+            level: state.phq2Score >= 5 ? 'Alto' : 'Médio',
+            description: `Escore PHQ-2 de ${state.phq2Score}/6 acima do ponto de corte clínico (≥ 3).`,
+        });
+    }
+
+    if (typeof state.gad2Score === 'number' && state.gad2Score >= 3) {
+        insights.push({
+            icon: 'alert',
+            title: `GAD-2 positivo (${state.gad2Score}/6)`,
+            description: 'Rastreio positivo para ansiedade clinicamente significativa (corte ≥ 3). Recomenda-se aplicação completa do GAD-7.',
+            priority: 'warning',
+        });
+        risks.push({
+            category: 'Rastreio Ansioso (GAD-2)',
+            level: state.gad2Score >= 5 ? 'Alto' : 'Médio',
+            description: `Escore GAD-2 de ${state.gad2Score}/6 acima do ponto de corte clínico (≥ 3).`,
+        });
+    }
+
+    if (typeof state.cgiSeverity === 'number' && state.cgiSeverity >= 5) {
+        insights.push({
+            icon: 'alert',
+            title: `Gravidade clínica elevada (CGI-S ${state.cgiSeverity}/7)`,
+            description: 'Impressão Clínica Global indica quadro acentuadamente a extremamente enfermo. Reavaliar resposta terapêutica e titulação.',
+            priority: 'warning',
+        });
+        risks.push({
+            category: 'Gravidade Clínica Global (CGI-S)',
+            level: state.cgiSeverity >= 6 ? 'Alto' : 'Médio',
+            description: `CGI-S ${state.cgiSeverity}/7 sugere necessidade de revisão intensiva do esquema terapêutico.`,
         });
     }
 
