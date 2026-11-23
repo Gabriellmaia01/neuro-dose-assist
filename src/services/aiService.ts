@@ -53,6 +53,84 @@ export interface AnalysisInput {
 
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 
+/**
+ * Calcula deterministicamente a estimativa de eficácia terapêutica (10% a 99%)
+ * com base no estado subjetivo, adequação à janela terapêutica e horário da tomada.
+ */
+export function calculateDeterministicEfficacy(
+    state: SubjectiveState,
+    doseData: DoseData,
+    medication?: MedicationContext,
+    medInfo?: MedicationClassInfo | null
+): number {
+    const clampedMood = Math.min(5, Math.max(1, state.mood));
+    const clampedEnergy = Math.min(10, Math.max(0, state.energy));
+    const clampedSleep = Math.min(10, Math.max(0, state.sleep));
+
+    const moodScore = ((clampedMood - 1) / 4) * 100;
+    const energyScore = (clampedEnergy / 10) * 100;
+    const sleepScore = (clampedSleep / 10) * 100;
+
+    const weightedState = moodScore * 0.45 + energyScore * 0.30 + sleepScore * 0.25;
+    let score = 35 + weightedState * 0.58;
+
+    if (medication) {
+        const doseValue = parseFloat(doseData.dose);
+        if (!isNaN(doseValue) && medication.minDose > 0 && medication.maxDose > 0) {
+            if (doseValue < medication.minDose) {
+                score -= 8;
+            } else if (doseValue > medication.maxDose) {
+                score -= 6;
+            } else {
+                score += 4;
+            }
+        }
+    }
+
+    if (medInfo && doseData.time) {
+        const period = getTimeOfDay(doseData.time);
+        if (medInfo.timeGuidance.avoid.includes(period)) {
+            score -= 5;
+        } else if (medInfo.timeGuidance.ideal.includes(period)) {
+            score += 2;
+        }
+    }
+
+    return Math.min(99, Math.max(10, Math.round(score)));
+}
+
+/**
+ * Seleciona de forma determinística a orientação de monitoramento mais relevante
+ * para o contexto clínico atual (sem sorteio aleatório).
+ */
+function selectMonitoringTip(
+    medInfo: MedicationClassInfo,
+    doseData: DoseData,
+    state: SubjectiveState
+): string | null {
+    const tips = medInfo.monitoringTips;
+    if (!tips || tips.length === 0) return null;
+
+    if (state.sleep < 5) {
+        const sleepTip = tips.find((t) => /sono|noite|insônia|sonolência/i.test(t));
+        if (sleepTip) return sleepTip;
+    }
+
+    if (state.mood < 3) {
+        const moodTip = tips.find((t) => /humor|ansiedade|sintoma/i.test(t));
+        if (moodTip) return moodTip;
+    }
+
+    const period = doseData.time ? getTimeOfDay(doseData.time) : 'manha';
+    const indexMap: Record<'manha' | 'tarde' | 'noite', number> = {
+        manha: 0,
+        tarde: 1,
+        noite: 2,
+    };
+
+    return tips[indexMap[period] % tips.length];
+}
+
 export const analyzeDose = async (
     doseData: DoseData,
     state: SubjectiveState,
@@ -60,15 +138,19 @@ export const analyzeDose = async (
     allMedications?: MedicationForCheck[],
     confidenceLevel: ConfidenceLevel = 'high'
 ): Promise<AnalysisResult> => {
-    // Simulate AI processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
     const { mood, energy, sleep } = state;
     const insights: PostDoseInsight[] = [];
 
-    // ── 1. Recomendação baseada no estado subjetivo (lógica existente melhorada) ──
+    const medInfo = medication
+        ? findMedicationInfo(
+              medication.therapeuticClass,
+              medication.activeIngredient,
+              medication.name
+          )
+        : null;
+
+    // ── 1. Recomendação baseada no estado subjetivo ──
     let recommendation = "";
-    let efficacyPrediction = 0;
     const risks: { category: string; level: string; description: string }[] = [];
 
     if (sleep < 5) {
@@ -82,13 +164,10 @@ export const analyzeDose = async (
 
     if (mood < 3) {
         recommendation += "Monitorar sintomas depressivos. Se persistir, consultar médico para ajuste de dose. ";
-        efficacyPrediction = 60 + Math.random() * 10;
     } else if (mood >= 4) {
         recommendation += "Resposta positiva ao tratamento atual. Manter conduta. ";
-        efficacyPrediction = 85 + Math.random() * 10;
     } else {
         recommendation += "Resposta estável. Continuar observação. ";
-        efficacyPrediction = 70 + Math.random() * 15;
     }
 
     if (energy < 4) {
@@ -99,20 +178,19 @@ export const analyzeDose = async (
         });
     }
 
-    // ── 2. Análise baseada no medicamento (NOVO) ──
-    if (medication) {
-        const medInfo = findMedicationInfo(
-            medication.therapeuticClass,
-            medication.activeIngredient,
-            medication.name
-        );
+    const efficacyPrediction = calculateDeterministicEfficacy(
+        state,
+        doseData,
+        medication,
+        medInfo
+    );
 
+    // ── 2. Análise baseada no medicamento ──
+    if (medication) {
         if (medInfo) {
-            // Gerar insights da base de conhecimento
             generateMedicationInsights(medInfo, doseData, medication, state, insights);
         }
 
-        // Verificar faixa de dose
         const doseValue = parseFloat(doseData.dose);
         if (!isNaN(doseValue) && medication.minDose > 0 && medication.maxDose > 0) {
             if (doseValue < medication.minDose) {
@@ -150,7 +228,7 @@ export const analyzeDose = async (
         }
     }
 
-    // ── 3. Verificação de interações medicamentosas (NOVO) ──
+    // ── 3. Verificação de interações medicamentosas ──
     if (allMedications && allMedications.length >= 2) {
         const interactions = checkInteractions(allMedications);
 
@@ -181,7 +259,6 @@ export const analyzeDose = async (
         generateStateBasedInsights(state, medication, insights);
     }
 
-    // Fallback
     if (!recommendation) {
         recommendation = "Manter protocolo atual e reavaliar em 7 dias.";
     }
@@ -195,19 +272,15 @@ export const analyzeDose = async (
         });
     }
 
-    // ── 5. Filtrar insights pelo nível de confiança da IA ──
+    // ── 5. Filtrar insights pelo nível de confiança da análise ──
     const filteredInsights = applyConfidenceFilter(insights, confidenceLevel);
 
-    // Ajustar recomendação pelo nível de confiança
     if (confidenceLevel === 'low') {
         recommendation = recommendation.trim();
         if (recommendation) {
             recommendation += ' ⚠️ Nível de confiança baixo — avalie clinicamente antes de seguir estas sugestões.';
         }
     }
-
-    // Ensure efficacy is within bounds
-    efficacyPrediction = Math.min(99, Math.max(10, Math.floor(efficacyPrediction)));
 
     return {
         recommendation,
@@ -219,33 +292,28 @@ export const analyzeDose = async (
     };
 };
 
-// ── Filtra insights conforme nível de confiança do médico ──
 function applyConfidenceFilter(
     insights: PostDoseInsight[],
     level: ConfidenceLevel
 ): PostDoseInsight[] {
     if (level === 'high') {
-        // Alto: retorna todos os insights
         return insights;
     }
 
     if (level === 'medium') {
-        // Médio: retorna warnings + até 2 informativos, máx 5 total
         const warnings = insights.filter(i => i.priority === 'warning');
         const others = insights.filter(i => i.priority !== 'warning').slice(0, 2);
         return [...warnings, ...others].slice(0, 5);
     }
 
-    // Baixo: apenas warnings e alertas críticos, máx 3
     const critical = insights.filter(i => i.priority === 'warning');
     const result = critical.slice(0, 3);
 
     if (result.length === 0) {
-        // Se não há nenhum warning, mostrar pelo menos um insight genérico
         result.push({
             icon: 'check',
             title: 'Registro concluído',
-            description: 'Dose registrada. Confiança da IA configurada como baixa — consulte orientação clínica para detalhes.',
+            description: 'Dose registrada. Confiança da análise configurada como baixa — consulte orientação clínica para detalhes.',
             priority: 'info',
         });
     }
@@ -253,7 +321,6 @@ function applyConfidenceFilter(
     return result;
 }
 
-// ── Gerador de insights baseados na base de conhecimento ──
 function generateMedicationInsights(
     medInfo: MedicationClassInfo,
     doseData: DoseData,
@@ -263,7 +330,6 @@ function generateMedicationInsights(
 ): void {
     const timeOfDay = getTimeOfDay(doseData.time);
 
-    // Dica de horário
     if (medInfo.timeGuidance.avoid.includes(timeOfDay)) {
         insights.push({
             icon: 'clock',
@@ -280,7 +346,6 @@ function generateMedicationInsights(
         });
     }
 
-    // Dica de alimentação
     if (medInfo.foodInteraction === 'com_alimento') {
         insights.push({
             icon: 'food',
@@ -297,25 +362,22 @@ function generateMedicationInsights(
         });
     }
 
-    // Dicas gerais do medicamento (máx 2)
     const relevantTips = medInfo.generalTips.slice(0, 2);
     for (const tip of relevantTips) {
         insights.push(tip);
     }
 
-    // Dica de monitoramento (1 aleatória)
-    if (medInfo.monitoringTips.length > 0) {
-        const randomTip = medInfo.monitoringTips[Math.floor(Math.random() * medInfo.monitoringTips.length)];
+    const selectedTip = selectMonitoringTip(medInfo, doseData, state);
+    if (selectedTip) {
         insights.push({
             icon: 'activity',
             title: 'O que observar agora',
-            description: randomTip,
+            description: selectedTip,
             priority: 'info',
         });
     }
 }
 
-// ── Insights cruzando estado subjetivo com medicamento ──
 function generateStateBasedInsights(
     state: SubjectiveState,
     medication: MedicationContext,
@@ -324,12 +386,10 @@ function generateStateBasedInsights(
     const isStimulant = ['Psicoestimulante', 'Estimulante'].some(
         cls => medication.therapeuticClass.toLowerCase().includes(cls.toLowerCase())
     );
-    const isBenzo = medication.therapeuticClass.toLowerCase().includes('benzodiazep');
     const isSedating = ['Antipsicótico', 'Benzodiazep'].some(
         cls => medication.therapeuticClass.toLowerCase().includes(cls.toLowerCase())
     );
 
-    // Estimulante + baixa energia = boa resposta esperada
     if (isStimulant && state.energy < 4) {
         insights.push({
             icon: 'activity',
@@ -339,7 +399,6 @@ function generateStateBasedInsights(
         });
     }
 
-    // Estimulante + sono ruim = alerta
     if (isStimulant && state.sleep < 5) {
         insights.push({
             icon: 'sleep',
@@ -349,7 +408,6 @@ function generateStateBasedInsights(
         });
     }
 
-    // Sedativo + muita sonolência/baixa energia = cuidado
     if (isSedating && state.energy < 3) {
         insights.push({
             icon: 'alert',
@@ -359,12 +417,11 @@ function generateStateBasedInsights(
         });
     }
 
-    // Humor muito baixo — lembrete humanizado
     if (state.mood <= 2) {
         insights.push({
             icon: 'check',
-            title: 'Você não está sozinho',
-            description: 'Seu humor está baixo hoje. Se os sintomas persistirem, procure seu médico. Lembre-se: buscar ajuda é um sinal de força.',
+            title: 'Acompanhamento de humor',
+            description: 'Humor reduzido registrado nesta aplicação. Caso persista nos próximos dias, reavalie a conduta clínica.',
             priority: 'info',
         });
     }

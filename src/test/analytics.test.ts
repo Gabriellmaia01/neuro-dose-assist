@@ -152,10 +152,20 @@ describe("Lógica de Domínio: Análise Clínica e Preditiva (analytics.ts)", ()
       ];
 
       const insights = generatePredictiveInsights("p-test-1", doses, [mockMedicamento]);
+      const insightsRepetidos = generatePredictiveInsights("p-test-1", doses, [mockMedicamento]);
+
+      expect(insights).toEqual(insightsRepetidos);
       expect(insights.weeklyForecast).toHaveLength(7);
       expect(insights.riskScore).toBeGreaterThanOrEqual(0);
       expect(insights.riskScore).toBeLessThanOrEqual(100);
       expect(insights.adherencePrediction).toBeGreaterThanOrEqual(0);
+    });
+
+    it("deve retornar previsão zerada quando não houver doses registradas", () => {
+      const vazio = generatePredictiveInsights("p-sem-dados", [], [mockMedicamento]);
+      expect(vazio.adherencePrediction).toBe(0);
+      expect(vazio.riskScore).toBe(0);
+      expect(vazio.weeklyForecast.every((d) => d.predictedEfficacy === 0 && d.confidence === 0)).toBe(true);
     });
   });
 });

@@ -415,24 +415,47 @@ export function aggregateMetrics(
 }
 
 /**
- * Gera análise preditiva usando heurísticas
+ * Gera análise preditiva determinística baseada em média móvel, inclinação
+ * da tendência recente e consistência amostral (sem valores aleatórios).
  */
 export function generatePredictiveInsights(
     patientId: string | null,
     doses: DoseRecord[],
-    medications: Medication[]
+    _medications: Medication[]
 ): PredictiveInsights {
-    const relevantDoses = patientId
+    const filteredDoses = patientId
         ? doses.filter(d => d.patientId === patientId)
         : doses;
 
-    // Calcula previsão de adesão baseado em histórico
-    const recentAdherence = calculateAdherenceRate(relevantDoses, 14);
-    const adherencePrediction = Math.round(recentAdherence * 0.9 + 10); // Slight regression to mean
+    const relevantDoses = [...filteredDoses].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
-    // Calcula score de risco (0-100)
-    const avgEfficacy = calculateAvgEfficacy(relevantDoses.slice(0, 5));
-    const avgMood = calculateAvgMood(relevantDoses.slice(0, 5));
+    const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const today = new Date().getDay();
+
+    if (relevantDoses.length === 0) {
+        return {
+            adherencePrediction: 0,
+            riskScore: 0,
+            suggestedDoseAdjustment: null,
+            weeklyForecast: Array.from({ length: 7 }, (_, idx) => ({
+                day: days[(today + idx + 1) % 7],
+                predictedEfficacy: 0,
+                confidence: 0,
+            })),
+            insights: ["Registre doses para habilitar projeções clínicas determinísticas"],
+        };
+    }
+
+    // Calcula previsão de adesão baseada no histórico recente de 14 dias
+    const recentAdherence = calculateAdherenceRate(relevantDoses, 14);
+    const adherencePrediction = Math.min(100, Math.max(0, Math.round(recentAdherence * 0.9 + 5)));
+
+    // Calcula score de risco (0-100) sobre as 5 doses mais recentes
+    const recentSample = relevantDoses.slice(0, 5);
+    const avgEfficacy = calculateAvgEfficacy(recentSample);
+    const avgMood = calculateAvgMood(recentSample);
     let riskScore = 0;
 
     if (avgEfficacy < 50) riskScore += 40;
@@ -454,19 +477,43 @@ export function generatePredictiveInsights(
         suggestedDoseAdjustment = "Tratamento estável - manter protocolo atual";
     }
 
-    // Previsão semanal
-    const weeklyForecast: WeeklyForecast[] = [];
-    const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const today = new Date().getDay();
+    // Inclinação determinística da tendência recente (limitada a [-3, +3] pontos por passo)
+    let dailySlope = 0;
+    if (recentSample.length >= 2) {
+        const newestEfficacy = calculateAvgEfficacy(recentSample.slice(0, Math.ceil(recentSample.length / 2)));
+        const olderEfficacy = calculateAvgEfficacy(recentSample.slice(Math.ceil(recentSample.length / 2)));
+        dailySlope = Math.max(-3, Math.min(3, (newestEfficacy - olderEfficacy) / 4));
+    }
 
+    // Desvio-padrão das eficácias recentes para calibrar confiança de forma determinística
+    const sampleEfficacies = recentSample.map(
+        d => d.analysis?.efficacyPrediction ?? ((d.subjectiveState?.energy || 0) * 10)
+    );
+    const meanEff = sampleEfficacies.reduce((acc, v) => acc + v, 0) / sampleEfficacies.length;
+    const variance =
+        sampleEfficacies.reduce((acc, v) => acc + Math.pow(v - meanEff, 2), 0) /
+        sampleEfficacies.length;
+    const stdDev = Math.sqrt(variance);
+
+    const sampleFactor = Math.min(1, relevantDoses.length / 7);
+    const stabilityFactor = Math.max(0, 1 - stdDev / 35);
+    const baseConfidence = 45 + sampleFactor * 30 + stabilityFactor * 20;
+
+    const weeklyForecast: WeeklyForecast[] = [];
     for (let i = 1; i <= 7; i++) {
         const dayIndex = (today + i) % 7;
-        // Previsão baseada na média + variação aleatória simulada
-        const variation = (Math.random() - 0.5) * 10;
+        const dampedSteps = Math.min(i, 4);
+        const projected = Math.round(
+            Math.max(10, Math.min(99, avgEfficacy + dailySlope * dampedSteps))
+        );
+        const horizonConfidence = Math.round(
+            Math.max(30, Math.min(95, baseConfidence - (i - 1) * 2))
+        );
+
         weeklyForecast.push({
             day: days[dayIndex],
-            predictedEfficacy: Math.round(Math.max(40, Math.min(95, avgEfficacy + variation))),
-            confidence: Math.round(70 + Math.random() * 20)
+            predictedEfficacy: projected,
+            confidence: horizonConfidence,
         });
     }
 
