@@ -60,6 +60,12 @@ import {
   deletePatient,
   type Patient,
 } from "@/lib/patients";
+import { getMedications, type Medication } from "@/lib/medications";
+import {
+  checkInteractions,
+  resolvePatientActiveMedications,
+} from "@/services/drugInteractions";
+import { Check, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const statusStyles = {
@@ -75,6 +81,7 @@ export default function Patients() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false); // Modal de visualização
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [catalogMedications, setCatalogMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -89,21 +96,26 @@ export default function Patients() {
     condition: "",
     clinicalHistory: "",
     allergies: "",
+    activeMedicationIds: [] as string[],
     currentMedications: "",
   });
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  // Carregar pacientes do Firebase
+  // Carregar pacientes e catálogo de medicamentos do Firebase
   useEffect(() => {
     const loadPatients = async () => {
       if (!user || !effectiveUserId) return;
 
       try {
         setLoading(true);
-        const patientsData = await getPatients(effectiveUserId);
+        const [patientsData, medicationsData] = await Promise.all([
+          getPatients(effectiveUserId),
+          getMedications(effectiveUserId).catch(() => [] as Medication[]),
+        ]);
         setPatients(patientsData);
+        setCatalogMedications(medicationsData);
       } catch (error: unknown) {
         console.error("Erro ao carregar pacientes:", error);
 
@@ -147,6 +159,7 @@ export default function Patients() {
       condition: "",
       clinicalHistory: "",
       allergies: "",
+      activeMedicationIds: [],
       currentMedications: "",
     });
     setPhotoFile(null);
@@ -154,9 +167,52 @@ export default function Patients() {
     setEditingPatient(null); // Resetar edição
   };
 
-  // Preencher formulário para edição
+  const toggleActiveMedication = (medicationId: string) => {
+    setFormData((prev) => {
+      const exists = prev.activeMedicationIds.includes(medicationId);
+      const nextIds = exists
+        ? prev.activeMedicationIds.filter((id) => id !== medicationId)
+        : [...prev.activeMedicationIds, medicationId];
+      return { ...prev, activeMedicationIds: nextIds };
+    });
+  };
+
+  // Alertas de interação em tempo real entre os medicamentos selecionados para o paciente
+  const activePatientInteractions = checkInteractions(
+    resolvePatientActiveMedications(
+      {
+        activeMedicationIds: formData.activeMedicationIds,
+        currentMedications: formData.currentMedications,
+      },
+      catalogMedications
+    )
+  );
+
+  // Preencher formulário para edição (migrando nomes legados quando coincidirem com o catálogo)
   const handleEditClick = (patient: Patient) => {
     setEditingPatient(patient);
+
+    const existingIds = new Set<string>(patient.activeMedicationIds || []);
+    const remainingExtraMeds: string[] = [];
+
+    if (patient.currentMedications) {
+      const terms = patient.currentMedications
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      for (const term of terms) {
+        const matched = catalogMedications.find(
+          (m) => m.id && m.name.toLowerCase() === term.toLowerCase()
+        );
+        if (matched?.id) {
+          existingIds.add(matched.id);
+        } else {
+          remainingExtraMeds.push(term);
+        }
+      }
+    }
+
     setFormData({
       name: patient.name,
       age: patient.age.toString(),
@@ -164,7 +220,8 @@ export default function Patients() {
       condition: patient.condition,
       clinicalHistory: patient.clinicalHistory || "",
       allergies: patient.allergies || "",
-      currentMedications: patient.currentMedications || "",
+      activeMedicationIds: Array.from(existingIds),
+      currentMedications: remainingExtraMeds.join(", "),
     });
     setPhotoPreview(patient.photoURL || null);
     setPhotoFile(null); // Resetar arquivo novo, manter preview atual
@@ -230,6 +287,21 @@ export default function Patients() {
     try {
       setSaving(true);
 
+      const selectedCatalogNames = catalogMedications
+        .filter((m) => m.id && formData.activeMedicationIds.includes(m.id))
+        .map((m) => m.name);
+
+      const extraMeds = formData.currentMedications
+        .split(",")
+        .map((t) => t.trim())
+        .filter(
+          (t) =>
+            Boolean(t) &&
+            !selectedCatalogNames.some((n) => n.toLowerCase() === t.toLowerCase())
+        );
+
+      const combinedMedicationsSummary = [...selectedCatalogNames, ...extraMeds].join(", ");
+
       const patientData: Patient = {
         id: editingPatient?.id, // Manter ID se for edição
         name: formData.name,
@@ -238,7 +310,9 @@ export default function Patients() {
         condition: formData.condition,
         clinicalHistory: formData.clinicalHistory || undefined,
         allergies: formData.allergies || undefined,
-        currentMedications: formData.currentMedications || undefined,
+        activeMedicationIds:
+          formData.activeMedicationIds.length > 0 ? formData.activeMedicationIds : undefined,
+        currentMedications: combinedMedicationsSummary || undefined,
         photoURL: editingPatient?.photoURL // Manter foto antiga se não houver nova
       };
       console.log("Dados do paciente:", patientData);
@@ -512,19 +586,73 @@ export default function Patients() {
                       className="h-11"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="patient-current-meds">Medicamentos em Uso</Label>
-                    <Textarea
-                      id="patient-current-meds"
-                      name="patientCurrentMedications"
-                      autoComplete="off"
-                      placeholder="Liste os medicamentos atuais…"
-                      rows={2}
-                      value={formData.currentMedications}
-                      onChange={(e) =>
-                        setFormData({ ...formData, currentMedications: e.target.value })
-                      }
-                    />
+                  <div className="space-y-3">
+                    <Label>Prescrições Ativas do Catálogo</Label>
+                    {catalogMedications.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/20 max-h-40 overflow-y-auto">
+                        {catalogMedications.map((med) => {
+                          if (!med.id) return null;
+                          const isSelected = formData.activeMedicationIds.includes(med.id);
+                          return (
+                            <button
+                              key={med.id}
+                              type="button"
+                              onClick={() => toggleActiveMedication(med.id!)}
+                              aria-pressed={isSelected}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-card text-foreground border-border hover:border-primary/50"
+                              )}
+                            >
+                              {isSelected && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
+                              <span>{med.name}</span>
+                              <span className={cn("text-[11px]", isSelected ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                                ({med.minDose}–{med.maxDose}{med.unit})
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhum medicamento cadastrado no catálogo ainda. Você pode informar co-medicações abaixo.
+                      </p>
+                    )}
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="patient-current-meds" className="text-xs text-muted-foreground">
+                        Outras Medicações Concomitantes (uso clínico geral, separadas por vírgula)
+                      </Label>
+                      <Textarea
+                        id="patient-current-meds"
+                        name="patientCurrentMedications"
+                        autoComplete="off"
+                        placeholder="Ex.: Losartana, Ibuprofeno, Metformina…"
+                        rows={2}
+                        value={formData.currentMedications}
+                        onChange={(e) =>
+                          setFormData({ ...formData, currentMedications: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {activePatientInteractions.length > 0 && (
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1.5">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
+                          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                          <span>
+                            {activePatientInteractions.length} interação(ões) detectada(s) neste prontuário
+                          </span>
+                        </div>
+                        {activePatientInteractions.map((inter) => (
+                          <p key={inter.id} className="text-xs text-muted-foreground">
+                            <strong>{inter.medicationA} + {inter.medicationB}</strong> ({inter.severity}): {inter.description}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <DialogFooter>

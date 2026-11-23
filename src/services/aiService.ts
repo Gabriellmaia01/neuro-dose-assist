@@ -1,5 +1,9 @@
 import { findMedicationInfo, getTimeOfDay, type MedicationClassInfo } from './medicationKnowledge';
-import { checkInteractions, type MedicationForCheck } from './drugInteractions';
+import {
+    checkInteractions,
+    checkPatientAllergyConflict,
+    type MedicationForCheck,
+} from './drugInteractions';
 
 export interface PostDoseInsight {
     icon: 'clock' | 'food' | 'alert' | 'sleep' | 'activity' | 'check' | 'droplet';
@@ -136,7 +140,8 @@ export const analyzeDose = async (
     state: SubjectiveState,
     medication?: MedicationContext,
     allMedications?: MedicationForCheck[],
-    confidenceLevel: ConfidenceLevel = 'high'
+    confidenceLevel: ConfidenceLevel = 'high',
+    patientAllergies?: string
 ): Promise<AnalysisResult> => {
     const { mood, energy, sleep } = state;
     const insights: PostDoseInsight[] = [];
@@ -152,6 +157,23 @@ export const analyzeDose = async (
     // ── 1. Recomendação baseada no estado subjetivo ──
     let recommendation = "";
     const risks: { category: string; level: string; description: string }[] = [];
+
+    // ── 1.a Verificação prioritária de alergia/sensibilidade do paciente ──
+    const allergyConflict = checkPatientAllergyConflict(patientAllergies, medication);
+    if (allergyConflict) {
+        insights.push({
+            icon: 'alert',
+            title: `Alerta de alergia: ${allergyConflict.matchedAllergy}`,
+            description: `${allergyConflict.description} Suspenda a administração até avaliação médica imediata.`,
+            priority: 'warning',
+        });
+        risks.push({
+            category: "Alergia / Hipersensibilidade",
+            level: "Alto",
+            description: allergyConflict.description,
+        });
+        recommendation += `ATENÇÃO: Conflito de alergia detectado (${allergyConflict.matchedAllergy}). Revisar prescrição imediatamente. `;
+    }
 
     if (sleep < 5) {
         recommendation += "Considerar ajuste no horário da medicação para não interferir no sono. ";

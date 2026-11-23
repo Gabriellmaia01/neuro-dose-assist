@@ -4,6 +4,7 @@ import { useClinic } from "@/contexts/ClinicContext";
 import { Patient } from "@/lib/patients";
 import { Medication } from "@/lib/medications";
 import { analyzeDose, AnalysisResult, type ConfidenceLevel } from "@/services/aiService";
+import { resolvePatientActiveMedications } from "@/services/drugInteractions";
 import { saveDose } from "@/lib/doses";
 import { validarCamposObrigatorios, obterErroDoseLimite } from "@/lib/validacaoDose";
 import { toast } from "@/hooks/use-toast";
@@ -98,13 +99,12 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
           }
         : undefined;
 
-      // Preparar lista de medicamentos para verificação de interações
-      const medicamentosParaChecagem = todosMedicamentos.map((m) => ({
-        id: m.id,
-        name: m.name,
-        therapeuticClass: m.therapeuticClass,
-        activeIngredient: m.activeIngredient,
-      }));
+      // Preparar lista de medicamentos EXCLUSIVOS do paciente selecionado + dose atual
+      const medicamentosParaChecagem = resolvePatientActiveMedications(
+        pacienteSelecionado,
+        todosMedicamentos,
+        medicamentoSelecionado
+      );
 
       const resultado = await analyzeDose(
         {
@@ -122,7 +122,8 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
         },
         contextoMedicamento,
         medicamentosParaChecagem,
-        nivelConfianca
+        nivelConfianca,
+        pacienteSelecionado?.allergies
       );
       setResultadoAnalise(resultado);
 

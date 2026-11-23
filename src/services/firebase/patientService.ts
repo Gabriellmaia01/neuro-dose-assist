@@ -69,6 +69,7 @@ export class FirebasePatientService implements IPatientService {
           condition: patient.condition,
           clinicalHistory: patient.clinicalHistory,
           allergies: patient.allergies,
+          activeMedicationIds: patient.activeMedicationIds,
           currentMedications: patient.currentMedications,
           updatedAt: new Date().toISOString(),
         });
@@ -101,6 +102,7 @@ export class FirebasePatientService implements IPatientService {
           condition: patient.condition,
           clinicalHistory: patient.clinicalHistory,
           allergies: patient.allergies,
+          activeMedicationIds: patient.activeMedicationIds,
           currentMedications: patient.currentMedications,
           photoURL: patient.photoURL,
           createdAt: new Date().toISOString(),

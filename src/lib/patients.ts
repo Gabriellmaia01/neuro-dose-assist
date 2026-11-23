@@ -9,6 +9,7 @@ export interface Patient {
   condition: string;
   clinicalHistory?: string;
   allergies?: string;
+  activeMedicationIds?: string[];
   currentMedications?: string;
   photoURL?: string;
   createdAt?: string;

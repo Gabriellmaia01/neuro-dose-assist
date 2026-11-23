@@ -104,4 +104,22 @@ describe("Motor Determinístico de Análise Clínica (aiService.ts)", () => {
     );
     expect(temAlertaHorario).toBe(true);
   });
+
+  it("deve emitir alerta de risco Alto quando o paciente tiver alergia registrada ao medicamento", async () => {
+    const resultadoAlergia = await analyzeDose(
+      doseBase,
+      estadoBom,
+      medSertralina,
+      [],
+      "high",
+      "Dipirona, Sertralina"
+    );
+
+    expect(
+      resultadoAlergia.riskAssessment.some(
+        (r) => r.category === "Alergia / Hipersensibilidade" && r.level === "Alto"
+      )
+    ).toBe(true);
+    expect(resultadoAlergia.recommendation).toContain("Conflito de alergia detectado");
+  });
 });
