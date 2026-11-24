@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,9 +30,8 @@ export function PatientViewDialog({
                 <DialogHeader>
                     <div className="flex items-center gap-4 mb-2">
                         <Avatar className="w-16 h-16">
-                            <AvatarImage src={patient?.photoURL} alt={patient?.name || "Paciente"} />
                             <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                                {patient?.name?.[0]}
+                                {patient?.name?.charAt(0).toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
                         <div>

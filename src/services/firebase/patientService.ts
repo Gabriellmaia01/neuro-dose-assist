@@ -15,44 +15,6 @@ function removeUndefinedFields<T extends Record<string, unknown>>(obj: T): Parti
   return cleaned as Partial<T>;
 }
 
-async function compressImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const maxSize = 300;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxSize) {
-            height *= maxSize / width;
-            width = maxSize;
-          }
-        } else {
-          if (height > maxSize) {
-            width *= maxSize / height;
-            height = maxSize;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        resolve(dataUrl);
-      };
-      img.onerror = reject;
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export class FirebasePatientService implements IPatientService {
   async savePatient(
     patient: Patient,
@@ -69,13 +31,10 @@ export class FirebasePatientService implements IPatientService {
           condition: patient.condition,
           clinicalHistory: patient.clinicalHistory,
           allergies: patient.allergies,
+          activeMedicationIds: patient.activeMedicationIds,
           currentMedications: patient.currentMedications,
           updatedAt: new Date().toISOString(),
         });
-
-        if (patient.photoURL) {
-          updateData.photoURL = patient.photoURL;
-        }
 
         await update(patientRef, updateData);
 
@@ -101,8 +60,8 @@ export class FirebasePatientService implements IPatientService {
           condition: patient.condition,
           clinicalHistory: patient.clinicalHistory,
           allergies: patient.allergies,
+          activeMedicationIds: patient.activeMedicationIds,
           currentMedications: patient.currentMedications,
-          photoURL: patient.photoURL,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           createdBy: userId,
@@ -140,27 +99,6 @@ export class FirebasePatientService implements IPatientService {
     }
   }
 
-  async uploadPatientPhoto(
-    file: File,
-    _userId: string,
-    patientId: string
-  ): Promise<string> {
-    try {
-      const base64Image = await compressImage(file);
-      const storageKey = `p_img_${patientId}`;
-      try {
-        localStorage.setItem(storageKey, base64Image);
-      } catch (e) {
-        console.error("Storage cheio ou erro:", e);
-        throw new Error("Limite de armazenamento local excedido. Tente uma imagem menor.");
-      }
-      return "local_cache";
-    } catch (error) {
-      console.error("Erro ao salvar foto localmente:", error);
-      throw error;
-    }
-  }
-
   async updatePatient(
     patientId: string,
     patient: Partial<Patient>,
@@ -168,11 +106,12 @@ export class FirebasePatientService implements IPatientService {
   ): Promise<void> {
     try {
       const patientRef = ref(realtimeDb, `users/${userId}/patients/${patientId}`);
-      const updateData = {
-        ...patient,
+      const { id: _ignoredId, ...patientFields } = patient;
+      const updateData = removeUndefinedFields({
+        ...patientFields,
         updatedAt: new Date().toISOString(),
-      };
-      await set(patientRef, updateData);
+      });
+      await update(patientRef, updateData);
     } catch (error) {
       console.error("Erro ao atualizar paciente:", error);
       throw error;
@@ -187,13 +126,9 @@ export class FirebasePatientService implements IPatientService {
       if (snapshot.exists()) {
         const patientsData = snapshot.val();
         const patients = Object.keys(patientsData).map((key) => {
-          const p = { id: key, ...patientsData[key] };
-          if (p.photoURL === "local_cache") {
-            const cachedImg = localStorage.getItem(`p_img_${key}`);
-            p.photoURL = cachedImg || null;
-          }
-          return p;
-        }) as Patient[];
+          const { photoURL: _legacyPhoto, ...rest } = patientsData[key] || {};
+          return { id: key, ...rest } as Patient;
+        });
         return patients;
       }
 
@@ -213,12 +148,8 @@ export class FirebasePatientService implements IPatientService {
       const snapshot = await get(patientRef);
 
       if (snapshot.exists()) {
-        const p = { id: patientId, ...snapshot.val() } as Patient;
-        if (p.photoURL === "local_cache") {
-          const cachedImg = localStorage.getItem(`p_img_${patientId}`);
-          if (cachedImg) p.photoURL = cachedImg;
-        }
-        return p;
+        const { photoURL: _legacyPhoto, ...rest } = snapshot.val() || {};
+        return { id: patientId, ...rest } as Patient;
       }
 
       return null;
@@ -237,7 +168,6 @@ export class FirebasePatientService implements IPatientService {
     try {
       const patientRef = ref(realtimeDb, `users/${userId}/patients/${patientId}`);
       await remove(patientRef);
-      localStorage.removeItem(`p_img_${patientId}`);
 
       await logActivity({
         action: "delete",

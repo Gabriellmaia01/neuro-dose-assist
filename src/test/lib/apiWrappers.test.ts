@@ -38,7 +38,6 @@ import {
   getPatients,
   savePatient,
   updatePatient,
-  uploadPatientPhoto,
 } from "@/lib/patients";
 import {
   getUserSettings,
@@ -80,7 +79,6 @@ const serviceMocks = vi.hoisted(() => ({
   },
   patients: {
     savePatient: vi.fn(),
-    uploadPatientPhoto: vi.fn(),
     updatePatient: vi.fn(),
     getPatients: vi.fn(),
     getPatientById: vi.fn(),
@@ -170,7 +168,6 @@ describe("API wrappers", () => {
       entityName: "Consulta",
       userId: "user-1",
     };
-    const photo = new File(["photo"], "photo.png");
 
     await saveAppointment(appointment, "user-1", user);
     await getAppointments("user-1");
@@ -213,12 +210,11 @@ describe("API wrappers", () => {
     expect(serviceMocks.medications.updateMedication).toHaveBeenCalledWith("med-1", { name: "Atualizado" }, "user-1");
 
     await savePatient(patient, "user-1", user);
-    await uploadPatientPhoto(photo, "user-1", "patient-1");
     await updatePatient("patient-1", { name: "Atualizado" }, "user-1");
     await getPatients("user-1");
     await getPatientById("patient-1", "user-1");
     await deletePatient("patient-1", "user-1", "Paciente", user);
-    expect(serviceMocks.patients.uploadPatientPhoto).toHaveBeenCalledWith(photo, "user-1", "patient-1");
+    expect(serviceMocks.patients.updatePatient).toHaveBeenCalledWith("patient-1", { name: "Atualizado" }, "user-1");
     expect(serviceMocks.patients.deletePatient).toHaveBeenCalledWith("patient-1", "user-1", "Paciente", user);
 
     await getUserSettings("user-1");

@@ -4,6 +4,7 @@ import { useClinic } from "@/contexts/ClinicContext";
 import { Patient } from "@/lib/patients";
 import { Medication } from "@/lib/medications";
 import { analyzeDose, AnalysisResult, type ConfidenceLevel } from "@/services/aiService";
+import { resolvePatientActiveMedications } from "@/services/drugInteractions";
 import { saveDose } from "@/lib/doses";
 import { validarCamposObrigatorios, obterErroDoseLimite } from "@/lib/validacaoDose";
 import { toast } from "@/hooks/use-toast";
@@ -25,6 +26,10 @@ export interface ParametrosEnvio {
   energia: number[];
   sono: number[];
   efeitos: string;
+  usarEscalasClinicas?: boolean;
+  phq2Score?: number;
+  gad2Score?: number;
+  cgiSeverity?: number;
   pacienteSelecionado: Patient | undefined;
   medicamentoSelecionado: Medication | undefined;
   todosMedicamentos: Medication[];
@@ -57,6 +62,10 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
     energia,
     sono,
     efeitos,
+    usarEscalasClinicas,
+    phq2Score,
+    gad2Score,
+    cgiSeverity,
     pacienteSelecionado,
     medicamentoSelecionado,
     todosMedicamentos,
@@ -98,13 +107,26 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
           }
         : undefined;
 
-      // Preparar lista de medicamentos para verificação de interações
-      const medicamentosParaChecagem = todosMedicamentos.map((m) => ({
-        id: m.id,
-        name: m.name,
-        therapeuticClass: m.therapeuticClass,
-        activeIngredient: m.activeIngredient,
-      }));
+      // Preparar lista de medicamentos EXCLUSIVOS do paciente selecionado + dose atual
+      const medicamentosParaChecagem = resolvePatientActiveMedications(
+        pacienteSelecionado,
+        todosMedicamentos,
+        medicamentoSelecionado
+      );
+
+      const estadoSubjetivoPayload = {
+        mood: humor[0],
+        energy: energia[0],
+        sleep: sono[0],
+        effects: efeitos,
+        ...(usarEscalasClinicas
+          ? {
+              phq2Score,
+              gad2Score,
+              cgiSeverity,
+            }
+          : {}),
+      };
 
       const resultado = await analyzeDose(
         {
@@ -114,15 +136,11 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
           time: horarioDose,
           indication: indicacao,
         },
-        {
-          mood: humor[0],
-          energy: energia[0],
-          sleep: sono[0],
-          effects: efeitos,
-        },
+        estadoSubjetivoPayload,
         contextoMedicamento,
         medicamentosParaChecagem,
-        nivelConfianca
+        nivelConfianca,
+        pacienteSelecionado?.allergies
       );
       setResultadoAnalise(resultado);
 
@@ -135,12 +153,7 @@ export function useEnvioDose(parametros: ParametrosEnvio): RetornoEnvioDose {
             doseAmount: quantidadeDose,
             time: horarioDose,
             indication: indicacao,
-            subjectiveState: {
-              mood: humor[0],
-              energy: energia[0],
-              sleep: sono[0],
-              effects: efeitos,
-            },
+            subjectiveState: estadoSubjetivoPayload,
             analysis: resultado,
             timestamp: new Date().toISOString(),
             createdAt: new Date().toISOString(),

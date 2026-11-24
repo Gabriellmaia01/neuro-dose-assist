@@ -16,6 +16,9 @@ import {
   type ServicosPainel,
 } from "@/lib/tiposPainel";
 
+/** Janela máxima de doses recentes carregadas no dashboard inicial. */
+export const DASHBOARD_DOSES_LIMIT = 200;
+
 /** Valores iniciais das estatísticas do painel. */
 const estatisticasIniciais: EstatisticasPainel = {
   pacientesAtivos: 0,
@@ -73,7 +76,7 @@ export function useDadosPainel(
         // Busca paralela de todos os dados (DIP — usa serviços injetados)
         const [pacientes, doses, medicamentos, consultas] = await Promise.all([
           servicos.buscarPacientes(effectiveUserId),
-          servicos.buscarDoses(effectiveUserId),
+          servicos.buscarDoses(effectiveUserId, { limit: DASHBOARD_DOSES_LIMIT }),
           servicos.buscarMedicamentos(effectiveUserId),
           servicos.buscarConsultas(effectiveUserId),
         ]);

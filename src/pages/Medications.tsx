@@ -12,7 +12,7 @@ import {
 } from "@/components/medications/MedicationFilters";
 import { Button } from "@/components/ui/button";
 import { useMedications } from "@/hooks/useMedications";
-import { Loader2, Pill, Plus } from "lucide-react";
+import { BookOpen, Loader2, Pill, Plus } from "lucide-react";
 
 export default function Medications() {
   const medicationState = useMedications();
@@ -24,6 +24,9 @@ export default function Medications() {
     medications,
     loading,
     saving,
+    importingFormulary,
+    missingStandardMedications,
+    handleImportStandardFormulary,
     editingId,
     viewingMedication,
     setViewingMedication,
@@ -53,7 +56,6 @@ export default function Medications() {
   const filteredTotal = filteredMedications.length;
   const uniqueClasses = new Set(medications.map((medication) => medication.therapeuticClass)).size;
   const hasActiveFilters = !!searchTerm || selectedClasses.length > 0;
-  const filterCount = hasActiveFilters ? selectedClasses.length + (searchTerm ? 1 : 0) : 0;
 
   return (
     <MainLayout>
@@ -68,20 +70,34 @@ export default function Medications() {
                 Medicamentos
               </h1>
               <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                Catálogo de medicamentos com classes, dosagens e formas farmacêuticas
+                Gerencie catálogo terapêutico, dosagens seguras e classes
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            {interactionAlerts.length > 0 && (
-              <div className="glass-card rounded-2xl p-6">
-                <InteractionAlertPanel
-                  alerts={interactionAlerts}
-                  onDismiss={handleDismissAlert}
-                />
-              </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {missingStandardMedications.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleImportStandardFormulary}
+                disabled={importingFormulary || loading}
+                className="h-11"
+              >
+                {importingFormulary ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                    Importando bulário…
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+                    Importar Bulário Padrão ({missingStandardMedications.length})
+                  </>
+                )}
+              </Button>
             )}
+
             <MedicationFormDialog
               open={isDialogOpen}
               onOpenChange={setIsDialogOpen}
@@ -89,8 +105,8 @@ export default function Medications() {
               formData={formData}
               setFormData={setFormData}
               saving={saving}
-              onSave={handleSaveMedication}
               onReset={resetForm}
+              onSave={handleSaveMedication}
             />
           </div>
         </div>
@@ -98,7 +114,12 @@ export default function Medications() {
         <MedicationDetailsDialog
           medication={viewingMedication}
           onClose={() => setViewingMedication(null)}
+          onEdit={(medication) => {
+            setViewingMedication(null);
+            handleEdit(medication);
+          }}
         />
+
         <MedicationDeleteDialog
           open={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
@@ -106,27 +127,34 @@ export default function Medications() {
           onConfirm={confirmDelete}
         />
 
-        {!loading && (
-          <MedicationStats
-            total={totalMedications}
-            uniqueClasses={uniqueClasses}
-            filteredTotal={filteredTotal}
-            filterCount={filterCount}
+        {interactionAlerts.length > 0 && (
+          <InteractionAlertPanel
+            alerts={interactionAlerts}
+            onDismiss={handleDismissAlert}
+            title="Matriz de Interações do Formulário Cadastrado"
           />
         )}
 
         <MedicationFilterPanel
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          open={isFilterOpen}
-          onOpenChange={setIsFilterOpen}
+          isFilterOpen={isFilterOpen}
+          onFilterOpenChange={setIsFilterOpen}
           selectedClasses={selectedClasses}
           onToggleClass={toggleClass}
+          onClearClasses={() => setSelectedClasses([])}
           hasActiveFilters={hasActiveFilters}
-          onClear={() => {
+          onClearAll={() => {
             setSearchTerm("");
             setSelectedClasses([]);
           }}
+        />
+
+        <MedicationStats
+          totalMedications={totalMedications}
+          filteredTotal={filteredTotal}
+          uniqueClasses={uniqueClasses}
+          interactionCount={interactionAlerts.length}
         />
 
         {loading ? (
@@ -145,9 +173,30 @@ export default function Medications() {
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilters
                 ? "Tente ajustar a busca ou remover filtros."
-                : "Cadastre o primeiro medicamento para começar."}
+                : "Cadastre o primeiro medicamento ou importe o bulário neuropsiquiátrico padrão."}
             </p>
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {!hasActiveFilters && missingStandardMedications.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleImportStandardFormulary}
+                  disabled={importingFormulary}
+                  className="h-11"
+                >
+                  {importingFormulary ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                      Importando bulário…
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+                      Importar Bulário Padrão ({missingStandardMedications.length})
+                    </>
+                  )}
+                </Button>
+              )}
               <Button variant="neuro" onClick={() => setIsDialogOpen(true)} className="h-11">
                 <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                 Cadastrar Medicamento

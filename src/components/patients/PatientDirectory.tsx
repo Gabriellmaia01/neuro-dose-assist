@@ -1,5 +1,5 @@
 import { EfficacyRing } from "@/components/dashboard/EfficacyRing";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -157,9 +157,8 @@ export function PatientDirectory({
                                         <TableCell onClick={() => onView(patient)}>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="w-10 h-10">
-                                                    <AvatarImage src={patient.photoURL} alt={patient.name} />
-                                                    <AvatarFallback className="bg-neuro-gradient">
-                                                        <User className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
+                                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                                                        {patient.name.charAt(0).toUpperCase()}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>

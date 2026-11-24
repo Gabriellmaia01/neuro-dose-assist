@@ -25,22 +25,6 @@ describe("Serviço de Pacientes (FirebasePatientService)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = new FirebasePatientService();
-
-    const mockStorage: Record<string, string> = {};
-    globalThis.localStorage = {
-      getItem: vi.fn((key: string) => mockStorage[key] || null),
-      setItem: vi.fn((key: string, val: string) => {
-        mockStorage[key] = val;
-      }),
-      removeItem: vi.fn((key: string) => {
-        delete mockStorage[key];
-      }),
-      clear: vi.fn(() => {
-        for (const k of Object.keys(mockStorage)) delete mockStorage[k];
-      }),
-      length: 0,
-      key: vi.fn(),
-    } as any;
   });
 
   describe("getPatients", () => {
@@ -61,6 +45,29 @@ describe("Serviço de Pacientes (FirebasePatientService)", () => {
       expect(result[0].id).toBe("p1");
       expect(result[0].name).toBe("Carlos Pereira");
       expect(result[1].id).toBe("p2");
+    });
+
+    it("deve descartar campos legados de foto sem acessar armazenamento local", async () => {
+      const mockData = {
+        p1: {
+          name: "Paciente Legado",
+          age: 42,
+          condition: "Depressão",
+          gender: "Feminino",
+          photoURL: "data:image/jpeg;base64,legado",
+        },
+      };
+
+      vi.mocked(firebaseDb.get).mockResolvedValueOnce({
+        exists: () => true,
+        val: () => mockData,
+      } as any);
+
+      const result = await service.getPatients("user-123");
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe("Paciente Legado");
+      expect("photoURL" in result[0]).toBe(false);
     });
 
     it("deve retornar array vazio quando o snapshot não existir", async () => {
@@ -134,6 +141,31 @@ describe("Serviço de Pacientes (FirebasePatientService)", () => {
           "user-123"
         )
       ).rejects.toThrow("Permissão negada");
+    });
+  });
+
+  describe("updatePatient", () => {
+    it("deve usar update() em vez de set() para preservar campos existentes no banco", async () => {
+      vi.mocked(firebaseDb.update).mockResolvedValueOnce();
+
+      await service.updatePatient(
+        "p-123",
+        {
+          id: "p-123",
+          condition: "Transtorno Bipolar",
+          allergies: undefined,
+        },
+        "user-123"
+      );
+
+      expect(firebaseDb.update).toHaveBeenCalledTimes(1);
+      expect(firebaseDb.set).not.toHaveBeenCalled();
+
+      const payload = vi.mocked(firebaseDb.update).mock.calls[0][1] as Record<string, unknown>;
+      expect(payload.condition).toBe("Transtorno Bipolar");
+      expect(payload.updatedAt).toBeTypeOf("string");
+      expect("id" in payload).toBe(false);
+      expect("allergies" in payload).toBe(false);
     });
   });
 

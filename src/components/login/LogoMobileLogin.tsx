@@ -1,17 +1,35 @@
 import { Brain } from "lucide-react";
 
 /**
- * Logo exibido no topo do formulário em dispositivos móveis.
- * Responsabilidade única: renderizar o logotipo adaptado para telas menores.
+ * LogoMobileLogin - Cabeçalho compacto exibido em telas menores que 900px.
+ * Responsabilidade única: renderizar a marca Neuro-Dose no topo em dispositivos menores.
  */
 export function LogoMobileLogin() {
   return (
-    <div className="lg:hidden text-center mb-8">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-violet-500 mb-4 shadow-lg shadow-teal-500/25">
-        <Brain className="w-9 h-9 text-white" />
+    <header className="login-mobile-header items-center gap-3 pb-6 border-b border-[var(--login-light-border)]">
+      <div className="flex items-center gap-2.5">
+        <div
+          className="w-8 h-8 rounded-[var(--login-radius)] border border-[var(--login-accent)] flex items-center justify-center shrink-0"
+          aria-hidden="true"
+        >
+          <Brain
+            className="w-[18px] h-[18px] text-[var(--login-accent)]"
+            strokeWidth={1.5}
+          />
+        </div>
+        <span className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--login-light-text)]">
+          Neuro-Dose
+        </span>
       </div>
-      <h1 className="text-2xl font-bold text-white">NeuroDose Assist</h1>
-      <p className="text-slate-400 text-sm">Sistema de decisão clínica</p>
-    </div>
+
+      <span
+        className="w-px h-4 bg-[var(--login-light-border)] shrink-0"
+        aria-hidden="true"
+      />
+
+      <span className="text-[13px] font-normal text-[var(--login-light-text-secondary)]">
+        Plataforma clínica
+      </span>
+    </header>
   );
 }

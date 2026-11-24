@@ -1,4 +1,4 @@
-import { ref, push, set, get, remove } from "firebase/database";
+import { ref, push, set, get, remove, update } from "firebase/database";
 import { realtimeDb } from "@/lib/firebase";
 import { logActivity } from "@/lib/activityLog";
 import type { Medication } from "@/lib/medications";
@@ -33,9 +33,10 @@ export class FirebaseMedicationService implements IMedicationService {
           minDose: medication.minDose,
           maxDose: medication.maxDose,
           unit: medication.unit,
+          halfLifeHours: medication.halfLifeHours,
           updatedAt: new Date().toISOString(),
         });
-        await set(medicationRef, updateData);
+        await update(medicationRef, updateData);
 
         await logActivity({
           action: "update",
@@ -61,6 +62,7 @@ export class FirebaseMedicationService implements IMedicationService {
           minDose: medication.minDose,
           maxDose: medication.maxDose,
           unit: medication.unit,
+          halfLifeHours: medication.halfLifeHours,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           createdBy: userId,
@@ -161,11 +163,12 @@ export class FirebaseMedicationService implements IMedicationService {
   ): Promise<void> {
     try {
       const medicationRef = ref(realtimeDb, `users/${userId}/medications/${medicationId}`);
+      const { id: _ignoredId, ...medicationFields } = medication;
       const updateData = removeUndefinedFields({
-        ...medication,
+        ...medicationFields,
         updatedAt: new Date().toISOString(),
       });
-      await set(medicationRef, updateData);
+      await update(medicationRef, updateData);
     } catch (error) {
       console.error("Erro ao atualizar medicamento:", error);
       throw error;

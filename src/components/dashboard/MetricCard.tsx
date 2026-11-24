@@ -15,40 +15,18 @@ interface MetricCardProps {
   className?: string;
 }
 
+/**
+ * MetricCard - Cartão de indicador clínico (KPI).
+ * Superfície branca neutra, números tabulares em 28px e variação com ícone e texto.
+ */
 export function MetricCard({
   title,
   value,
   subtitle,
   icon,
   trend,
-  variant = "default",
   className,
 }: MetricCardProps) {
-  const variantStyles = {
-    default: {
-      accent: "from-primary/20 to-primary/5",
-      iconBg: "bg-primary/10",
-      iconText: "text-primary",
-    },
-    success: {
-      accent: "from-success/20 to-success/5",
-      iconBg: "bg-success/10",
-      iconText: "text-success",
-    },
-    warning: {
-      accent: "from-warning/20 to-warning/5",
-      iconBg: "bg-warning/10",
-      iconText: "text-warning",
-    },
-    danger: {
-      accent: "from-destructive/20 to-destructive/5",
-      iconBg: "bg-destructive/10",
-      iconText: "text-destructive",
-    },
-  };
-
-  const styles = variantStyles[variant];
-
   const TrendIcon = trend
     ? trend.value > 0
       ? TrendingUp
@@ -57,55 +35,60 @@ export function MetricCard({
         : Minus
     : null;
 
-  const trendColor = trend
+  const trendColorClass = trend
     ? trend.value > 0
-      ? "text-success"
+      ? "text-[var(--nd-success)]"
       : trend.value < 0
-        ? "text-destructive"
-        : "text-muted-foreground"
+        ? "text-[var(--nd-error)]"
+        : "text-[var(--nd-text-secondary)]"
+    : "";
+
+  const formattedTrend = trend
+    ? trend.value > 0
+      ? `+${trend.value}%`
+      : `${trend.value}%`
     : "";
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border/50 p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 group",
-        className
-      )}
-    >
-      {/* Gradient accent */}
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300", styles.accent)} />
-
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      <div className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1 min-w-0 flex-1">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
-            <p className="text-2xl sm:text-3xl font-display font-bold tracking-tight">
-              {value}
-            </p>
-            {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</p>
-            )}
-          </div>
-          <div className={cn(
-            "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110",
-            styles.iconBg,
-            styles.iconText
-          )}>
+    <div className={cn("nd-card p-5 flex flex-col justify-between h-full", className)}>
+      <div>
+        {/* Rótulo 13px sentence case + ícone fino neutro (sem caixinha colorida) */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[13px] font-medium text-[var(--nd-text-secondary)] truncate">
+            {title}
+          </span>
+          <span className="text-[var(--nd-icon)] shrink-0" aria-hidden="true">
             {icon}
-          </div>
+          </span>
         </div>
 
-        {trend && TrendIcon && (
-          <div className={cn("flex items-center gap-1 mt-3 sm:mt-4 text-xs sm:text-sm", trendColor)}>
-            <TrendIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="font-medium">{Math.abs(trend.value)}%</span>
-            <span className="text-muted-foreground truncate hidden sm:inline">{trend.label}</span>
-          </div>
+        {/* Número de destaque 28px peso 600 com tabular-nums */}
+        <div className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--nd-text)] nd-tabular">
+          {value}
+        </div>
+
+        {/* Descrição 13px cor secundária */}
+        {subtitle && (
+          <p className="mt-1 text-[13px] font-normal text-[var(--nd-text-secondary)] truncate">
+            {subtitle}
+          </p>
         )}
       </div>
+
+      {/* Linha de variação no rodapé com divisória fina */}
+      {trend && (
+        <div className="mt-4 pt-3 border-t border-[var(--nd-border)] flex items-center gap-1.5 text-[12px] nd-tabular">
+          {TrendIcon && (
+            <span className={cn("inline-flex items-center gap-1 font-medium shrink-0", trendColorClass)}>
+              <TrendIcon className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+              <span>{formattedTrend}</span>
+            </span>
+          )}
+          <span className="text-[var(--nd-text-secondary)] truncate">
+            {trend.label}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

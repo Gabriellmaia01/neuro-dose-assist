@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 interface InteractionAlertProps {
     alerts: InteractionAlertType[];
     onDismiss?: (alertId: string) => void;
+    title?: string;
+    subtitle?: string;
     className?: string;
 }
 
@@ -82,7 +84,13 @@ export function InteractionAlertCard({
     );
 }
 
-export function InteractionAlertPanel({ alerts, onDismiss, className }: InteractionAlertProps) {
+export function InteractionAlertPanel({
+    alerts,
+    onDismiss,
+    title = "Alertas de Interação Medicamentosa",
+    subtitle,
+    className
+}: InteractionAlertProps) {
     if (alerts.length === 0) {
         return null;
     }
@@ -94,12 +102,19 @@ export function InteractionAlertPanel({ alerts, onDismiss, className }: Interact
     return (
         <div className={cn("space-y-4", className)}>
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-warning" />
-                    <h3 className="font-display font-semibold text-lg">
-                        Alertas de Interação Medicamentosa
-                    </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
+                        <h3 className="font-display font-semibold text-base sm:text-lg">
+                            {title}
+                        </h3>
+                    </div>
+                    {subtitle && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {subtitle}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">

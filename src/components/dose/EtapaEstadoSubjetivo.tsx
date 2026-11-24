@@ -1,16 +1,25 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { User } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { User, ClipboardList } from "lucide-react";
 
 /**
- * Etapa 2 — Estado Subjetivo do paciente.
- * Princípio SOLID:
- *  - Responsabilidade Única (S): apenas UI da etapa 2
- *  - Segregação de Interfaces (I): props mínimas necessárias
+ * Etapa 2 — Estado Subjetivo e Escalas Clínicas Padronizadas (PHQ-2, GAD-2, CGI-S).
  */
 
 const EMOJIS_HUMOR = ["😞", "😔", "😐", "🙂", "😊"];
+
+const CGI_LABELS: Record<number, string> = {
+  1: "1 — Normal, não enfermo",
+  2: "2 — Limítrofe",
+  3: "3 — Levemente enfermo",
+  4: "4 — Moderadamente enfermo",
+  5: "5 — Acentuadamente enfermo",
+  6: "6 — Gravemente enfermo",
+  7: "7 — Extremamente enfermo",
+};
 
 interface PropriedadesEstadoSubjetivo {
   humor: number[];
@@ -21,6 +30,14 @@ interface PropriedadesEstadoSubjetivo {
   onSonoChange: (valor: number[]) => void;
   efeitos: string;
   onEfeitosChange: (valor: string) => void;
+  usarEscalasClinicas?: boolean;
+  onUsarEscalasClinicasChange?: (valor: boolean) => void;
+  phq2Score?: number;
+  onPhq2ScoreChange?: (valor: number) => void;
+  gad2Score?: number;
+  onGad2ScoreChange?: (valor: number) => void;
+  cgiSeverity?: number;
+  onCgiSeverityChange?: (valor: number) => void;
 }
 
 export function EtapaEstadoSubjetivo({
@@ -32,19 +49,27 @@ export function EtapaEstadoSubjetivo({
   onSonoChange,
   efeitos,
   onEfeitosChange,
+  usarEscalasClinicas = false,
+  onUsarEscalasClinicasChange,
+  phq2Score = 0,
+  onPhq2ScoreChange,
+  gad2Score = 0,
+  onGad2ScoreChange,
+  cgiSeverity = 1,
+  onCgiSeverityChange,
 }: PropriedadesEstadoSubjetivo) {
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-6">
       <div className="flex items-center gap-3 pb-4 border-b border-border">
         <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
           <User className="w-5 h-5 text-secondary-foreground" aria-hidden="true" />
         </div>
         <div>
           <h2 className="font-display font-semibold text-lg">
-            Estado Subjetivo
+            Estado Subjetivo & Escalas Clínicas
           </h2>
           <p className="text-sm text-muted-foreground">
-            Registre o estado atual para contextualizar a análise
+            Registre o estado atual e, opcionalmente, escalas psicométricas padronizadas
           </p>
         </div>
       </div>
@@ -104,6 +129,115 @@ export function EtapaEstadoSubjetivo({
             className="py-4"
           />
         </div>
+
+        {/* Bloco Opcional de Escalas Clínicas Padronizadas */}
+        {onUsarEscalasClinicasChange && (
+          <div className="rounded-xl border border-border p-4 space-y-5 bg-muted/20">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <ClipboardList className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+                <div>
+                  <Label htmlFor="toggle-clinical-scales" className="cursor-pointer font-semibold text-sm">
+                    Avaliação Clínica Padronizada (PHQ-2, GAD-2 e CGI-S)
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Rastreio psicométrico validado para acompanhamento objetivo de resposta terapêutica
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="toggle-clinical-scales"
+                checked={usarEscalasClinicas}
+                onCheckedChange={onUsarEscalasClinicasChange}
+              />
+            </div>
+
+            {usarEscalasClinicas && (
+              <div className="space-y-6 pt-3 border-t border-border">
+                {/* PHQ-2 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs sm:text-sm">
+                      PHQ-2 — Rastreio Depressivo (anedomia + humor deprimido)
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className={
+                        phq2Score >= 3
+                          ? "bg-warning/10 text-warning border-warning/30 tabular-nums"
+                          : "tabular-nums"
+                      }
+                    >
+                      {phq2Score}/6 {phq2Score >= 3 ? "• Positivo (≥3)" : "• Negativo"}
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={[phq2Score]}
+                    onValueChange={(v) => onPhq2ScoreChange?.(v[0])}
+                    min={0}
+                    max={6}
+                    step={1}
+                    className="py-2"
+                  />
+                </div>
+
+                {/* GAD-2 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs sm:text-sm">
+                      GAD-2 — Rastreio Ansioso (tensão + preocupação incontrolável)
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className={
+                        gad2Score >= 3
+                          ? "bg-warning/10 text-warning border-warning/30 tabular-nums"
+                          : "tabular-nums"
+                      }
+                    >
+                      {gad2Score}/6 {gad2Score >= 3 ? "• Positivo (≥3)" : "• Negativo"}
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={[gad2Score]}
+                    onValueChange={(v) => onGad2ScoreChange?.(v[0])}
+                    min={0}
+                    max={6}
+                    step={1}
+                    className="py-2"
+                  />
+                </div>
+
+                {/* CGI-S */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs sm:text-sm">
+                      CGI-S — Impressão Clínica Global de Gravidade
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className={
+                        cgiSeverity >= 5
+                          ? "bg-destructive/10 text-destructive border-destructive/30 tabular-nums"
+                          : "tabular-nums"
+                      }
+                    >
+                      {CGI_LABELS[cgiSeverity] || `${cgiSeverity}/7`}
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={[cgiSeverity]}
+                    onValueChange={(v) => onCgiSeverityChange?.(v[0])}
+                    min={1}
+                    max={7}
+                    step={1}
+                    className="py-2"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Efeitos Percebidos */}
         <div className="space-y-2">

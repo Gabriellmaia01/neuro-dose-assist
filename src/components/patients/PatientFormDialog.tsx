@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -19,20 +18,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import type { PatientFormData } from "@/hooks/usePatients";
+import type { Medication } from "@/lib/medications";
 import type { Patient } from "@/lib/patients";
+import type { InteractionAlert } from "@/services/drugInteractions";
 import { cn } from "@/lib/utils";
-import { Image as ImageIcon, Loader2, Plus, Upload, User } from "lucide-react";
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
-
-type PatientFormData = {
-    name: string;
-    age: string;
-    gender: "Masculino" | "Feminino" | "Outro" | "";
-    condition: string;
-    clinicalHistory: string;
-    allergies: string;
-    currentMedications: string;
-};
+import { AlertTriangle, Check, Loader2, Plus } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 
 export function PatientFormDialog({
     open,
@@ -41,9 +33,9 @@ export function PatientFormDialog({
     editingPatient,
     formData,
     setFormData,
-    photoFile,
-    photoPreview,
-    onPhotoChange,
+    catalogMedications,
+    activePatientInteractions,
+    onToggleMedication,
     saving,
     onSave,
 }: {
@@ -53,9 +45,9 @@ export function PatientFormDialog({
     editingPatient: Patient | null;
     formData: PatientFormData;
     setFormData: Dispatch<SetStateAction<PatientFormData>>;
-    photoFile: File | null;
-    photoPreview: string | null;
-    onPhotoChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    catalogMedications: Medication[];
+    activePatientInteractions: InteractionAlert[];
+    onToggleMedication: (medicationId: string) => void;
     saving: boolean;
     onSave: () => void;
 }) {
@@ -83,46 +75,6 @@ export function PatientFormDialog({
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="photo-upload">Foto do Paciente</Label>
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                {photoPreview ? (
-                                    <Avatar className="w-20 h-20">
-                                        <AvatarImage src={photoPreview} alt="Foto do paciente" />
-                                        <AvatarFallback>
-                                            <User className="w-10 h-10" aria-hidden="true" />
-                                        </AvatarFallback>
-                                    </Avatar>
-                                ) : (
-                                    <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
-                                        <ImageIcon className="w-10 h-10 text-muted-foreground" aria-hidden="true" />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="flex-1">
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={onPhotoChange}
-                                    className="hidden"
-                                    id="photo-upload"
-                                    name="photoUpload"
-                                />
-                                <Label
-                                    htmlFor="photo-upload"
-                                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-accent"
-                                >
-                                    <Upload className="w-4 h-4" aria-hidden="true" />
-                                    {photoFile ? "Alterar Foto" : "Adicionar Foto"}
-                                </Label>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    JPG, PNG ou GIF. Máximo 5MB.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="patient-name">Nome Completo *</Label>
@@ -236,19 +188,73 @@ export function PatientFormDialog({
                             className="h-11"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="patient-current-meds">Medicamentos em Uso</Label>
-                        <Textarea
-                            id="patient-current-meds"
-                            name="patientCurrentMedications"
-                            autoComplete="off"
-                            placeholder="Liste os medicamentos atuais…"
-                            rows={2}
-                            value={formData.currentMedications}
-                            onChange={(event) =>
-                                setFormData({ ...formData, currentMedications: event.target.value })
-                            }
-                        />
+                    <div className="space-y-3">
+                        <Label>Prescrições Ativas do Catálogo</Label>
+                        {catalogMedications.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/20 max-h-40 overflow-y-auto">
+                                {catalogMedications.map((med) => {
+                                    if (!med.id) return null;
+                                    const isSelected = formData.activeMedicationIds.includes(med.id);
+                                    return (
+                                        <button
+                                            key={med.id}
+                                            type="button"
+                                            onClick={() => onToggleMedication(med.id!)}
+                                            aria-pressed={isSelected}
+                                            className={cn(
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                                                isSelected
+                                                    ? "bg-primary text-primary-foreground border-primary"
+                                                    : "bg-card text-foreground border-border hover:border-primary/50"
+                                            )}
+                                        >
+                                            {isSelected && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
+                                            <span>{med.name}</span>
+                                            <span className={cn("text-[11px]", isSelected ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                                                ({med.minDose}–{med.maxDose}{med.unit})
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Nenhum medicamento cadastrado no catálogo ainda. Você pode informar co-medicações abaixo.
+                            </p>
+                        )}
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="patient-current-meds" className="text-xs text-muted-foreground">
+                                Outras Medicações Concomitantes (uso clínico geral, separadas por vírgula)
+                            </Label>
+                            <Textarea
+                                id="patient-current-meds"
+                                name="patientCurrentMedications"
+                                autoComplete="off"
+                                placeholder="Ex.: Losartana, Ibuprofeno, Metformina…"
+                                rows={2}
+                                value={formData.currentMedications}
+                                onChange={(event) =>
+                                    setFormData({ ...formData, currentMedications: event.target.value })
+                                }
+                            />
+                        </div>
+
+                        {activePatientInteractions.length > 0 && (
+                            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1.5">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
+                                    <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                                    <span>
+                                        {activePatientInteractions.length} interação(ões) detectada(s) neste prontuário
+                                    </span>
+                                </div>
+                                {activePatientInteractions.map((inter) => (
+                                    <p key={inter.id} className="text-xs text-muted-foreground">
+                                        <strong>{inter.medicationA} + {inter.medicationB}</strong> ({inter.severity}): {inter.description}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <DialogFooter>

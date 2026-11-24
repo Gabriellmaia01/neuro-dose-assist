@@ -51,12 +51,6 @@ function LayoutAgenda({
     );
 }
 
-
-// =============================================================================
-// COMPONENTE PRINCIPAL — Composição via Inversão de Dependência (D do SOLID)
-// A página é apenas uma composição de hooks e componentes especializados.
-// =============================================================================
-
 export default function Appointments() {
     const dados = useDadosAgenda();
     const calendario = useCalendario();

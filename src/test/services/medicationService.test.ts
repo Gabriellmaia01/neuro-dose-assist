@@ -8,6 +8,7 @@ vi.mock("firebase/database", () => ({
   set: vi.fn(),
   get: vi.fn(),
   remove: vi.fn(),
+  update: vi.fn(),
 }));
 
 vi.mock("@/lib/firebase", () => ({
@@ -83,6 +84,55 @@ describe("Serviço de Medicamentos (FirebaseMedicationService)", () => {
 
       expect(id).toBe("m-novo-id");
       expect(firebaseDb.set).toHaveBeenCalledTimes(1);
+      expect(firebaseDb.update).not.toHaveBeenCalled();
+    });
+
+    it("deve usar update() ao editar medicamento existente para preservar createdAt e createdBy", async () => {
+      vi.mocked(firebaseDb.update).mockResolvedValueOnce();
+
+      const id = await service.saveMedication(
+        {
+          id: "m-existente",
+          name: "Sertralina",
+          brandName: "Zoloft",
+          activeIngredient: "Cloridrato de Sertralina",
+          therapeuticClass: "ISRS",
+          form: "Comprimido",
+          minDose: 25,
+          maxDose: 200,
+          unit: "mg",
+        },
+        "user-123"
+      );
+
+      expect(id).toBe("m-existente");
+      expect(firebaseDb.update).toHaveBeenCalledTimes(1);
+      expect(firebaseDb.set).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("updateMedication", () => {
+    it("deve realizar atualização parcial via update() sem sobrescrever o nó completo", async () => {
+      vi.mocked(firebaseDb.update).mockResolvedValueOnce();
+
+      await service.updateMedication(
+        "m-1",
+        {
+          id: "m-1",
+          maxDose: 150,
+          halfLifeHours: undefined,
+        },
+        "user-123"
+      );
+
+      expect(firebaseDb.update).toHaveBeenCalledTimes(1);
+      expect(firebaseDb.set).not.toHaveBeenCalled();
+
+      const payload = vi.mocked(firebaseDb.update).mock.calls[0][1] as Record<string, unknown>;
+      expect(payload.maxDose).toBe(150);
+      expect(payload.updatedAt).toBeTypeOf("string");
+      expect("id" in payload).toBe(false);
+      expect("halfLifeHours" in payload).toBe(false);
     });
   });
 

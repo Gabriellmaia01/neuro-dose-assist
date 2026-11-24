@@ -1,6 +1,9 @@
 import { doseService } from "@/services/firebase/doseService";
 import type { AnalysisResult, SubjectiveState } from "@/services/aiService";
 import type { UserAuditInfo } from "@/services/contracts/common.types";
+import type { DoseQueryOptions } from "@/services/contracts/domain.types";
+
+export type { DoseQueryOptions };
 
 export interface DoseRecord {
   id?: string;
@@ -24,8 +27,11 @@ export function saveDose(
   return doseService.saveDose(dose, userId, doseInfo, userInfo);
 }
 
-export function getDoses(userId: string): Promise<DoseRecord[]> {
-  return doseService.getDoses(userId);
+export function getDoses(
+  userId: string,
+  options?: DoseQueryOptions
+): Promise<DoseRecord[]> {
+  return doseService.getDoses(userId, options);
 }
 
 export function deleteDose(

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
 import { toast } from "@/hooks/use-toast";
@@ -6,17 +6,22 @@ import {
     deletePatient,
     getPatients,
     savePatient,
-    uploadPatientPhoto,
     type Patient,
 } from "@/lib/patients";
+import { getMedications, type Medication } from "@/lib/medications";
+import {
+    checkInteractions,
+    resolvePatientActiveMedications,
+} from "@/services/drugInteractions";
 
-type PatientFormData = {
+export type PatientFormData = {
     name: string;
     age: string;
     gender: "Masculino" | "Feminino" | "Outro" | "";
     condition: string;
     clinicalHistory: string;
     allergies: string;
+    activeMedicationIds: string[];
     currentMedications: string;
 };
 
@@ -27,6 +32,7 @@ const EMPTY_FORM: PatientFormData = {
     condition: "",
     clinicalHistory: "",
     allergies: "",
+    activeMedicationIds: [],
     currentMedications: "",
 };
 
@@ -37,13 +43,12 @@ export function usePatients() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [patients, setPatients] = useState<Patient[]>([]);
+    const [catalogMedications, setCatalogMedications] = useState<Medication[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [viewingPatient, setViewingPatient] = useState<Patient | null>(null);
     const [formData, setFormData] = useState<PatientFormData>(EMPTY_FORM);
-    const [photoFile, setPhotoFile] = useState<File | null>(null);
-    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     useEffect(() => {
         const loadPatients = async () => {
@@ -51,8 +56,12 @@ export function usePatients() {
 
             try {
                 setLoading(true);
-                const patientsData = await getPatients(effectiveUserId);
+                const [patientsData, medicationsData] = await Promise.all([
+                    getPatients(effectiveUserId),
+                    getMedications(effectiveUserId).catch(() => [] as Medication[]),
+                ]);
                 setPatients(patientsData);
+                setCatalogMedications(medicationsData);
             } catch (error: unknown) {
                 console.error("Erro ao carregar pacientes:", error);
 
@@ -87,14 +96,54 @@ export function usePatients() {
     );
 
     const resetForm = () => {
-        setFormData({ ...EMPTY_FORM });
-        setPhotoFile(null);
-        setPhotoPreview(null);
+        setFormData({ ...EMPTY_FORM, activeMedicationIds: [] });
         setEditingPatient(null);
     };
 
+    const toggleActiveMedication = (medicationId: string) => {
+        setFormData((prev) => {
+            const exists = prev.activeMedicationIds.includes(medicationId);
+            const nextIds = exists
+                ? prev.activeMedicationIds.filter((id) => id !== medicationId)
+                : [...prev.activeMedicationIds, medicationId];
+            return { ...prev, activeMedicationIds: nextIds };
+        });
+    };
+
+    const activePatientInteractions = checkInteractions(
+        resolvePatientActiveMedications(
+            {
+                activeMedicationIds: formData.activeMedicationIds,
+                currentMedications: formData.currentMedications,
+            },
+            catalogMedications
+        )
+    );
+
     const handleEditClick = (patient: Patient) => {
         setEditingPatient(patient);
+
+        const existingIds = new Set<string>(patient.activeMedicationIds || []);
+        const remainingExtraMeds: string[] = [];
+
+        if (patient.currentMedications) {
+            const terms = patient.currentMedications
+                .split(",")
+                .map((term) => term.trim())
+                .filter(Boolean);
+
+            for (const term of terms) {
+                const matched = catalogMedications.find(
+                    (med) => med.id && med.name.toLowerCase() === term.toLowerCase()
+                );
+                if (matched?.id) {
+                    existingIds.add(matched.id);
+                } else {
+                    remainingExtraMeds.push(term);
+                }
+            }
+        }
+
         setFormData({
             name: patient.name,
             age: patient.age.toString(),
@@ -102,45 +151,15 @@ export function usePatients() {
             condition: patient.condition,
             clinicalHistory: patient.clinicalHistory || "",
             allergies: patient.allergies || "",
-            currentMedications: patient.currentMedications || "",
+            activeMedicationIds: Array.from(existingIds),
+            currentMedications: remainingExtraMeds.join(", "),
         });
-        setPhotoPreview(patient.photoURL || null);
-        setPhotoFile(null);
         setIsDialogOpen(true);
     };
 
     const handleViewClick = (patient: Patient) => {
         setViewingPatient(patient);
         setIsViewDialogOpen(true);
-    };
-
-    const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            if (!file.type.startsWith("image/")) {
-                toast({
-                    title: "Arquivo inválido",
-                    description: "Por favor, selecione uma imagem.",
-                    variant: "destructive",
-                });
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                toast({
-                    title: "Arquivo muito grande",
-                    description: "A imagem deve ter no máximo 5MB.",
-                    variant: "destructive",
-                });
-                return;
-            }
-
-            setPhotoFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
     };
 
     const handleSavePatient = async () => {
@@ -165,6 +184,23 @@ export function usePatients() {
         try {
             setSaving(true);
 
+            const selectedCatalogNames = catalogMedications
+                .filter((med) => med.id && formData.activeMedicationIds.includes(med.id))
+                .map((med) => med.name);
+
+            const extraMeds = formData.currentMedications
+                .split(",")
+                .map((term) => term.trim())
+                .filter(
+                    (term) =>
+                        Boolean(term) &&
+                        !selectedCatalogNames.some(
+                            (name) => name.toLowerCase() === term.toLowerCase()
+                        )
+                );
+
+            const combinedMedicationsSummary = [...selectedCatalogNames, ...extraMeds].join(", ");
+
             const patientData: Patient = {
                 id: editingPatient?.id,
                 name: formData.name,
@@ -173,35 +209,19 @@ export function usePatients() {
                 condition: formData.condition,
                 clinicalHistory: formData.clinicalHistory || undefined,
                 allergies: formData.allergies || undefined,
-                currentMedications: formData.currentMedications || undefined,
-                photoURL: editingPatient?.photoURL
+                activeMedicationIds:
+                    formData.activeMedicationIds.length > 0
+                        ? formData.activeMedicationIds
+                        : undefined,
+                currentMedications: combinedMedicationsSummary || undefined,
             };
-            console.log("Dados do paciente:", patientData);
 
-            console.log("Chamando savePatient...");
             const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-            const patientId = await savePatient(patientData, effectiveUserId, userInfo);
-            console.log("Paciente salvo com ID:", patientId);
-
-            if (photoFile && patientId) {
-                try {
-                    console.log("Iniciando upload da foto...");
-                    const photoURL = await uploadPatientPhoto(photoFile, effectiveUserId, patientId);
-                    console.log("Foto enviada, atualizando URL...");
-                    await savePatient({ ...patientData, id: patientId, photoURL }, effectiveUserId, userInfo);
-                    console.log("URL da foto salva no banco.");
-                } catch (error) {
-                    console.error("Erro ao fazer upload da foto:", error);
-                    toast({
-                        title: "Aviso",
-                        description: "Paciente salvo, mas erro ao atualizar foto (verifique o console).",
-                    });
-                }
-            }
+            await savePatient(patientData, effectiveUserId, userInfo);
 
             toast({
                 title: editingPatient ? "Paciente atualizado!" : "Paciente cadastrado!",
-                description: `${formData.name} foi ${editingPatient ? 'atualizado' : 'criado'} com sucesso.`,
+                description: `${formData.name} foi ${editingPatient ? "atualizado" : "criado"} com sucesso.`,
             });
 
             const patientsData = await getPatients(effectiveUserId);
@@ -258,19 +278,19 @@ export function usePatients() {
         isViewDialogOpen,
         setIsViewDialogOpen,
         patients,
+        catalogMedications,
         loading,
         saving,
         editingPatient,
         viewingPatient,
         formData,
         setFormData,
-        photoFile,
-        photoPreview,
         filteredPatients,
+        activePatientInteractions,
+        toggleActiveMedication,
         resetForm,
         handleEditClick,
         handleViewClick,
-        handlePhotoChange,
         handleSavePatient,
         handleDeletePatient,
     };

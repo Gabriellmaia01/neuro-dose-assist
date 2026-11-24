@@ -69,7 +69,7 @@ describe("PainelDeControle", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: /Painel de Controle/ })
+      screen.getByRole("heading", { name: /Centro de Telemetria e Decisão Farmacológica/ })
     ).toBeInTheDocument();
     expect(screen.getByText("Paciente Teste")).toBeInTheDocument();
     expect(screen.getByText("Alerta de teste")).toBeInTheDocument();

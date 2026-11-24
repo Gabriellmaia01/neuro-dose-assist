@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
@@ -38,8 +37,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
+      <AuthProvider>
           <ClinicProvider>
             <TooltipProvider>
               <Toaster />
@@ -138,7 +136,6 @@ const App = () => (
             </TooltipProvider>
           </ClinicProvider>
         </AuthProvider>
-      </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );

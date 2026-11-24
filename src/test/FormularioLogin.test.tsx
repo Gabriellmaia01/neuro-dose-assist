@@ -18,10 +18,10 @@ describe("FormularioLogin", () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText("E-mail clínico"), {
       target: { value: "pessoa@example.com" },
     });
-    fireEvent.change(screen.getByLabelText("Senha"), {
+    fireEvent.change(screen.getByLabelText("Chave de acesso"), {
       target: { value: "senha-segura" },
     });
 
@@ -42,7 +42,9 @@ describe("FormularioLogin", () => {
       />
     );
 
-    fireEvent.submit(screen.getByRole("button", { name: "Entrar" }).closest("form")!);
+    fireEvent.submit(
+      screen.getByRole("button", { name: "Acessar painel clínico" }).closest("form")!
+    );
     expect(aoEnviar).toHaveBeenCalledTimes(1);
 
     rerender(
@@ -56,12 +58,14 @@ describe("FormularioLogin", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: "Entrando..." })).toBeDisabled();
-    expect(screen.getByLabelText("Email")).toBeDisabled();
-    expect(screen.getByLabelText("Senha")).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Acessando painel clínico" })
+    ).toBeDisabled();
+    expect(screen.getByLabelText("E-mail clínico")).toBeDisabled();
+    expect(screen.getByLabelText("Chave de acesso")).toBeDisabled();
   });
 
-  it("aciona aoEsqueceuSenha ao clicar em \"Esqueceu a senha?\"", () => {
+  it("aciona aoEsqueceuSenha ao clicar em \"Recuperar chave\"", () => {
     const aoEsqueceuSenha = vi.fn();
 
     render(
@@ -76,7 +80,7 @@ describe("FormularioLogin", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Esqueceu a senha?" }));
+    fireEvent.click(screen.getByRole("button", { name: "Recuperar chave" }));
 
     expect(aoEsqueceuSenha).toHaveBeenCalledTimes(1);
   });

@@ -75,6 +75,10 @@ export default function DoseRegister() {
       energia: formulario.energia,
       sono: formulario.sono,
       efeitos: formulario.efeitos,
+      usarEscalasClinicas: formulario.usarEscalasClinicas,
+      phq2Score: formulario.phq2Score,
+      gad2Score: formulario.gad2Score,
+      cgiSeverity: formulario.cgiSeverity,
       pacienteSelecionado,
       medicamentoSelecionado,
       todosMedicamentos: medicamentos,
@@ -130,6 +134,14 @@ export default function DoseRegister() {
                   onSonoChange={formulario.setSono}
                   efeitos={formulario.efeitos}
                   onEfeitosChange={formulario.setEfeitos}
+                  usarEscalasClinicas={formulario.usarEscalasClinicas}
+                  onUsarEscalasClinicasChange={formulario.setUsarEscalasClinicas}
+                  phq2Score={formulario.phq2Score}
+                  onPhq2ScoreChange={formulario.setPhq2Score}
+                  gad2Score={formulario.gad2Score}
+                  onGad2ScoreChange={formulario.setGad2Score}
+                  cgiSeverity={formulario.cgiSeverity}
+                  onCgiSeverityChange={formulario.setCgiSeverity}
                 />
               )}
 
@@ -142,6 +154,10 @@ export default function DoseRegister() {
                   humor={formulario.humor}
                   energia={formulario.energia}
                   sono={formulario.sono}
+                  usarEscalasClinicas={formulario.usarEscalasClinicas}
+                  phq2Score={formulario.phq2Score}
+                  gad2Score={formulario.gad2Score}
+                  cgiSeverity={formulario.cgiSeverity}
                 />
               )}
 

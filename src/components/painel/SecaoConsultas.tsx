@@ -1,77 +1,108 @@
-import { Calendar, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, Check, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { type Appointment } from "@/lib/appointments";
+import { cn } from "@/lib/utils";
 
 interface PropriedadesSecaoConsultas {
   consultas: Appointment[];
 }
 
 /**
- * Seção de próximas consultas do painel.
- * Responsabilidade única: renderizar a lista de consultas agendadas.
+ * SecaoConsultas - Próximos atendimentos da agenda clínica.
+ * Estado vazio sóbrio sem caixa tracejada; lista com divisórias de 1px.
  */
 export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
   return (
-    <div className="glass-card rounded-2xl p-5 border border-border/50">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-primary" />
-          </div>
-          <h3 className="font-display font-semibold">Próximas Consultas</h3>
+    <section
+      aria-label="Agenda clínica"
+      className="nd-card overflow-hidden"
+    >
+      {/* Cabeçalho */}
+      <div className="px-6 pt-6 pb-4 flex items-center justify-between gap-3 border-b border-[var(--nd-border)]">
+        <div>
+          <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+            Agenda clínica
+          </h2>
+          <p className="text-[13px] font-normal text-[var(--nd-text-secondary)] mt-0.5">
+            Próximos atendimentos
+          </p>
         </div>
-        <Link to="/appointments" className="text-sm text-primary hover:underline">
-          Ver todas
+
+        <Link
+          to="/appointments"
+          className="nd-link inline-flex items-center gap-1 shrink-0"
+        >
+          <span>Agenda completa</span>
+          <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         </Link>
       </div>
 
+      {/* Lista ou estado vazio sóbrio */}
       {consultas.length > 0 ? (
-        <div className="space-y-3">
-          {consultas.slice(0, 4).map((consulta) => (
-            <div
-              key={consulta.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-                <Clock className="w-4 h-4 text-primary mb-0.5" />
-                <span className="text-xs font-medium">{consulta.time}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{consulta.patientName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(consulta.date + "T00:00:00"), "dd/MM")} •{" "}
-                  {consulta.type}
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className={
-                  consulta.status === "Confirmada"
-                    ? "bg-success/10 text-success border-success/20"
-                    : consulta.status === "Agendada"
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-primary/10 text-primary border-primary/20"
-                }
+        <ul className="divide-y divide-[var(--nd-border)]">
+          {consultas.slice(0, 3).map((consulta) => {
+            const isConfirmed = consulta.status === "Confirmada";
+
+            return (
+              <li
+                key={consulta.id}
+                className="px-6 py-3.5 flex items-center justify-between gap-3"
               >
-                {consulta.status}
-              </Badge>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex flex-col items-center justify-center w-12 h-11 rounded-[var(--nd-radius)] bg-[var(--nd-muted)] shrink-0 nd-tabular">
+                    <span className="text-[13px] font-semibold text-[var(--nd-text)] leading-none">
+                      {consulta.time}
+                    </span>
+                    <span className="text-[12px] text-[var(--nd-text-secondary)] leading-none mt-1">
+                      {format(new Date(consulta.date + "T00:00:00"), "dd/MM")}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-semibold text-[var(--nd-text)] truncate">
+                      {consulta.patientName}
+                    </p>
+                    <p className="text-[13px] text-[var(--nd-text-secondary)] truncate">
+                      {consulta.type}
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--nd-radius)] text-[12px] font-medium shrink-0",
+                    isConfirmed
+                      ? "bg-[var(--nd-success-bg)] text-[var(--nd-success)]"
+                      : "bg-[var(--nd-muted)] text-[var(--nd-label)]"
+                  )}
+                >
+                  {isConfirmed ? (
+                    <Check className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+                  ) : (
+                    <Clock className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
+                  )}
+                  <span>{consulta.status}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       ) : (
-        <div className="text-center py-6 text-muted-foreground">
-          <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Nenhuma consulta agendada</p>
-          <Link
-            to="/appointments"
-            className="text-sm text-primary hover:underline mt-1 inline-block"
-          >
-            Agendar consulta
+        <div className="px-6 py-10 flex flex-col items-center justify-center text-center">
+          <Calendar
+            className="w-6 h-6 text-[var(--nd-icon)] mb-3"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <p className="text-[14px] font-medium text-[var(--nd-text)]">
+            Nenhuma consulta agendada
+          </p>
+          <Link to="/appointments" className="nd-link mt-2">
+            + Agendar novo horário
           </Link>
         </div>
       )}
-    </div>
+    </section>
   );
 }

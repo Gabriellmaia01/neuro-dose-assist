@@ -41,9 +41,9 @@ export default function Patients() {
                             editingPatient={patients.editingPatient}
                             formData={patients.formData}
                             setFormData={patients.setFormData}
-                            photoFile={patients.photoFile}
-                            photoPreview={patients.photoPreview}
-                            onPhotoChange={patients.handlePhotoChange}
+                            catalogMedications={patients.catalogMedications}
+                            activePatientInteractions={patients.activePatientInteractions}
+                            onToggleMedication={patients.toggleActiveMedication}
                             saving={patients.saving}
                             onSave={patients.handleSavePatient}
                         />

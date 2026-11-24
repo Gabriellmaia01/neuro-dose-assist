@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useClinic } from "@/contexts/ClinicContext";
 import { toast } from "@/hooks/use-toast";
 import {
   deleteMedication,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/medications";
 import { formMap, therapeuticClassMap } from "@/lib/medicationCatalog";
 import { checkInteractions } from "@/services/drugInteractions";
+import { getMissingStandardMedications } from "@/services/standardFormulary";
 
 export interface MedicationFormData {
   name: string;
@@ -34,11 +36,14 @@ const EMPTY_FORM: MedicationFormData = {
 
 export function useMedications() {
   const { user } = useAuth();
+  const { effectiveUserId } = useClinic();
+  const targetUserId = effectiveUserId || user?.uid;
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [importingFormulary, setImportingFormulary] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingMedication, setViewingMedication] = useState<Medication | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -54,13 +59,18 @@ export function useMedications() {
     return alerts.filter(alert => !dismissedAlerts.includes(alert.id));
   }, [medications, dismissedAlerts]);
 
+  const missingStandardMedications = useMemo(
+    () => getMissingStandardMedications(medications),
+    [medications]
+  );
+
   useEffect(() => {
     const loadMedications = async () => {
-      if (!user) return;
+      if (!user || !targetUserId) return;
 
       try {
         setLoading(true);
-        const medicationsData = await getMedications(user.uid);
+        const medicationsData = await getMedications(targetUserId);
         setMedications(medicationsData);
       } catch (error: unknown) {
         console.error("Erro ao carregar medicamentos:", error);
@@ -90,7 +100,40 @@ export function useMedications() {
     };
 
     loadMedications();
-  }, [user]);
+  }, [user, targetUserId]);
+
+  const handleImportStandardFormulary = async () => {
+    if (!user || !targetUserId || missingStandardMedications.length === 0) return;
+
+    try {
+      setImportingFormulary(true);
+      const userInfo = {
+        name: user.displayName || undefined,
+        email: user.email || undefined,
+      };
+
+      for (const template of missingStandardMedications) {
+        await saveMedication({ ...template }, targetUserId, userInfo);
+      }
+
+      const updatedList = await getMedications(targetUserId);
+      setMedications(updatedList);
+
+      toast({
+        title: "Bulário padrão importado",
+        description: `${missingStandardMedications.length} fármaco(s) neuropsiquiátrico(s) adicionados ao catálogo.`,
+      });
+    } catch (error) {
+      console.error("Erro ao importar bulário padrão:", error);
+      toast({
+        title: "Erro ao importar bulário",
+        description: "Não foi possível importar os medicamentos padrão.",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingFormulary(false);
+    }
+  };
 
   const toggleClass = (className: string) => {
     setSelectedClasses(prev =>
@@ -149,11 +192,11 @@ export function useMedications() {
   };
 
   const confirmDelete = async () => {
-    if (!user || !medicationToDelete?.id) return;
+    if (!user || !targetUserId || !medicationToDelete?.id) return;
 
     try {
       const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-      await deleteMedication(medicationToDelete.id, user.uid, medicationToDelete.name, userInfo);
+      await deleteMedication(medicationToDelete.id, targetUserId, medicationToDelete.name, userInfo);
       toast({
         title: "Medicamento excluído",
         description: "O medicamento foi removido com sucesso.",
@@ -259,14 +302,15 @@ export function useMedications() {
         unit: formData.unit,
       };
 
+      if (!targetUserId) return;
       const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-      await saveMedication(medicationData, user.uid, userInfo);
+      await saveMedication(medicationData, targetUserId, userInfo);
       toast({
         title: editingId ? "Medicamento atualizado!" : "Medicamento cadastrado!",
         description: `${formData.name} foi ${editingId ? "atualizado" : "cadastrado"} com sucesso.`,
       });
 
-      const medicationsData = await getMedications(user.uid);
+      const medicationsData = await getMedications(targetUserId);
       setMedications(medicationsData);
       setIsDialogOpen(false);
       resetForm();
@@ -307,6 +351,9 @@ export function useMedications() {
     medications,
     loading,
     saving,
+    importingFormulary,
+    missingStandardMedications,
+    handleImportStandardFormulary,
     editingId,
     viewingMedication,
     setViewingMedication,

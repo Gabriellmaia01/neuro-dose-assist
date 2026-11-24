@@ -1,109 +1,100 @@
-import { Plus, History, FileText, Brain, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, History, FileText, Brain, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+/**
+ * QuickActions - 4 atalhos rápidos de ação clínica.
+ * "Registrar Dose" recebe o único destaque em cor primária (#1B4965); os demais são neutros.
+ */
 export function QuickActions() {
   const actions = [
     {
       icon: Plus,
       label: "Registrar Dose",
-      description: "Nova entrada",
+      description: "Nova entrada farmacológica",
       href: "/dose",
-      gradient: "from-teal-500 to-cyan-500",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      bgGlow: "bg-teal-500/20",
       primary: true,
     },
     {
       icon: Brain,
       label: "Consultar IA",
-      description: "Recomendações",
+      description: "Recomendações preditivas",
       href: "/dose",
-      gradient: "from-violet-500 to-purple-500",
-      iconColor: "text-violet-600 dark:text-violet-400",
-      bgGlow: "bg-violet-500/10",
+      primary: false,
     },
     {
       icon: History,
-      label: "Histórico",
-      description: "Ver registros",
+      label: "Histórico Clínico",
+      description: "Consultar logs e posologias",
       href: "/history",
-      gradient: "from-blue-500 to-indigo-500",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      bgGlow: "bg-blue-500/10",
+      primary: false,
     },
     {
       icon: FileText,
-      label: "Relatório",
-      description: "Exportar PDF",
+      label: "Relatório Médico",
+      description: "Exportar dossiê em PDF",
       href: "/reports",
-      gradient: "from-amber-500 to-orange-500",
-      iconColor: "text-amber-600 dark:text-amber-400",
-      bgGlow: "bg-amber-500/10",
+      primary: false,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      {actions.map((action) => (
-        <Link key={action.label} to={action.href} className="group">
-          <div
+    <section aria-label="Ações rápidas">
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-2 xl:grid-cols-4 gap-6">
+        {actions.map((action) => (
+          <Link
+            key={action.label}
+            to={action.href}
             className={cn(
-              "relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-5 transition-all duration-300",
-              "border border-border/50 hover:border-border",
-              "hover:shadow-lg hover:-translate-y-0.5",
-              action.primary
-                ? "bg-gradient-to-br from-slate-900 to-slate-800 border-white/10"
-                : "bg-card"
+              "relative flex items-start gap-3.5 p-4 h-full",
+              action.primary ? "nd-shortcut-primary" : "nd-card-interactive"
             )}
           >
-            {/* Background glow */}
-            <div className={cn(
-              "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-              action.bgGlow
-            )} />
-
-            {/* Icon with gradient */}
-            <div className={cn(
-              "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:scale-110",
-              action.primary ? "bg-white/10" : "bg-muted/50"
-            )}>
-              <action.icon className={cn(
-                "w-5 h-5 sm:w-6 sm:h-6",
-                action.primary ? "text-white" : action.iconColor
-              )} />
+            {/* Quadrado neutro de 36px com ícone de linha de 20px */}
+            <div
+              className={cn(
+                "w-9 h-9 rounded-[var(--nd-radius)] flex items-center justify-center shrink-0",
+                action.primary
+                  ? "bg-white/10 text-white"
+                  : "bg-[var(--nd-muted)] text-[var(--nd-primary)]"
+              )}
+              aria-hidden="true"
+            >
+              <action.icon className="w-5 h-5" strokeWidth={1.5} />
             </div>
 
-            {/* Text */}
-            <div className="relative z-10">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className={cn(
-                  "font-semibold text-sm sm:text-base",
-                  action.primary ? "text-white" : "text-foreground"
-                )}>
-                  {action.label}
-                </h3>
-                <ArrowRight className={cn(
-                  "w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300",
-                  action.primary ? "text-white/60" : "text-muted-foreground"
-                )} />
-              </div>
-              <p className={cn(
-                "text-xs sm:text-sm mt-0.5",
-                action.primary ? "text-white/60" : "text-muted-foreground"
-              )}>
+            <div className="min-w-0 flex-1 pr-5">
+              <h2
+                className={cn(
+                  "text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] truncate",
+                  action.primary ? "text-white" : "text-[var(--nd-text)]"
+                )}
+              >
+                {action.label}
+              </h2>
+              <p
+                className={cn(
+                  "text-[13px] font-normal leading-[1.4] mt-1 truncate",
+                  action.primary
+                    ? "text-white/80"
+                    : "text-[var(--nd-text-secondary)]"
+                )}
+              >
                 {action.description}
               </p>
             </div>
 
-            {/* Primary action indicator */}
-            {action.primary && (
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-500/30 to-cyan-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-            )}
-          </div>
-        </Link>
-      ))}
-    </div>
+            <ArrowUpRight
+              className={cn(
+                "w-4 h-4 absolute top-4 right-4 shrink-0",
+                action.primary ? "text-white/80" : "text-[var(--nd-icon)]"
+              )}
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
