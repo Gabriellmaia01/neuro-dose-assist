@@ -13,6 +13,7 @@ export function FormularioLogin({
   aoMudarEmail,
   aoMudarSenha,
   aoEnviar,
+  aoEsqueceuSenha,
 }: PropriedadesFormularioLogin) {
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
@@ -57,6 +58,8 @@ export function FormularioLogin({
           </label>
           <button
             type="button"
+            onClick={aoEsqueceuSenha}
+            disabled={carregando}
             className="login-link"
           >
             Recuperar chave

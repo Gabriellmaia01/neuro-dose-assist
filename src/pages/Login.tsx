@@ -6,6 +6,7 @@ import { LogoMobileLogin } from "@/components/login/LogoMobileLogin";
 import { FormularioLogin } from "@/components/login/FormularioLogin";
 import { FormularioCadastro } from "@/components/login/FormularioCadastro";
 import { BotaoGoogle } from "@/components/login/BotaoGoogle";
+import { DialogoRecuperarSenha } from "@/components/login/DialogoRecuperarSenha";
 
 /**
  * Página de Login (Autenticação).
@@ -23,6 +24,7 @@ export default function Login() {
     handleEntrar,
     handleCriarConta,
     handleEntrarComGoogle,
+    recuperacaoSenha,
   } = useAutenticacaoLogin();
 
   return (
@@ -109,6 +111,7 @@ export default function Login() {
                   aoMudarEmail={setEmail}
                   aoMudarSenha={setSenha}
                   aoEnviar={handleEntrar}
+                  aoEsqueceuSenha={recuperacaoSenha.abrir}
                 />
               </div>
             ) : (
@@ -156,13 +159,22 @@ export default function Login() {
             <span>Ambiente em conformidade com CFM e LGPD</span>
           </div>
         </div>
-
         {/* Rodapé da página com linha divisória de 1px */}
         <footer className="pt-6 border-t border-[var(--login-light-border)] flex flex-col xs:flex-row items-center justify-between gap-2 text-[12px] text-[var(--login-light-text-secondary)]">
           <span>Neuro-Dose Assist</span>
           <span>© 2026 Todos os direitos reservados</span>
         </footer>
       </main>
+
+      {/* Diálogo de recuperação de senha */}
+      <DialogoRecuperarSenha
+        aberto={recuperacaoSenha.aberto}
+        email={recuperacaoSenha.email}
+        enviando={recuperacaoSenha.enviando}
+        aoMudarAberto={recuperacaoSenha.aoMudarAberto}
+        aoMudarEmail={recuperacaoSenha.setEmail}
+        aoEnviar={recuperacaoSenha.enviar}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ vi.mock("firebase/auth", () => {
     signOut: vi.fn(),
     onAuthStateChanged: vi.fn(),
     updatePassword: vi.fn(),
+    sendPasswordResetEmail: vi.fn(),
     reauthenticateWithCredential: vi.fn(),
     EmailAuthProvider: {
       credential: vi.fn().mockReturnValue({ providerId: "password" }),
@@ -92,6 +93,28 @@ describe("Serviço de Autenticação (FirebaseAuthService)", () => {
       vi.mocked(firebaseAuth.signOut).mockResolvedValueOnce();
       await service.signOut();
       expect(firebaseAuth.signOut).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("sendPasswordReset", () => {
+    it("deve chamar sendPasswordResetEmail com o email sem espaços nas pontas", async () => {
+      vi.mocked(firebaseAuth.sendPasswordResetEmail).mockResolvedValueOnce();
+
+      await service.sendPasswordReset("  medico@clinica.com ");
+
+      expect(firebaseAuth.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+      expect(firebaseAuth.sendPasswordResetEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        "medico@clinica.com"
+      );
+    });
+
+    it("deve propagar o erro do Firebase (ex.: email inválido)", async () => {
+      vi.mocked(firebaseAuth.sendPasswordResetEmail).mockRejectedValueOnce(
+        new Error("auth/invalid-email")
+      );
+
+      await expect(service.sendPasswordReset("invalido")).rejects.toThrow("auth/invalid-email");
     });
   });
 

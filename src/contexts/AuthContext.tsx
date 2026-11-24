@@ -10,6 +10,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -160,9 +161,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await authService.sendPasswordReset(email);
+      // Mensagem neutra: não revela se o email possui (ou não) uma conta cadastrada.
+      toast({
+        title: "Verifique seu email",
+        description:
+          "Se existir uma conta com este email, enviaremos um link para redefinir a senha.",
+      });
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      const errorMessage =
+        code === "auth/invalid-email"
+          ? "Email inválido."
+          : code === "auth/too-many-requests"
+            ? "Muitas tentativas. Aguarde alguns minutos e tente novamente."
+            : code === "auth/network-request-failed"
+              ? "Erro de rede. Verifique sua conexão com a internet."
+              : "Não foi possível enviar o email de recuperação. Tente novamente.";
+      toast({
+        title: "Erro ao recuperar senha",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signInWithGoogle, logout, updatePassword: changePassword }}
+      value={{
+        user,
+        loading,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        logout,
+        updatePassword: changePassword,
+        resetPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>
