@@ -1,21 +1,19 @@
 import emailjs from '@emailjs/browser';
 
 // =====================================
-// CONFIGURAÇÃO DO EMAILJS
+// CONFIGURAÇÃO DO EMAILJS (VIA .env)
 // =====================================
-// IMPORTANTE: Você precisa criar uma conta gratuita em https://emailjs.com
-// e substituir estas variáveis pelas suas credenciais:
-//
-// 1. Crie um serviço de email (Email Service) - conectando seu Gmail, Outlook, etc.
-// 2. Crie um template (Email Template) com as variáveis abaixo
-// 3. Copie o Public Key da seção "Account" > "General"
+// Configure as variáveis opcionais no arquivo .env:
+//   VITE_EMAILJS_SERVICE_ID=
+//   VITE_EMAILJS_TEMPLATE_ID=
+//   VITE_EMAILJS_PUBLIC_KEY=
 //
 // Template sugerido para EmailJS:
 // Subject: Convite para acessar {{clinic_name}} - NeuroDose Assist
 // Body:
 //   Olá!
 //
-//   {{sender_name}} convidou você para participar da clínica "{{clinic_name}}" 
+//   {{sender_name}} convidou você para participar da clínica "{{clinic_name}}"
 //   como {{role}} no sistema NeuroDose Assist.
 //
 //   Para aceitar o convite, acesse o link abaixo:
@@ -25,12 +23,29 @@ import emailjs from '@emailjs/browser';
 //   Equipe NeuroDose Assist
 // =====================================
 
-const EMAILJS_SERVICE_ID = 'service_dzmkuxb';
-const EMAILJS_TEMPLATE_ID = 'template_qxu47ad';
-const EMAILJS_PUBLIC_KEY = 'wVfNjG-B6K5PsmzPp';
+interface EmailJsConfig {
+    serviceId: string;
+    templateId: string;
+    publicKey: string;
+}
 
-// Inicializar EmailJS
-emailjs.init(EMAILJS_PUBLIC_KEY);
+let initializedPublicKey: string | null = null;
+
+function getEmailJsConfig(): EmailJsConfig {
+    return {
+        serviceId: (import.meta.env.VITE_EMAILJS_SERVICE_ID || '').trim(),
+        templateId: (import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '').trim(),
+        publicKey: (import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '').trim(),
+    };
+}
+
+/**
+ * Indica se as credenciais do EmailJS estão definidas nas variáveis de ambiente.
+ */
+export function isEmailJsConfigured(): boolean {
+    const { serviceId, templateId, publicKey } = getEmailJsConfig();
+    return Boolean(serviceId && templateId && publicKey);
+}
 
 export interface InviteEmailParams {
     toEmail: string;
@@ -41,14 +56,27 @@ export interface InviteEmailParams {
 }
 
 /**
- * Envia um email de convite para a clínica
+ * Envia um email de convite para a clínica.
+ * Retorna false de forma graciosa quando o EmailJS não está configurado,
+ * permitindo que a interface ofereça a cópia manual do link de convite.
  */
 export async function sendInviteEmail(params: InviteEmailParams): Promise<boolean> {
     const { toEmail, clinicName, senderName, role, inviteLink } = params;
+    const { serviceId, templateId, publicKey } = getEmailJsConfig();
 
-    console.log('[Email] Tentando enviar convite para:', toEmail);
+    if (!serviceId || !templateId || !publicKey) {
+        console.warn(
+            '[Email] Credenciais do EmailJS não configuradas (VITE_EMAILJS_*). Use o link manual de convite.'
+        );
+        return false;
+    }
 
     try {
+        if (initializedPublicKey !== publicKey) {
+            emailjs.init(publicKey);
+            initializedPublicKey = publicKey;
+        }
+
         const templateParams = {
             to_email: toEmail,
             clinic_name: clinicName,
@@ -57,13 +85,7 @@ export async function sendInviteEmail(params: InviteEmailParams): Promise<boolea
             invite_link: inviteLink,
         };
 
-        const response = await emailjs.send(
-            EMAILJS_SERVICE_ID,
-            EMAILJS_TEMPLATE_ID,
-            templateParams
-        );
-
-        console.log('[Email] Convite enviado com sucesso:', response.status);
+        await emailjs.send(serviceId, templateId, templateParams);
         return true;
     } catch (error) {
         console.error('[Email] Erro ao enviar convite:', error);

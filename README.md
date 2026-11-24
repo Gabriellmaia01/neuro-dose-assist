@@ -7,7 +7,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-12-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-42_Testes-6E9F18?style=flat&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-68_Testes-6E9F18?style=flat&logo=vitest&logoColor=white)](https://vitest.dev/)
 
 🔗 **Demo ao vivo:** [neuro-dose.vercel.app](https://neuro-dose.vercel.app/)
 
@@ -32,7 +32,7 @@ A plataforma centraliza o prontuário de pacientes, o catálogo de medicamentos 
 | :--- | :---: | :--- |
 | **Autenticação** | `/login` | Login com e-mail/senha, cadastro de conta profissional e autenticação federada via Google, com proteção de rotas privadas. |
 | **Dashboard Principal** | `/` | Painel de controle com atalhos rápidos, 4 KPIs (pacientes ativos, doses em 7 dias, eficácia média e inferências), curva de eficácia × dose (7d), última aplicação, pacientes recentes, alertas farmacológicos e próximos atendimentos. |
-| **Pacientes** | `/patients` | CRUD completo de prontuários com foto (Firebase Storage, até 5 MB), idade, gênero, condição principal, histórico clínico, alergias e medicamentos em uso. |
+| **Pacientes** | `/patients` | CRUD completo de prontuários com idade, gênero, condição principal, histórico clínico, alergias e prescrições estruturadas por paciente. |
 | **Medicamentos & Interações** | `/medications` | Catálogo farmacológico por classe terapêutica (ISRS, IRSN, psicoestimulante, antipsicótico atípico, estabilizador de humor, benzodiazepínico), faixas seguras (`minDose`–`maxDose`) e **detector de interações** (grave, moderada e leve) com recomendações clínicas. |
 | **Registro de Dose & Análise Clínica** | `/dose` | Fluxo guiado em 3 etapas (*Informações da Dose → Estado Subjetivo → Confirmação*) com validação de limites e geração automática de recomendação, estimativa de eficácia (`%`), avaliação de riscos e insights pós-dose. |
 | **Histórico & Auditoria** | `/history` | Consulta filtrável de todas as doses registradas, trilha de auditoria (*Log de Atividades* da clínica) e exportação do histórico em PDF. |

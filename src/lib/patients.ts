@@ -11,7 +11,6 @@ export interface Patient {
   allergies?: string;
   activeMedicationIds?: string[];
   currentMedications?: string;
-  photoURL?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
@@ -23,14 +22,6 @@ export function savePatient(
   userInfo?: UserAuditInfo
 ): Promise<string> {
   return patientService.savePatient(patient, userId, userInfo);
-}
-
-export function uploadPatientPhoto(
-  file: File,
-  userId: string,
-  patientId: string
-): Promise<string> {
-  return patientService.uploadPatientPhoto(file, userId, patientId);
 }
 
 export function updatePatient(

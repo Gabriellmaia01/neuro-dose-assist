@@ -2,7 +2,7 @@ import { User, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EfficacyRing } from "./EfficacyRing";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface Patient {
   id: string;
@@ -11,7 +11,6 @@ interface Patient {
   lastDose: string;
   medication: string;
   efficacy: number;
-  photoURL?: string;
 }
 
 interface RecentPatientsProps {
@@ -78,7 +77,6 @@ export function RecentPatients({ patients, className }: RecentPatientsProps) {
                 >
                   {/* Avatar circular neutro */}
                   <Avatar className="w-10 h-10 shrink-0">
-                    <AvatarImage src={patient.photoURL} alt={patient.name} />
                     <AvatarFallback className="bg-[var(--nd-muted)] text-[var(--nd-primary)] text-[14px] font-semibold">
                       {patient.name.charAt(0).toUpperCase()}
                     </AvatarFallback>

@@ -31,7 +31,6 @@ export function formatarPacientesRecentes(
         ? `${medicamento.name} ${ultimaDosePaciente?.doseAmount}mg`
         : "Sem registro",
       efficacy: ultimaDosePaciente?.analysis?.efficacyPrediction || 0,
-      photoURL: p.photoURL,
     };
   });
 }

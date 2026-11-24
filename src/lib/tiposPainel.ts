@@ -1,6 +1,6 @@
 import { type Appointment } from "@/lib/appointments";
 import { type Patient } from "@/lib/patients";
-import { type DoseRecord } from "@/lib/doses";
+import { type DoseRecord, type DoseQueryOptions } from "@/lib/doses";
 
 /**
  * Estatísticas calculadas do painel principal.
@@ -36,7 +36,6 @@ export interface PacienteRecente {
   lastDose: string;
   medication: string;
   efficacy: number;
-  photoURL?: string;
 }
 
 /**
@@ -80,7 +79,7 @@ export interface DadosPainel {
  */
 export interface ServicosPainel {
   buscarPacientes: (idUsuario: string) => Promise<Patient[]>;
-  buscarDoses: (idUsuario: string) => Promise<DoseRecord[]>;
+  buscarDoses: (idUsuario: string, options?: DoseQueryOptions) => Promise<DoseRecord[]>;
   buscarMedicamentos: (idUsuario: string) => Promise<any[]>;
   buscarConsultas: (idUsuario: string) => Promise<Appointment[]>;
 }

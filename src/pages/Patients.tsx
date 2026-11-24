@@ -38,9 +38,7 @@ import {
   Trash2,
   Eye,
   Filter,
-  Upload,
   Loader2,
-  Image as ImageIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,13 +47,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
 import {
   savePatient,
-  uploadPatientPhoto,
   getPatients,
   deletePatient,
   type Patient,
@@ -99,9 +96,6 @@ export default function Patients() {
     activeMedicationIds: [] as string[],
     currentMedications: "",
   });
-
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Carregar pacientes e catálogo de medicamentos do Firebase
   useEffect(() => {
@@ -162,8 +156,6 @@ export default function Patients() {
       activeMedicationIds: [],
       currentMedications: "",
     });
-    setPhotoFile(null);
-    setPhotoPreview(null);
     setEditingPatient(null); // Resetar edição
   };
 
@@ -223,8 +215,6 @@ export default function Patients() {
       activeMedicationIds: Array.from(existingIds),
       currentMedications: remainingExtraMeds.join(", "),
     });
-    setPhotoPreview(patient.photoURL || null);
-    setPhotoFile(null); // Resetar arquivo novo, manter preview atual
     setIsDialogOpen(true);
   };
 
@@ -232,36 +222,6 @@ export default function Patients() {
   const handleViewClick = (patient: Patient) => {
     setViewingPatient(patient);
     setIsViewDialogOpen(true);
-  };
-
-  // Handle file change
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({
-          title: "Arquivo inválido",
-          description: "Por favor, selecione uma imagem.",
-          variant: "destructive",
-        });
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Arquivo muito grande",
-          description: "A imagem deve ter no máximo 5MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   // Salvar paciente (Criar ou Atualizar)
@@ -313,32 +273,10 @@ export default function Patients() {
         activeMedicationIds:
           formData.activeMedicationIds.length > 0 ? formData.activeMedicationIds : undefined,
         currentMedications: combinedMedicationsSummary || undefined,
-        photoURL: editingPatient?.photoURL // Manter foto antiga se não houver nova
       };
-      console.log("Dados do paciente:", patientData);
 
-      // Salvar (upsert)
-      console.log("Chamando savePatient...");
       const userInfo = { name: user.displayName || undefined, email: user.email || undefined };
-      const patientId = await savePatient(patientData, effectiveUserId, userInfo);
-      console.log("Paciente salvo com ID:", patientId);
-
-      if (photoFile && patientId) {
-        try {
-          console.log("Iniciando upload da foto...");
-          const photoURL = await uploadPatientPhoto(photoFile, effectiveUserId, patientId);
-          console.log("Foto enviada, atualizando URL...");
-          // Atualizar com nova foto
-          await savePatient({ ...patientData, id: patientId, photoURL }, effectiveUserId, userInfo);
-          console.log("URL da foto salva no banco.");
-        } catch (error) {
-          console.error("Erro ao fazer upload da foto:", error);
-          toast({
-            title: "Aviso",
-            description: "Paciente salvo, mas erro ao atualizar foto (verifique o console).",
-          });
-        }
-      }
+      await savePatient(patientData, effectiveUserId, userInfo);
 
       toast({
         title: editingPatient ? "Paciente atualizado!" : "Paciente cadastrado!",
@@ -432,47 +370,6 @@ export default function Patients() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  {/* Upload de Foto */}
-                  <div className="space-y-2">
-                    <Label htmlFor="photo-upload">Foto do Paciente</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        {photoPreview ? (
-                          <Avatar className="w-20 h-20">
-                            <AvatarImage src={photoPreview} alt="Foto do paciente" />
-                            <AvatarFallback>
-                              <User className="w-10 h-10" aria-hidden="true" />
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
-                            <ImageIcon className="w-10 h-10 text-muted-foreground" aria-hidden="true" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePhotoChange}
-                          className="hidden"
-                          id="photo-upload"
-                          name="photoUpload"
-                        />
-                        <Label
-                          htmlFor="photo-upload"
-                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-accent"
-                        >
-                          <Upload className="w-4 h-4" aria-hidden="true" />
-                          {photoFile ? "Alterar Foto" : "Adicionar Foto"}
-                        </Label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          JPG, PNG ou GIF. Máximo 5MB.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="patient-name">Nome Completo *</Label>
@@ -688,9 +585,8 @@ export default function Patients() {
               <DialogHeader>
                 <div className="flex items-center gap-4 mb-2">
                   <Avatar className="w-16 h-16">
-                    <AvatarImage src={viewingPatient?.photoURL} alt={viewingPatient?.name || "Paciente"} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                      {viewingPatient?.name?.[0]}
+                      {viewingPatient?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
@@ -869,7 +765,6 @@ export default function Patients() {
                       <TableCell onClick={() => handleViewClick(patient)}>
                         <div className="flex items-center gap-3">
                           <Avatar className="w-9 h-9 ring-1 ring-border">
-                            <AvatarImage src={patient.photoURL} alt={patient.name} />
                             <AvatarFallback className="bg-teal-500/10 text-teal-400 font-mono text-xs font-bold">
                               {patient.name.charAt(0).toUpperCase()}
                             </AvatarFallback>

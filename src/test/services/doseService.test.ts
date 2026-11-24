@@ -3,11 +3,15 @@ import { FirebaseDoseService } from "@/services/firebase/doseService";
 import * as firebaseDb from "firebase/database";
 
 vi.mock("firebase/database", () => ({
-  ref: vi.fn(),
+  ref: vi.fn((_db, path) => ({ path })),
   push: vi.fn(),
   set: vi.fn(),
   get: vi.fn(),
   remove: vi.fn(),
+  query: vi.fn((targetRef, ...constraints) => ({ targetRef, constraints })),
+  orderByChild: vi.fn((field) => ({ type: "orderByChild", field })),
+  equalTo: vi.fn((value) => ({ type: "equalTo", value })),
+  limitToLast: vi.fn((count) => ({ type: "limitToLast", count })),
 }));
 
 vi.mock("@/lib/firebase", () => ({
@@ -66,6 +70,69 @@ describe("Serviço de Doses (FirebaseDoseService)", () => {
 
       const doses = await service.getDoses("user-123");
       expect(doses).toEqual([]);
+    });
+
+    it("deve aplicar query com orderByChild('timestamp') e limitToLast quando limit for informado", async () => {
+      const mockData = {
+        d1: { id: "d1", patientId: "p1", doseAmount: "10", timestamp: "2026-01-01T10:00:00.000Z" },
+        d2: { id: "d2", patientId: "p2", doseAmount: "20", timestamp: "2026-01-03T10:00:00.000Z" },
+        d3: { id: "d3", patientId: "p1", doseAmount: "15", timestamp: "2026-01-02T10:00:00.000Z" },
+      };
+
+      vi.mocked(firebaseDb.get).mockResolvedValueOnce({
+        exists: () => true,
+        val: () => mockData,
+      } as any);
+
+      const doses = await service.getDoses("user-123", { limit: 2 });
+
+      expect(firebaseDb.orderByChild).toHaveBeenCalledWith("timestamp");
+      expect(firebaseDb.limitToLast).toHaveBeenCalledWith(2);
+      expect(firebaseDb.query).toHaveBeenCalledTimes(1);
+      expect(doses).toHaveLength(2);
+      expect(doses[0].id).toBe("d2");
+      expect(doses[1].id).toBe("d3");
+    });
+
+    it("deve aplicar query filtrada por patientId com orderByChild e equalTo", async () => {
+      const mockData = {
+        d1: { id: "d1", patientId: "p-alvo", doseAmount: "10", timestamp: "2026-01-01T10:00:00.000Z" },
+        d2: { id: "d2", patientId: "p-alvo", doseAmount: "20", timestamp: "2026-01-04T10:00:00.000Z" },
+      };
+
+      vi.mocked(firebaseDb.get).mockResolvedValueOnce({
+        exists: () => true,
+        val: () => mockData,
+      } as any);
+
+      const doses = await service.getDoses("user-123", { patientId: "p-alvo", limit: 1 });
+
+      expect(firebaseDb.orderByChild).toHaveBeenCalledWith("patientId");
+      expect(firebaseDb.equalTo).toHaveBeenCalledWith("p-alvo");
+      expect(firebaseDb.query).toHaveBeenCalledTimes(1);
+      expect(doses).toHaveLength(1);
+      expect(doses[0].id).toBe("d2");
+    });
+
+    it("deve fazer fallback seguro em memória se o índice ainda não existir no Firebase RTDB", async () => {
+      const mockData = {
+        d1: { id: "d1", patientId: "p1", doseAmount: "10", timestamp: "2026-01-01T10:00:00.000Z" },
+        d2: { id: "d2", patientId: "p2", doseAmount: "20", timestamp: "2026-01-03T10:00:00.000Z" },
+        d3: { id: "d3", patientId: "p1", doseAmount: "15", timestamp: "2026-01-02T10:00:00.000Z" },
+      };
+
+      vi.mocked(firebaseDb.get)
+        .mockRejectedValueOnce(new Error("Index not defined, add \".indexOn\": \"patientId\""))
+        .mockResolvedValueOnce({
+          exists: () => true,
+          val: () => mockData,
+        } as any);
+
+      const doses = await service.getDoses("user-123", { patientId: "p1", limit: 1 });
+
+      expect(firebaseDb.get).toHaveBeenCalledTimes(2);
+      expect(doses).toHaveLength(1);
+      expect(doses[0].id).toBe("d3");
     });
   });
 

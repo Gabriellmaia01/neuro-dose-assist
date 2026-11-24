@@ -1,9 +1,36 @@
-import { ref, push, set, get, remove } from "firebase/database";
+import {
+  ref,
+  push,
+  set,
+  get,
+  remove,
+  query,
+  orderByChild,
+  equalTo,
+  limitToLast,
+} from "firebase/database";
 import { realtimeDb } from "@/lib/firebase";
 import { logActivity } from "@/lib/activityLog";
 import type { DoseRecord } from "@/lib/doses";
-import type { IDoseService } from "../contracts/domain.types";
+import type { DoseQueryOptions, IDoseService } from "../contracts/domain.types";
 import type { UserAuditInfo } from "../contracts/common.types";
+
+function sortDosesDescending(dosesData: Record<string, DoseRecord>): DoseRecord[] {
+  return Object.entries(dosesData)
+    .map(([key, value]) => ({
+      ...value,
+      id: value.id || key,
+    }))
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+function isMissingIndexError(error: unknown): boolean {
+  const message =
+    typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message?: unknown }).message || "")
+      : String(error || "");
+  return message.toLowerCase().includes("index not defined");
+}
 
 export class FirebaseDoseService implements IDoseService {
   async saveDose(
@@ -42,19 +69,50 @@ export class FirebaseDoseService implements IDoseService {
     }
   }
 
-  async getDoses(userId: string): Promise<DoseRecord[]> {
-    try {
-      const dosesRef = ref(realtimeDb, `users/${userId}/doses`);
-      const snapshot = await get(dosesRef);
+  async getDoses(userId: string, options?: DoseQueryOptions): Promise<DoseRecord[]> {
+    const dosesRef = ref(realtimeDb, `users/${userId}/doses`);
+    const limit =
+      typeof options?.limit === "number" && options.limit > 0
+        ? Math.floor(options.limit)
+        : undefined;
+    const patientId = options?.patientId?.trim() || undefined;
 
-      if (snapshot.exists()) {
-        const dosesData = snapshot.val();
-        return Object.values(dosesData).sort((a: any, b: any) => {
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-        }) as DoseRecord[];
+    const buildQueryRef = () => {
+      if (patientId) {
+        return query(dosesRef, orderByChild("patientId"), equalTo(patientId));
       }
-      return [];
+      if (limit) {
+        return query(dosesRef, orderByChild("timestamp"), limitToLast(limit));
+      }
+      return dosesRef;
+    };
+
+    try {
+      const snapshot = await get(buildQueryRef());
+
+      if (!snapshot.exists()) {
+        return [];
+      }
+
+      const sorted = sortDosesDescending(snapshot.val() as Record<string, DoseRecord>);
+      return limit ? sorted.slice(0, limit) : sorted;
     } catch (error) {
+      if ((patientId || limit) && isMissingIndexError(error)) {
+        console.warn(
+          '[Doses] Índice não definido no Firebase RTDB (configure ".indexOn": ["timestamp", "patientId"]). Aplicando fallback em memória.'
+        );
+        const fallbackSnapshot = await get(dosesRef);
+        if (!fallbackSnapshot.exists()) {
+          return [];
+        }
+
+        let sorted = sortDosesDescending(fallbackSnapshot.val() as Record<string, DoseRecord>);
+        if (patientId) {
+          sorted = sorted.filter((d) => d.patientId === patientId);
+        }
+        return limit ? sorted.slice(0, limit) : sorted;
+      }
+
       console.error("Erro ao buscar doses:", error);
       throw error;
     }

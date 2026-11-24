@@ -14,7 +14,6 @@ export interface IPatientService {
   savePatient(patient: Patient, userId: string, userInfo?: UserAuditInfo): Promise<string>;
   updatePatient(patientId: string, patient: Partial<Patient>, userId: string): Promise<void>;
   deletePatient(patientId: string, userId: string, patientName?: string, userInfo?: UserAuditInfo): Promise<void>;
-  uploadPatientPhoto(file: File, userId: string, patientId: string): Promise<string>;
 }
 
 export interface IMedicationService {
@@ -25,8 +24,13 @@ export interface IMedicationService {
   deleteMedication(medicationId: string, userId: string, medicationName?: string, userInfo?: UserAuditInfo): Promise<void>;
 }
 
+export interface DoseQueryOptions {
+  limit?: number;
+  patientId?: string;
+}
+
 export interface IDoseService {
-  getDoses(userId: string): Promise<DoseRecord[]>;
+  getDoses(userId: string, options?: DoseQueryOptions): Promise<DoseRecord[]>;
   saveDose(
     dose: DoseRecord,
     userId: string,
