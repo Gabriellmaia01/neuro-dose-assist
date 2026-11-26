@@ -20,7 +20,7 @@ interface PropriedadesResultado {
 
 export function ResultadoAnalise({ resultadoAnalise, onNovoRegistro }: PropriedadesResultado) {
   return (
-    <div className="glass-card rounded-2xl p-8 animate-fade-up">
+    <div className="nd-card p-8 animate-fade-up">
       {/* Cabeçalho de sucesso */}
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
@@ -89,7 +89,7 @@ export function ResultadoAnalise({ resultadoAnalise, onNovoRegistro }: Proprieda
       </div>
 
       {/* Recomendação da IA */}
-      <div className="mt-6 p-4 rounded-xl bg-neuro-gradient-subtle border border-primary/20">
+      <div className="mt-6 p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
         <div className="flex items-start gap-3">
           <Brain className="w-5 h-5 text-primary mt-0.5" aria-hidden="true" />
           <div>
@@ -115,7 +115,7 @@ export function ResultadoAnalise({ resultadoAnalise, onNovoRegistro }: Proprieda
         <Button variant="outline" onClick={onNovoRegistro}>
           Novo Registro
         </Button>
-        <Button asChild variant="neuro">
+        <Button asChild variant="default">
           <Link to="/history">Ver Histórico</Link>
         </Button>
       </div>

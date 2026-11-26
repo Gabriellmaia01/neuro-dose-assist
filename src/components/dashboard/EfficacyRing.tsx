@@ -31,9 +31,9 @@ export function EfficacyRing({
   const progress = ((100 - clamped) / 100) * circumference;
 
   const getColor = (val: number) => {
-    if (val >= 75) return "#1E7A4D";
-    if (val >= 50) return "#B54708";
-    return "#B42318";
+    if (val >= 75) return "var(--nd-success)";
+    if (val >= 50) return "var(--nd-warning)";
+    return "var(--nd-error)";
   };
 
   const getBandLabel = (val: number) => {
@@ -63,7 +63,7 @@ export function EfficacyRing({
           cy={width / 2}
           r={radius}
           fill="none"
-          stroke="#EEF2F6"
+          stroke="var(--nd-muted)"
           strokeWidth={stroke}
         />
         <circle

@@ -24,7 +24,7 @@ export function ProfileSettingsPanel({
     onSave: () => void;
 }) {
     return (
-        <div className="glass-card rounded-2xl p-6 space-y-6">
+        <div className="nd-card p-6 space-y-6">
             <div>
                 <h2 className="font-display font-semibold text-lg">
                     Informações do Perfil
@@ -37,7 +37,7 @@ export function ProfileSettingsPanel({
             <Separator />
 
             <div className="flex items-center gap-6">
-                <div className="w-20 h-20 rounded-full bg-neuro-gradient flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-[var(--nd-primary)] flex items-center justify-center">
                     <User className="w-10 h-10 text-primary-foreground" />
                 </div>
                 <div>
@@ -124,7 +124,7 @@ export function ProfileSettingsPanel({
 
             <div className="flex justify-end">
                 <Button
-                    variant="neuro"
+                    variant="default"
                     onClick={onSave}
                     disabled={saving}
                 >

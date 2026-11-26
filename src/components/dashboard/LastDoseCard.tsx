@@ -1,5 +1,5 @@
-import { Check, AlertTriangle, AlertCircle } from "lucide-react";
-import { EfficacyRing } from "./EfficacyRing";
+import { Check, AlertTriangle, AlertCircle, Plus, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface LastDoseCardProps {
@@ -22,7 +22,7 @@ function formatDoseDisplay(dose: string): string {
 }
 
 /**
- * LastDoseCard - Resumo clínico da última aplicação registrada.
+ * LastDoseCard - Card bento escuro de foco (estilo Time Tracker em azul-marinho/teal clínico).
  */
 export function LastDoseCard({
   medication,
@@ -34,20 +34,17 @@ export function LastDoseCard({
 }: LastDoseCardProps) {
   const riskConfig = {
     low: {
-      bg: "bg-[var(--nd-success-bg)]",
-      text: "text-[var(--nd-success)]",
+      bg: "bg-white/15 text-white",
       icon: Check,
       label: "Risco mínimo",
     },
     medium: {
-      bg: "bg-[var(--nd-warning-bg)]",
-      text: "text-[var(--nd-warning)]",
+      bg: "bg-[var(--nd-warning-bg)] text-[var(--nd-warning)]",
       icon: AlertTriangle,
       label: "Risco moderado",
     },
     high: {
-      bg: "bg-[var(--nd-error-bg)]",
-      text: "text-[var(--nd-error)]",
+      bg: "bg-[var(--nd-error-bg)] text-[var(--nd-error)]",
       icon: AlertCircle,
       label: "Risco elevado",
     },
@@ -59,60 +56,79 @@ export function LastDoseCard({
   return (
     <section
       aria-label="Última aplicação"
-      className={cn("nd-card p-6 flex flex-col justify-between h-full", className)}
+      className={cn(
+        "nd-card-hero relative overflow-hidden p-6 flex flex-col justify-between h-full",
+        className
+      )}
     >
-      {/* Cabeçalho: rótulo + medicamento à esquerda, anel de 56px à direita */}
-      <div className="flex items-start justify-between gap-4 pb-5">
-        <div className="min-w-0">
-          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
-            Última aplicação
-          </p>
-          <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.01em] text-[var(--nd-text)] truncate">
-            {medication}
-          </h2>
-        </div>
+      {/* Ondas topográficas orgânicas sutis (identidade marítima clínica) */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 280 220"
+        className="pointer-events-none absolute inset-0 w-full h-full opacity-25"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M-20 175 C 45 110, 140 215, 300 95"
+          fill="none"
+          stroke="var(--nd-dark-accent-soft)"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M-20 198 C 60 135, 165 232, 300 128"
+          fill="none"
+          stroke="var(--nd-dark-title-accent)"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M-20 148 C 35 88, 125 182, 300 62"
+          fill="none"
+          stroke="var(--nd-dark-accent-soft)"
+          strokeWidth="1"
+        />
+      </svg>
 
-        <EfficacyRing value={efficacy} size="md" showLabel />
+      <div className="relative z-10 flex items-center justify-between gap-2">
+        <p className="text-[13px] font-medium text-white/80">
+          Última aplicação
+        </p>
+        <span className="inline-flex items-center gap-1 text-[12px] text-white/80 nd-tabular">
+          <Clock className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+          <span>{time}</span>
+        </span>
       </div>
 
-      {/* Lista de detalhes com divisórias finas de 1px */}
-      <dl className="divide-y divide-[var(--nd-border)] border-t border-[var(--nd-border)] text-[13px]">
-        <div className="flex items-center justify-between gap-4 py-3.5">
-          <dt className="font-medium text-[var(--nd-text-secondary)]">
-            Posologia
-          </dt>
-          <dd className="font-medium text-[14px] text-[var(--nd-text)] nd-tabular">
-            {formatDoseDisplay(dose)}
-          </dd>
+      {/* Leitura central tabular em destaque */}
+      <div className="relative z-10 my-5">
+        <p className="text-[32px] font-semibold tracking-[-0.03em] leading-none text-white nd-tabular">
+          {formatDoseDisplay(dose)}
+        </p>
+        <h2 className="mt-2 text-[16px] font-medium text-white/95 truncate">
+          {medication}
+        </h2>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[12px] font-medium nd-tabular">
+            Eficácia {Math.round(efficacy)}%
+          </span>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium",
+              risk.bg
+            )}
+          >
+            <RiskIcon className="w-3 h-3 shrink-0" strokeWidth={2} aria-hidden="true" />
+            <span>{risk.label}</span>
+          </span>
         </div>
+      </div>
 
-        <div className="flex items-center justify-between gap-4 py-3.5">
-          <dt className="font-medium text-[var(--nd-text-secondary)]">
-            Horário
-          </dt>
-          <dd className="font-medium text-[14px] text-[var(--nd-text)] nd-tabular">
-            {time}
-          </dd>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 pt-3.5">
-          <dt className="font-medium text-[var(--nd-text-secondary)]">
-            Efeito adverso
-          </dt>
-          <dd>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--nd-radius)] text-[12px] font-medium",
-                risk.bg,
-                risk.text
-              )}
-            >
-              <RiskIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-              <span>{risk.label}</span>
-            </span>
-          </dd>
-        </div>
-      </dl>
+      <Link
+        to="/dose"
+        className="relative z-10 inline-flex items-center justify-center gap-2 w-full h-11 rounded-full bg-white text-[var(--nd-primary-deep)] text-[14px] font-semibold hover:bg-[var(--nd-accent-soft)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+      >
+        <Plus className="w-4 h-4" strokeWidth={2} aria-hidden="true" />
+        <span>Nova aplicação</span>
+      </Link>
     </section>
   );
 }

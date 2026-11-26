@@ -44,7 +44,7 @@ export function SubjectiveStateCard({
   className,
 }: SubjectiveStateCardProps) {
   return (
-    <div className={cn("glass-card rounded-2xl p-6", className)}>
+    <div className={cn("nd-card p-6", className)}>
       <h3 className="text-sm font-medium text-muted-foreground mb-4">
         Estado Subjetivo Atual
       </h3>

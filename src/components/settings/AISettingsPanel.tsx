@@ -13,7 +13,7 @@ export function AISettingsPanel({
     onChange: (key: keyof AISettings, value: boolean | string) => void;
 }) {
     return (
-        <div className="glass-card rounded-2xl p-6 space-y-6">
+        <div className="nd-card p-6 space-y-6">
             <div>
                 <h2 className="font-display font-semibold text-lg">
                     Configurações de IA
@@ -29,7 +29,7 @@ export function AISettingsPanel({
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-neuro-gradient flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-[var(--nd-primary)] flex items-center justify-center">
                             <Brain className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
@@ -93,7 +93,7 @@ export function AISettingsPanel({
                     </Select>
                 </div>
 
-                <div className="p-4 rounded-xl bg-neuro-gradient-subtle border border-primary/20">
+                <div className="p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
                     <div className="flex items-center gap-2 text-primary mb-2">
                         <Shield className="w-4 h-4" />
                         <span className="text-sm font-medium">

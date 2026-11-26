@@ -46,12 +46,13 @@ export function InteractionAlertCard({
         >
             {onDismiss && (
                 <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 opacity-70 hover:opacity-100"
+                    className="absolute top-1 right-1 sm:top-2 sm:right-2 h-11 w-11 sm:h-7 sm:w-7 opacity-70 hover:opacity-100"
                     onClick={onDismiss}
                 >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                     <span className="sr-only">Fechar</span>
                 </Button>
             )}

@@ -121,11 +121,6 @@ export default {
         "slide-in-right": "slide-in-right 0.4s ease-out forwards",
         "slide-in-left": "slide-in-left 0.4s ease-out forwards",
       },
-      boxShadow: {
-        'glow-primary': '0 0 20px -5px hsl(var(--primary) / 0.3)',
-        'glow-success': '0 0 20px -5px hsl(var(--success) / 0.3)',
-        'glow-warning': '0 0 20px -5px hsl(var(--warning) / 0.3)',
-      },
       spacing: {
         '18': '4.5rem',
         '88': '22rem',

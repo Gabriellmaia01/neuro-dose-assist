@@ -1,4 +1,4 @@
-import { Calendar, Clock, Check, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { type Appointment } from "@/lib/appointments";
@@ -9,100 +9,96 @@ interface PropriedadesSecaoConsultas {
 }
 
 /**
- * SecaoConsultas - Próximos atendimentos da agenda clínica.
- * Estado vazio sóbrio sem caixa tracejada; lista com divisórias de 1px.
+ * SecaoConsultas - Card bento de lembrete da próxima consulta (estilo Reminders com CTA em pílula).
  */
 export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
+  const proxima = consultas[0];
+  const demais = consultas.slice(1, 3);
+
   return (
     <section
       aria-label="Agenda clínica"
-      className="nd-card overflow-hidden"
+      className="nd-card p-6 flex flex-col justify-between h-full"
     >
-      {/* Cabeçalho */}
-      <div className="px-6 pt-6 pb-4 flex items-center justify-between gap-3 border-b border-[var(--nd-border)]">
-        <div>
-          <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
-            Agenda clínica
-          </h2>
-          <p className="text-[13px] font-normal text-[var(--nd-text-secondary)] mt-0.5">
-            Próximos atendimentos
-          </p>
-        </div>
-
-        <Link
-          to="/appointments"
-          className="nd-link inline-flex items-center gap-1 shrink-0"
-        >
-          <span>Agenda completa</span>
-          <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
-        </Link>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+          Próximo atendimento
+        </h2>
+        {consultas.length > 0 && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[var(--nd-muted)] text-[var(--nd-label)] text-[11px] font-semibold nd-tabular">
+            {consultas.length} na fila
+          </span>
+        )}
       </div>
 
-      {/* Lista ou estado vazio sóbrio */}
-      {consultas.length > 0 ? (
-        <ul className="divide-y divide-[var(--nd-border)]">
-          {consultas.slice(0, 3).map((consulta) => {
-            const isConfirmed = consulta.status === "Confirmada";
-
-            return (
-              <li
-                key={consulta.id}
-                className="px-6 py-3.5 flex items-center justify-between gap-3"
+      {proxima ? (
+        <div className="my-5 space-y-4">
+          <div className="space-y-1.5">
+            <p className="text-[19px] font-semibold tracking-[-0.015em] leading-snug text-[var(--nd-primary-deep)] truncate">
+              {proxima.patientName}
+            </p>
+            <p className="text-[13px] text-[var(--nd-text-secondary)] nd-tabular">
+              {format(new Date(proxima.date + "T00:00:00"), "dd/MM")} · {proxima.time} — {proxima.type}
+            </p>
+            <div className="pt-1">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium",
+                  proxima.status === "Confirmada"
+                    ? "bg-[var(--nd-success-bg)] text-[var(--nd-success)]"
+                    : "bg-[var(--nd-muted)] text-[var(--nd-label)]"
+                )}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex flex-col items-center justify-center w-12 h-11 rounded-[var(--nd-radius)] bg-[var(--nd-muted)] shrink-0 nd-tabular">
-                    <span className="text-[13px] font-semibold text-[var(--nd-text)] leading-none">
-                      {consulta.time}
-                    </span>
-                    <span className="text-[12px] text-[var(--nd-text-secondary)] leading-none mt-1">
-                      {format(new Date(consulta.date + "T00:00:00"), "dd/MM")}
-                    </span>
-                  </div>
+                {proxima.status === "Confirmada" ? (
+                  <Check className="w-3 h-3" strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Clock className="w-3 h-3" strokeWidth={1.75} aria-hidden="true" />
+                )}
+                <span>{proxima.status}</span>
+              </span>
+            </div>
+          </div>
 
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-semibold text-[var(--nd-text)] truncate">
-                      {consulta.patientName}
-                    </p>
-                    <p className="text-[13px] text-[var(--nd-text-secondary)] truncate">
-                      {consulta.type}
-                    </p>
-                  </div>
-                </div>
-
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--nd-radius)] text-[12px] font-medium shrink-0",
-                    isConfirmed
-                      ? "bg-[var(--nd-success-bg)] text-[var(--nd-success)]"
-                      : "bg-[var(--nd-muted)] text-[var(--nd-label)]"
-                  )}
+          {demais.length > 0 && (
+            <ul className="pt-3 border-t border-[var(--nd-border)] space-y-2">
+              {demais.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 text-[12px]"
                 >
-                  {isConfirmed ? (
-                    <Check className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
-                  ) : (
-                    <Clock className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
-                  )}
-                  <span>{consulta.status}</span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+                  <span className="font-medium text-[var(--nd-text)] truncate">
+                    {item.patientName}
+                  </span>
+                  <span className="text-[var(--nd-text-secondary)] shrink-0 nd-tabular">
+                    {format(new Date(item.date + "T00:00:00"), "dd/MM")} · {item.time}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       ) : (
-        <div className="px-6 py-10 flex flex-col items-center justify-center text-center">
-          <Calendar
-            className="w-6 h-6 text-[var(--nd-icon)] mb-3"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          <p className="text-[14px] font-medium text-[var(--nd-text)]">
+        <div className="my-auto py-6 flex flex-col items-start gap-2">
+          <div className="w-10 h-10 rounded-full bg-[var(--nd-accent-soft)] flex items-center justify-center">
+            <Calendar
+              className="w-5 h-5 text-[var(--nd-primary)]"
+              strokeWidth={1.65}
+              aria-hidden="true"
+            />
+          </div>
+          <p className="text-[16px] font-semibold text-[var(--nd-text)] mt-1">
             Nenhuma consulta agendada
           </p>
-          <Link to="/appointments" className="nd-link mt-2">
-            + Agendar novo horário
-          </Link>
+          <p className="text-[13px] text-[var(--nd-text-secondary)] leading-relaxed">
+            Organize retornos e avaliações neurológicas na agenda clínica.
+          </p>
         </div>
       )}
+
+      <Link to="/appointments" className="nd-btn-primary-pill w-full">
+        <Calendar className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+        <span>{proxima ? "Abrir agenda" : "Agendar consulta"}</span>
+      </Link>
     </section>
   );
 }

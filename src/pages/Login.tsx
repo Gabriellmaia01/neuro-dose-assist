@@ -44,9 +44,9 @@ export default function Login() {
             <p className="text-[13px] font-medium text-[var(--login-accent)]">
               Portal de prescrição médica
             </p>
-            <h2 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] leading-[1.2] text-[var(--login-light-text)]">
+            <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] leading-[1.2] text-[var(--login-light-text)]">
               {abaAtiva === "login" ? "Identificação clínica" : "Novo cadastro"}
-            </h2>
+            </h1>
             <p className="mt-2 text-[15px] font-normal leading-[1.5] text-[var(--login-light-text-secondary)]">
               {abaAtiva === "login"
                 ? "Acesse o sistema de decisão e farmacocinética neural."

@@ -62,7 +62,7 @@ export default function Medications() {
       <div className="space-y-8 pb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+            <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-md">
               <Pill className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
             </div>
             <div className="min-w-0">
@@ -158,12 +158,12 @@ export default function Medications() {
         />
 
         {loading ? (
-          <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+          <div className="nd-card p-12 flex items-center justify-center gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
             <span className="text-muted-foreground font-medium">Carregando medicamentos…</span>
           </div>
         ) : filteredMedications.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center">
+          <div className="nd-card p-12 text-center">
             <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
               <Pill className="w-7 h-7 text-muted-foreground" aria-hidden="true" />
             </div>
@@ -197,7 +197,7 @@ export default function Medications() {
                   )}
                 </Button>
               )}
-              <Button variant="neuro" onClick={() => setIsDialogOpen(true)} className="h-11">
+              <Button variant="default" onClick={() => setIsDialogOpen(true)} className="h-11">
                 <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                 Cadastrar Medicamento
               </Button>

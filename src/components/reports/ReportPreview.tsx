@@ -46,7 +46,7 @@ export function ReportPreview({
     onDownload: () => void;
 }) {
     return (
-        <div className="glass-card rounded-2xl p-8 shadow-lg">
+        <div className="nd-card p-8 shadow-lg">
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
                 <div>
                     <h2 className="font-display font-semibold text-xl mb-1">
@@ -76,7 +76,7 @@ export function ReportPreview({
                 ) : (
                     <>
                         <div className="text-center pb-8 border-b-2 border-border mb-8">
-                            <div className="w-20 h-20 rounded-2xl bg-neuro-gradient flex items-center justify-center mx-auto mb-5 shadow-lg">
+                            <div className="w-20 h-20 rounded-2xl bg-[var(--nd-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg">
                                 <Brain className="w-10 h-10 text-primary-foreground" />
                             </div>
                             <h3 className="font-display text-2xl font-bold mb-2">NeuroDose Assist</h3>

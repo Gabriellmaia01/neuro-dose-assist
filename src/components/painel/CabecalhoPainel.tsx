@@ -1,4 +1,5 @@
-import { Users, Activity, ShieldCheck } from "lucide-react";
+import { FileText, History, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { type EstatisticasPainel } from "@/lib/tiposPainel";
 
 interface PropriedadesCabecalhoPainel {
@@ -6,37 +7,36 @@ interface PropriedadesCabecalhoPainel {
 }
 
 /**
- * CabecalhoPainel - Cabeçalho simples e sóbrio da página principal do dashboard.
- * Responsabilidade única: apresentar o título, subtítulo e resumo clínico discreto.
+ * CabecalhoPainel - Cabeçalho bento do dashboard com título clínico e ações em pílula.
  */
 export function CabecalhoPainel({ estatisticas }: PropriedadesCabecalhoPainel) {
   return (
-    <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
-      <div className="space-y-1.5">
-        <h1 className="text-[28px] font-semibold tracking-[-0.02em] leading-[1.2] text-[var(--nd-text)]">
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="space-y-1 min-w-0">
+        <h1 className="text-[24px] sm:text-[28px] font-semibold tracking-[-0.025em] leading-[1.2] text-[var(--nd-text)]">
           Centro de Telemetria e Decisão Farmacológica
         </h1>
-        <p className="text-[15px] font-normal leading-[1.5] text-[var(--nd-text-secondary)] max-w-2xl">
-          Monitoramento preditivo e suporte algorítmico contínuo para dosagens neurológicas de alta precisão.
+        <p className="text-[14px] sm:text-[15px] font-normal leading-[1.5] text-[var(--nd-text-secondary)]">
+          Acompanhe {estatisticas.pacientesAtivos} pacientes ativos, curvas posológicas e alertas clínicos em tempo real.
         </p>
       </div>
 
-      {/* Resumo discreto em texto com ícones finos */}
-      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-[var(--nd-text-secondary)] nd-tabular shrink-0">
-        <span className="inline-flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
-          <span>{estatisticas.pacientesAtivos} pacientes</span>
-        </span>
-        <span aria-hidden="true" className="text-[var(--nd-border-hover)]">·</span>
-        <span className="inline-flex items-center gap-1.5">
-          <Activity className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
-          <span>{estatisticas.inferenciasIA} inferências</span>
-        </span>
-        <span aria-hidden="true" className="text-[var(--nd-border-hover)]">·</span>
-        <span className="inline-flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
-          <span>LGPD/CFM</span>
-        </span>
+      {/* Ações rápidas em pílula (hierarquia primária + secundárias) */}
+      <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <Link to="/dose" className="nd-btn-primary-pill">
+          <Plus className="w-4 h-4" strokeWidth={2} aria-hidden="true" />
+          <span>Registrar Dose</span>
+        </Link>
+
+        <Link to="/history" className="nd-btn-outline-pill">
+          <History className="w-4 h-4 text-[var(--nd-primary)]" strokeWidth={1.75} aria-hidden="true" />
+          <span>Histórico</span>
+        </Link>
+
+        <Link to="/reports" className="nd-btn-outline-pill">
+          <FileText className="w-4 h-4 text-[var(--nd-primary)]" strokeWidth={1.75} aria-hidden="true" />
+          <span>Relatório</span>
+        </Link>
       </div>
     </div>
   );

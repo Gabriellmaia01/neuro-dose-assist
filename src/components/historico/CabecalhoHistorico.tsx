@@ -24,7 +24,7 @@ export function CabecalhoHistorico({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+        <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-md">
           <Clock className="w-6 h-6 text-primary-foreground" />
         </div>
         <div>

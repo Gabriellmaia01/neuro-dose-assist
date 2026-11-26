@@ -34,7 +34,7 @@ export function PainelResumoLateral({
 }: PropriedadesPainelResumo) {
   return (
     <aside className="lg:col-span-4 space-y-6">
-      <div className="glass-card rounded-2xl p-6">
+      <div className="nd-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
             <ClipboardCheck className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -86,7 +86,7 @@ export function PainelResumoLateral({
         )}
       </div>
 
-      <div className="glass-card rounded-2xl p-6">
+      <div className="nd-card p-6">
         <div className="flex items-center gap-2 text-primary mb-2">
           <AlertTriangle className="w-4 h-4" aria-hidden="true" />
           <p className="text-sm font-semibold">Dica</p>

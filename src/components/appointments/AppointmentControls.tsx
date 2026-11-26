@@ -25,7 +25,7 @@ import { Calendar as CalendarIcon, Loader2, Plus } from "lucide-react";
 
 export function AppointmentLoadingIndicator() {
     return (
-        <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+        <div className="nd-card p-12 flex items-center justify-center gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <span className="text-muted-foreground font-medium">Carregando agenda...</span>
         </div>
@@ -35,7 +35,7 @@ export function AppointmentLoadingIndicator() {
 export function AppointmentHeader() {
     return (
         <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+            <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-md">
                 <CalendarIcon className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
@@ -178,7 +178,7 @@ function AppointmentDialog({
     return (
         <Dialog open={aberto} onOpenChange={aoMudar}>
             <DialogTrigger asChild>
-                <Button variant="neuro" onClick={aoClicarNovo}>
+                <Button variant="default" onClick={aoClicarNovo}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nova Consulta
                 </Button>
@@ -201,7 +201,7 @@ function AppointmentDialog({
                     <Button variant="outline" onClick={aoFechar} disabled={salvando}>
                         Cancelar
                     </Button>
-                    <Button variant="neuro" onClick={aoSalvar} disabled={salvando}>
+                    <Button variant="default" onClick={aoSalvar} disabled={salvando}>
                         {salvando ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

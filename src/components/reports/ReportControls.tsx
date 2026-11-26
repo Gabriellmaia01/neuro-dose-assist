@@ -67,7 +67,7 @@ export function ReportControls({
 }) {
     return (
         <div className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 shadow-lg">
+            <div className="nd-card p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <FileText className="w-4 h-4 text-primary" />
@@ -107,7 +107,7 @@ export function ReportControls({
                 </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-6 shadow-lg">
+            <div className="nd-card p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
                         <CalendarIcon className="w-4 h-4 text-info" />
@@ -204,7 +204,7 @@ export function ReportControls({
                 </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-6 shadow-lg">
+            <div className="nd-card p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
                         <Download className="w-4 h-4 text-success" />
@@ -213,7 +213,7 @@ export function ReportControls({
                 </div>
                 <div className="space-y-3">
                     <Button
-                        variant="neuro"
+                        variant="default"
                         className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all"
                         onClick={() => onGenerate("pdf")}
                         disabled={isGenerating || loading}

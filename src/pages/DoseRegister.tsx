@@ -100,7 +100,7 @@ export default function DoseRegister() {
         {!mostrarResultado ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Formulário principal */}
-            <div className="lg:col-span-8 glass-card rounded-2xl p-6 sm:p-8">
+            <div className="lg:col-span-8 nd-card p-6 sm:p-8">
               {formulario.etapa === 1 && (
                 <EtapaInformacoesDose
                   pacientes={pacientes}

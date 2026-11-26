@@ -49,7 +49,7 @@ export function FiltrosHistorico({
   temFiltrosAtivos,
 }: PropriedadesFiltros) {
   return (
-    <div className="glass-card rounded-2xl p-6 shadow-lg">
+    <div className="nd-card p-6 shadow-lg">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
           <Filter className="w-4 h-4 text-primary" />

@@ -19,7 +19,7 @@ const NOMES_ETAPAS: Record<number, string> = {
 
 export function BarraProgressoEtapas({ etapaAtual }: PropriedadesBarraProgresso) {
   return (
-    <div className="glass-card rounded-2xl p-4">
+    <div className="nd-card p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -38,7 +38,7 @@ export function BarraProgressoEtapas({ etapaAtual }: PropriedadesBarraProgresso)
                   "w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold",
                   "transition-[background-color,color,box-shadow] duration-200",
                   etapaAtual >= s
-                    ? "bg-neuro-gradient text-primary-foreground shadow-sm"
+                    ? "bg-[var(--nd-primary)] text-primary-foreground shadow-sm"
                     : "bg-muted text-muted-foreground"
                 )}
               >

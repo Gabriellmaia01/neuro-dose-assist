@@ -25,39 +25,46 @@ export function DialogoRecuperarSenha({
 }: PropriedadesDialogoRecuperarSenha) {
   return (
     <Dialog open={aberto} onOpenChange={aoMudarAberto}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md">
+      <DialogContent className="bg-[var(--nd-surface)] border border-[var(--nd-border)] text-[var(--nd-text)] shadow-[var(--nd-shadow-popover)] sm:max-w-md rounded-[var(--nd-radius-lg)]">
         <DialogHeader>
-          <DialogTitle>Recuperar senha</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogTitle className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+            Recuperar senha
+          </DialogTitle>
+          <DialogDescription className="text-[14px] text-[var(--nd-text-secondary)]">
             Informe o email da sua conta. Enviaremos um link para você criar uma nova senha.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={aoEnviar} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="recuperar-email" className="text-slate-300">
+            <Label htmlFor="recuperar-email" className="text-[13px] font-medium text-[var(--nd-label)]">
               Email da conta
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <Mail
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[var(--nd-icon)] pointer-events-none"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
               <Input
                 id="recuperar-email"
                 type="email"
-                placeholder="seu@email.com"
+                autoComplete="email"
+                placeholder="nome@clinica.med.br"
                 value={email}
                 onChange={(e) => aoMudarEmail(e.target.value)}
-                className="pl-11 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl"
+                className="login-input pl-[42px] pr-3.5"
                 required
                 disabled={enviando}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button
               type="button"
-              variant="ghost"
-              className="text-slate-300 hover:text-white"
+              variant="outline"
+              className="h-11 sm:h-10 border-[var(--nd-border-input)] text-[var(--nd-label)] hover:bg-[var(--nd-bg)] hover:text-[var(--nd-text)]"
               onClick={() => aoMudarAberto(false)}
               disabled={enviando}
             >
@@ -65,12 +72,12 @@ export function DialogoRecuperarSenha({
             </Button>
             <Button
               type="submit"
-              className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
+              className="h-11 sm:h-10 bg-[var(--nd-primary)] hover:bg-[var(--nd-primary-hover)] text-white shadow-none"
               disabled={enviando || email.trim() === ""}
             >
               {enviando ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
                   Enviando...
                 </>
               ) : (

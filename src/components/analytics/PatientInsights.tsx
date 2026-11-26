@@ -49,7 +49,7 @@ export function PatientInsights({
 
     if (analytics.length === 0) {
         return (
-            <div className={cn("glass-card rounded-2xl p-6", className)}>
+            <div className={cn("nd-card p-6", className)}>
                 <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
                         <User className="w-4 h-4 text-info" />
@@ -66,7 +66,7 @@ export function PatientInsights({
     }
 
     return (
-        <div className={cn("glass-card rounded-2xl p-6", className)}>
+        <div className={cn("nd-card p-6", className)}>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">

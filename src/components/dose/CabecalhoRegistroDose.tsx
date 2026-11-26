@@ -7,7 +7,7 @@ import { Pill } from "lucide-react";
 export function CabecalhoRegistroDose() {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
+      <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-md">
         <Pill className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
       </div>
       <div className="min-w-0">

@@ -24,7 +24,7 @@ export function ListaAtividadesHistorico({
 }: PropriedadesListaAtividades) {
   if (carregando) {
     return (
-      <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+      <div className="nd-card p-12 flex items-center justify-center gap-3">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
         <span className="text-muted-foreground font-medium">
           Carregando atividades…
@@ -35,7 +35,7 @@ export function ListaAtividadesHistorico({
 
   if (logs.length === 0) {
     return (
-      <div className="glass-card rounded-2xl p-12 text-center">
+      <div className="nd-card p-12 text-center">
         <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
           <FileText
             className="w-7 h-7 text-muted-foreground"
@@ -70,7 +70,7 @@ export function ListaAtividadesHistorico({
           <li key={log.id}>
             <div
               className={cn(
-                "w-full glass-card rounded-2xl p-5 transition-colors duration-200 hover:bg-card/90"
+                "w-full nd-card p-5 transition-colors duration-200 hover:bg-card/90"
               )}
             >
               <div className="flex items-start gap-4">

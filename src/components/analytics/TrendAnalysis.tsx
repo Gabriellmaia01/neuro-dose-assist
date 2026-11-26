@@ -27,7 +27,7 @@ export function TrendAnalysis({
 }: TrendAnalysisProps) {
     if (data.length === 0) {
         return (
-            <div className={cn("glass-card rounded-2xl p-6", className)}>
+            <div className={cn("nd-card p-6", className)}>
                 <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Activity className="w-4 h-4 text-primary" />
@@ -44,7 +44,7 @@ export function TrendAnalysis({
     }
 
     return (
-        <div className={cn("glass-card rounded-2xl p-6", className)}>
+        <div className={cn("nd-card p-6", className)}>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -63,7 +63,7 @@ export function TrendAnalysis({
                         <span className="text-muted-foreground">Eficácia</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-info" />
+                        <div className="w-3 h-3 rounded-full bg-accent" />
                         <span className="text-muted-foreground">Humor</span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -109,8 +109,8 @@ export function TrendAnalysis({
                         contentStyle={{
                             backgroundColor: "hsl(var(--card))",
                             border: "1px solid hsl(var(--border))",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                            borderRadius: "var(--nd-radius)",
+                            boxShadow: "var(--nd-shadow-popover)"
                         }}
                         labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
                         formatter={(value: number, name: string) => {
@@ -135,11 +135,11 @@ export function TrendAnalysis({
                     <Line
                         type="monotone"
                         dataKey="mood"
-                        stroke="hsl(var(--info))"
+                        stroke="hsl(var(--accent))"
                         strokeWidth={2}
                         strokeDasharray="5 5"
-                        dot={{ fill: "hsl(var(--info))", strokeWidth: 0, r: 3 }}
-                        activeDot={{ r: 5, fill: "hsl(var(--info))" }}
+                        dot={{ fill: "hsl(var(--accent))", strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5, fill: "hsl(var(--accent))" }}
                     />
 
                     <Line
@@ -167,10 +167,10 @@ export function TrendAnalysis({
                 </div>
                 <div className="text-center">
                     <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Brain className="w-4 h-4 text-info" />
+                        <Brain className="w-4 h-4 text-accent" />
                         <span className="text-xs font-medium text-muted-foreground">Humor Médio</span>
                     </div>
-                    <p className="text-xl font-display font-bold text-info">
+                    <p className="text-xl font-display font-bold text-accent">
                         {Math.round(data.reduce((a, b) => a + b.mood, 0) / data.length)}%
                     </p>
                 </div>

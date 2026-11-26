@@ -52,7 +52,7 @@ export function MedicationFormDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="neuro" className="h-11">
+        <Button variant="default" className="h-11">
           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
           Novo Medicamento
         </Button>
@@ -214,7 +214,7 @@ export function MedicationFormDialog({
           >
             Cancelar
           </Button>
-          <Button variant="neuro" onClick={onSave} disabled={saving} className="h-11">
+          <Button variant="default" onClick={onSave} disabled={saving} className="h-11">
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />

@@ -7,24 +7,24 @@ function AnalyticsStatCard({
     label,
     value,
     icon,
-    borderColor,
 }: {
     label: string;
     value: ReactNode;
     icon: ReactNode;
-    borderColor: string;
 }) {
     return (
-        <div className={cn("glass-card rounded-xl p-4 border-l-4", borderColor)}>
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        {label}
-                    </p>
-                    <div className="mt-1">{value}</div>
-                </div>
-                {icon}
+        <div className="nd-card p-4">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[13px] font-medium text-[var(--nd-text-secondary)] truncate">
+                    {label}
+                </p>
+                {icon && (
+                    <span className="text-[var(--nd-icon)] shrink-0" aria-hidden="true">
+                        {icon}
+                    </span>
+                )}
             </div>
+            <div className="mt-2">{value}</div>
         </div>
     );
 }
@@ -60,64 +60,58 @@ export function AnalyticsStats({ metrics }: { metrics: AnalyticsMetrics }) {
     const trend = getTrendContent(metrics.trendDirection);
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <AnalyticsStatCard
-                label="Total Doses"
-                value={<p className="text-2xl font-display font-bold">{metrics.totalDoses}</p>}
-                icon={<Pill className="w-8 h-8 text-primary/60" />}
-                borderColor="border-l-primary"
+                label="Total de doses"
+                value={<p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] nd-tabular">{metrics.totalDoses}</p>}
+                icon={<Pill className="w-4 h-4" strokeWidth={1.5} />}
             />
             <AnalyticsStatCard
                 label="Pacientes"
-                value={<p className="text-2xl font-display font-bold">{metrics.totalPatients}</p>}
-                icon={<Users className="w-8 h-8 text-info/60" />}
-                borderColor="border-l-info"
+                value={<p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] nd-tabular">{metrics.totalPatients}</p>}
+                icon={<Users className="w-4 h-4" strokeWidth={1.5} />}
             />
             <AnalyticsStatCard
                 label="Eficácia"
                 value={
-                    <p className={cn("text-2xl font-display font-bold", getThresholdColor(metrics.avgEfficacy, 70, 50))}>
+                    <p className={cn("text-[24px] font-semibold tracking-[-0.02em] nd-tabular", getThresholdColor(metrics.avgEfficacy, 70, 50))}>
                         {metrics.avgEfficacy}%
                     </p>
                 }
-                icon={<Activity className="w-8 h-8 text-success/60" />}
-                borderColor="border-l-success"
+                icon={<Activity className="w-4 h-4" strokeWidth={1.5} />}
             />
             <AnalyticsStatCard
                 label="Adesão"
                 value={
-                    <p className={cn("text-2xl font-display font-bold", getThresholdColor(metrics.adherenceRate, 80, 60))}>
+                    <p className={cn("text-[24px] font-semibold tracking-[-0.02em] nd-tabular", getThresholdColor(metrics.adherenceRate, 80, 60))}>
                         {metrics.adherenceRate}%
                     </p>
                 }
-                icon={<Brain className="w-8 h-8 text-purple-500/60" />}
-                borderColor="border-l-purple-500"
+                icon={<Brain className="w-4 h-4" strokeWidth={1.5} />}
             />
             <AnalyticsStatCard
                 label="Alertas"
                 value={
                     <p className={cn(
-                        "text-2xl font-display font-bold",
+                        "text-[24px] font-semibold tracking-[-0.02em] nd-tabular",
                         metrics.riskAlerts > 0 ? "text-warning" : "text-success"
                     )}>
                         {metrics.riskAlerts}
                     </p>
                 }
-                icon={<Sparkles className="w-8 h-8 text-warning/60" />}
-                borderColor="border-l-warning"
+                icon={<Sparkles className="w-4 h-4" strokeWidth={1.5} />}
             />
             <AnalyticsStatCard
                 label="Tendência"
                 value={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         {trend.icon}
-                        <span className={cn("text-lg font-display font-bold", trend.textColor)}>
+                        <span className={cn("text-[18px] font-semibold tracking-[-0.01em]", trend.textColor)}>
                             {trend.text}
                         </span>
                     </div>
                 }
                 icon={null}
-                borderColor="border-l-accent"
             />
         </div>
     );

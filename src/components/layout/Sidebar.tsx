@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Pill,
@@ -42,7 +42,7 @@ interface SidebarProps {
 }
 
 /**
- * Sidebar - Navegação lateral escura e sóbria (#0F1E2E).
+ * Sidebar - Navegação lateral clara em estilo bento clínico (#F8FAFC).
  * Colapsa automaticamente para ícones entre 900px e 1279px e vira drawer abaixo de 900px.
  */
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
@@ -50,18 +50,77 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     if (typeof window === "undefined") return false;
     return window.innerWidth >= 900 && window.innerWidth < 1280;
   });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 900;
+  });
+  const asideRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 900px) and (max-width: 1279px)");
-    const handleViewportChange = (e: MediaQueryListEvent) => {
-      setCollapsed(e.matches);
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const tabletQuery = window.matchMedia("(min-width: 900px) and (max-width: 1279px)");
+    const mobileQuery = window.matchMedia("(max-width: 899px)");
+    const handleTabletChange = (e: MediaQueryListEvent) => setCollapsed(e.matches);
+    const handleMobileChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+
+    setIsMobile(mobileQuery.matches);
+    tabletQuery.addEventListener("change", handleTabletChange);
+    mobileQuery.addEventListener("change", handleMobileChange);
+    return () => {
+      tabletQuery.removeEventListener("change", handleTabletChange);
+      mobileQuery.removeEventListener("change", handleMobileChange);
     };
-    mediaQuery.addEventListener("change", handleViewportChange);
-    return () => mediaQuery.removeEventListener("change", handleViewportChange);
   }, []);
+
+  // Impede foco via teclado na sidebar fora da tela em viewports mobile (<900px)
+  useEffect(() => {
+    const el = asideRef.current;
+    if (!el) return;
+    (el as HTMLElement & { inert: boolean }).inert = isMobile && !isOpen;
+  }, [isMobile, isOpen]);
+
+  // Drawer mobile: foco inicial, trap de Tab, fechamento com Escape e trava de scroll
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose?.();
+        return;
+      }
+
+      if (event.key !== "Tab" || !asideRef.current) return;
+      const focusable = asideRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobile, isOpen, onClose]);
 
   const handleLogout = async () => {
     await logout();
@@ -79,54 +138,60 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <aside
+      ref={asideRef}
+      role={isMobile && isOpen ? "dialog" : undefined}
+      aria-modal={isMobile && isOpen ? true : undefined}
+      aria-hidden={isMobile && !isOpen ? true : undefined}
       aria-label="Menu lateral"
       data-open={isOpen ? "true" : "false"}
       data-collapsed={collapsed ? "true" : "false"}
       className="nd-sidebar"
     >
-      {/* Topo: marca Neuro-Dose */}
+      {/* Topo: marca Neuro-Dose em superfície clara */}
       <div
         className={cn(
-          "h-16 flex items-center border-b border-[var(--nd-dark-border)] shrink-0",
-          showLabels ? "justify-between px-4" : "justify-center px-2"
+          "h-[72px] flex items-center shrink-0",
+          showLabels ? "justify-between px-5" : "justify-center px-2"
         )}
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <Link
+          to="/"
+          onClick={handleNavClick}
+          className="flex items-center gap-3 min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] rounded-xl"
+        >
           <div
-            className="w-8 h-8 rounded-[var(--nd-radius)] border border-[var(--nd-dark-accent-soft)] flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded-xl bg-[var(--nd-primary)] text-white flex items-center justify-center shrink-0 shadow-sm"
             aria-hidden="true"
           >
-            <Brain
-              className="w-[18px] h-[18px] text-[var(--nd-dark-accent-soft)]"
-              strokeWidth={1.5}
-            />
+            <Brain className="w-5 h-5" strokeWidth={1.75} />
           </div>
           {showLabels && (
-            <span className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--nd-dark-text)] truncate">
+            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] truncate">
               Neuro-Dose
             </span>
           )}
-        </div>
+        </Link>
 
         {/* Botão de fechar no drawer mobile */}
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="nd-mobile-only items-center justify-center w-8 h-8 rounded-[var(--nd-radius)] text-[var(--nd-dark-text-secondary)] hover:text-[var(--nd-dark-text)] hover:bg-[var(--nd-dark-hover)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-dark-accent-soft)]"
+          className="nd-mobile-only items-center justify-center w-11 h-11 -mr-2 rounded-full text-[var(--nd-text-secondary)] hover:text-[var(--nd-text)] hover:bg-[var(--nd-muted)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)]"
           aria-label="Fechar menu lateral"
         >
-          <X className="w-[18px] h-[18px]" strokeWidth={1.5} aria-hidden="true" />
+          <X className="w-[18px] h-[18px]" strokeWidth={1.75} aria-hidden="true" />
         </button>
       </div>
 
       {/* Navegação principal */}
       <nav
         aria-label="Navegação principal"
-        className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4"
+        className="flex-1 overflow-y-auto scrollbar-thin px-3.5 py-2"
       >
         {showLabels && (
-          <p className="px-3 mb-2 text-[12px] font-medium text-[var(--nd-dark-text-secondary)]">
-            Módulos clínicos
+          <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--nd-text-secondary)]">
+            Menu
           </p>
         )}
 
@@ -146,8 +211,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   )}
                 >
                   <item.icon
-                    className="w-[18px] h-[18px] shrink-0"
-                    strokeWidth={1.5}
+                    className={cn(
+                      "w-[18px] h-[18px] shrink-0",
+                      isActive ? "text-[var(--nd-primary)]" : "text-[var(--nd-icon)]"
+                    )}
+                    strokeWidth={isActive ? 2 : 1.65}
                     aria-hidden="true"
                   />
                   {showLabels && <span className="truncate">{item.name}</span>}
@@ -158,9 +226,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </ul>
 
         {/* Grupo Sistema */}
-        <div className="mt-6 pt-4 border-t border-[var(--nd-dark-border)]">
+        <div className="mt-5 pt-4 border-t border-[var(--nd-border)]">
           {showLabels && (
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--nd-dark-text-secondary)]">
+            <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--nd-text-secondary)]">
               Sistema
             </p>
           )}
@@ -180,8 +248,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     )}
                   >
                     <item.icon
-                      className="w-[18px] h-[18px] shrink-0"
-                      strokeWidth={1.5}
+                      className={cn(
+                        "w-[18px] h-[18px] shrink-0",
+                        isActive ? "text-[var(--nd-primary)]" : "text-[var(--nd-icon)]"
+                      )}
+                      strokeWidth={isActive ? 2 : 1.65}
                       aria-hidden="true"
                     />
                     {showLabels && <span className="truncate">{item.name}</span>}
@@ -189,32 +260,30 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </li>
               );
             })}
+            <li>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title={!showLabels ? "Desconectar" : undefined}
+                className={cn("nd-logout-btn", !showLabels && "justify-center px-0")}
+              >
+                <LogOut
+                  className="w-[18px] h-[18px] shrink-0 text-[var(--nd-icon)]"
+                  strokeWidth={1.65}
+                  aria-hidden="true"
+                />
+                {showLabels && <span>Desconectar</span>}
+              </button>
+            </li>
           </ul>
         </div>
       </nav>
-
-      {/* Rodapé: Desconectar (neutro, sem vermelho) */}
-      <div className="p-3 border-t border-[var(--nd-dark-border)] shrink-0">
-        <button
-          type="button"
-          onClick={handleLogout}
-          title={!showLabels ? "Desconectar" : undefined}
-          className={cn("nd-logout-btn", !showLabels && "justify-center px-0")}
-        >
-          <LogOut
-            className="w-[18px] h-[18px] shrink-0"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          {showLabels && <span>Desconectar</span>}
-        </button>
-      </div>
 
       {/* Botão de recolher/expandir sidebar no desktop (>=900px) */}
       <button
         type="button"
         onClick={() => setCollapsed((prev) => !prev)}
-        className="nd-desktop-only items-center justify-center absolute -right-3 top-[20px] w-6 h-6 rounded-full bg-[var(--nd-surface)] border border-[var(--nd-border-input)] text-[var(--nd-label)] hover:border-[var(--nd-border-hover)] hover:text-[var(--nd-text)] shadow-[var(--nd-shadow-sm)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] z-50"
+        className="nd-desktop-only items-center justify-center absolute -right-3.5 top-[22px] w-7 h-7 rounded-full bg-[var(--nd-surface)] border border-[var(--nd-border-input)] text-[var(--nd-label)] hover:border-[var(--nd-border-hover)] hover:text-[var(--nd-text)] shadow-[var(--nd-shadow-sm)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] z-50"
         aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
         aria-expanded={!collapsed}
       >

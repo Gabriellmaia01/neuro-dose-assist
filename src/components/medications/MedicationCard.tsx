@@ -27,7 +27,7 @@ export function MedicationCard({
   return (
     <div
       className={cn(
-        "glass-card rounded-2xl p-6",
+        "nd-card p-6",
         "transition-[transform,box-shadow,background-color] duration-200",
         "hover:shadow-lg hover:bg-card/90"
       )}

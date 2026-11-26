@@ -52,13 +52,13 @@ export function LadoHeroLogin() {
 
       {/* Centro: título, subtítulo e grade de 3 métricas */}
       <div className="my-auto py-10">
-        <h1 className="text-[48px] font-semibold tracking-[-0.02em] leading-[1.1] text-[var(--login-dark-text)]">
+        <p className="text-[48px] font-semibold tracking-[-0.02em] leading-[1.1] text-[var(--login-dark-text)]">
           Precisão algorítmica na
           <br />
           <span className="text-[var(--login-dark-title-accent)]">
             Neurologia Clínica.
           </span>
-        </h1>
+        </p>
 
         <p className="mt-6 text-[18px] font-normal leading-[1.6] text-[var(--login-dark-text-secondary)] max-w-[560px]">
           Modelagem farmacocinética e suporte à dosagem em tempo real.

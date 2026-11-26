@@ -38,7 +38,7 @@ export function ListaRegistrosHistorico({
 }: PropriedadesListaRegistros) {
   if (carregando) {
     return (
-      <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+      <div className="nd-card p-12 flex items-center justify-center gap-3">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
         <span className="text-muted-foreground font-medium">
           Carregando histórico…
@@ -49,7 +49,7 @@ export function ListaRegistrosHistorico({
 
   if (itens.length === 0) {
     return (
-      <div className="glass-card rounded-2xl p-12 text-center">
+      <div className="nd-card p-12 text-center">
         <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
           <Search className="w-7 h-7 text-muted-foreground" aria-hidden="true" />
         </div>
@@ -84,7 +84,7 @@ export function ListaRegistrosHistorico({
               type="button"
               onClick={() => onItemSelecionado(item)}
               className={cn(
-                "w-full text-left glass-card rounded-2xl p-5 transition-[transform,box-shadow,background-color] duration-200 hover:shadow-md hover:bg-card/90",
+                "w-full text-left nd-card p-5 transition-[transform,box-shadow,background-color] duration-200 hover:shadow-md hover:bg-card/90",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               )}
               aria-label={`Abrir detalhes do registro de ${item.patientName} em ${rotuloDataHora}`}

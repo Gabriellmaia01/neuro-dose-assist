@@ -14,46 +14,43 @@ export function ReportStatsBar({
 }) {
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total de Doses</p>
-                        <p className="text-2xl font-display font-bold mt-1">{totalDoses}</p>
-                    </div>
-                    <Pill className="w-8 h-8 text-primary/60" />
+            <div className="nd-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Total de doses</p>
+                    <Pill className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 </div>
+                <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{totalDoses}</p>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Eficácia Média</p>
-                        <p className={cn(
-                            "text-2xl font-display font-bold mt-1",
-                            avgEfficacy > 70 ? "text-success" : avgEfficacy > 50 ? "text-warning" : "text-destructive"
-                        )}>
-                            {avgEfficacy}%
-                        </p>
-                    </div>
-                    <Activity className="w-8 h-8 text-success/60" />
+            <div className="nd-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Eficácia média</p>
+                    <Activity className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 </div>
+                <p className={cn(
+                    "text-[24px] font-semibold tracking-[-0.02em] mt-2 nd-tabular",
+                    avgEfficacy > 70 ? "text-[var(--nd-success)]" : avgEfficacy > 50 ? "text-[var(--nd-warning)]" : "text-[var(--nd-error)]"
+                )}>
+                    {avgEfficacy}%
+                </p>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Medicamentos</p>
-                        <p className="text-2xl font-display font-bold mt-1">{uniqueMedications}</p>
-                    </div>
-                    <Brain className="w-8 h-8 text-info/60" />
+            <div className="nd-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Medicamentos</p>
+                    <Brain className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 </div>
+                <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{uniqueMedications}</p>
             </div>
-            <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Alertas</p>
-                        <p className="text-2xl font-display font-bold mt-1 text-warning">{lowMoodCount}</p>
-                    </div>
-                    <Activity className="w-8 h-8 text-warning/60" />
+            <div className="nd-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Alertas</p>
+                    <Activity className="w-4 h-4 text-[var(--nd-warning)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 </div>
+                <p className={cn(
+                    "text-[24px] font-semibold tracking-[-0.02em] mt-2 nd-tabular",
+                    lowMoodCount > 0 ? "text-[var(--nd-warning)]" : "text-[var(--nd-text)]"
+                )}>
+                    {lowMoodCount}
+                </p>
             </div>
         </div>
     );

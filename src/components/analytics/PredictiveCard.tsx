@@ -50,11 +50,11 @@ export function PredictiveCard({ insights, className }: PredictiveCardProps) {
     };
 
     return (
-        <div className={cn("glass-card rounded-2xl p-6", className)}>
+        <div className={cn("nd-card p-6", className)}>
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-neuro-gradient flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--nd-primary)] flex items-center justify-center">
                         <Brain className="w-4 h-4 text-primary-foreground" />
                     </div>
                     <div>
@@ -150,7 +150,7 @@ export function PredictiveCard({ insights, className }: PredictiveCardProps) {
 
             {/* Suggested Adjustment — only shown when relevant */}
             {insights.suggestedDoseAdjustment && (
-                <div className="p-4 rounded-xl bg-neuro-gradient-subtle border border-primary/20">
+                <div className="p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
                     <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <AlertTriangle className="w-4 h-4 text-primary" />

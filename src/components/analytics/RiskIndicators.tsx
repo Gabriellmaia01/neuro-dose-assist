@@ -49,22 +49,22 @@ const riskLabels = {
 
 const severityStyles = {
     low: {
-        bg: "bg-warning/10",
-        border: "border-warning/20",
-        icon: "text-warning",
-        badge: "bg-warning/20 text-warning"
+        bg: "bg-[var(--nd-muted)]/70",
+        border: "border-[var(--nd-border)]",
+        icon: "text-[var(--nd-primary)]",
+        badge: "bg-primary/10 text-primary"
     },
     medium: {
-        bg: "bg-orange-500/10",
-        border: "border-orange-500/20",
-        icon: "text-orange-500",
-        badge: "bg-orange-500/20 text-orange-500"
+        bg: "bg-[var(--nd-warning-bg)]",
+        border: "border-[var(--nd-warning)]/25",
+        icon: "text-[var(--nd-warning)]",
+        badge: "bg-[var(--nd-warning)]/15 text-[var(--nd-warning)]"
     },
     high: {
-        bg: "bg-destructive/10",
-        border: "border-destructive/20",
-        icon: "text-destructive",
-        badge: "bg-destructive/20 text-destructive"
+        bg: "bg-[var(--nd-error-bg)]",
+        border: "border-[var(--nd-error)]/25",
+        icon: "text-[var(--nd-error)]",
+        badge: "bg-[var(--nd-error)]/15 text-[var(--nd-error)]"
     }
 };
 
@@ -135,7 +135,7 @@ export function RiskIndicators({
 
     return (
         <>
-            <div className={cn("glass-card rounded-2xl p-6", className)}>
+            <div className={cn("nd-card p-6", className)}>
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
@@ -153,10 +153,10 @@ export function RiskIndicators({
                         <div className={cn(
                             "px-3 py-1 rounded-full text-xs font-semibold",
                             alerts.some(a => a.severity === "high")
-                                ? "bg-destructive/20 text-destructive"
+                                ? "bg-[var(--nd-error-bg)] text-[var(--nd-error)]"
                                 : alerts.some(a => a.severity === "medium")
-                                    ? "bg-orange-500/20 text-orange-500"
-                                    : "bg-warning/20 text-warning"
+                                    ? "bg-[var(--nd-warning-bg)] text-[var(--nd-warning)]"
+                                    : "bg-[var(--nd-muted)] text-[var(--nd-primary)]"
                         )}>
                             {highCount > 0
                                 ? `${highCount} crítico(s)`
@@ -225,17 +225,17 @@ export function RiskIndicators({
                         {/* Resumo de severidades */}
                         <div className="flex items-center gap-2 mt-4">
                             {highCount > 0 && (
-                                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-xs">
+                                <Badge variant="outline" className="bg-[var(--nd-error-bg)] text-[var(--nd-error)] border-[var(--nd-error)]/25 text-xs">
                                     {highCount} Crítico{highCount > 1 ? "s" : ""}
                                 </Badge>
                             )}
                             {mediumCount > 0 && (
-                                <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 text-xs">
+                                <Badge variant="outline" className="bg-[var(--nd-warning-bg)] text-[var(--nd-warning)] border-[var(--nd-warning)]/25 text-xs">
                                     {mediumCount} Médio{mediumCount > 1 ? "s" : ""}
                                 </Badge>
                             )}
                             {lowCount > 0 && (
-                                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-xs">
+                                <Badge variant="outline" className="bg-[var(--nd-muted)] text-[var(--nd-primary)] border-[var(--nd-border)] text-xs">
                                     {lowCount} Baixo{lowCount > 1 ? "s" : ""}
                                 </Badge>
                             )}

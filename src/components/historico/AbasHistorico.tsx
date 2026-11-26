@@ -16,7 +16,7 @@ interface PropriedadesAbas {
 export function AbasHistorico({ abaAtiva, onAbaChange }: PropriedadesAbas) {
   return (
     <Tabs value={abaAtiva} onValueChange={onAbaChange}>
-      <div className="glass-card rounded-2xl p-2 shadow-lg">
+      <div className="nd-card p-2 shadow-lg">
         <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full bg-transparent gap-1">
           <TabsTrigger value="all">Todos</TabsTrigger>
           <TabsTrigger value="dose">

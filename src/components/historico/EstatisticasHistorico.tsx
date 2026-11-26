@@ -19,66 +19,63 @@ export function EstatisticasHistoricoComp({ estatisticas }: PropriedadesEstatist
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Registros
-            </p>
-            <p className="text-2xl font-display font-bold mt-1">
-              {totalFiltrado}
-            </p>
-          </div>
-          <Clock className="w-8 h-8 text-primary/60" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
+            Registros
+          </p>
+          <Clock className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">
+          {totalFiltrado}
+        </p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Pacientes
-            </p>
-            <p className="text-2xl font-display font-bold mt-1">
-              {pacientesUnicos}
-            </p>
-          </div>
-          <Brain className="w-8 h-8 text-info/60" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
+            Pacientes
+          </p>
+          <Brain className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">
+          {pacientesUnicos}
+        </p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Eficácia
-            </p>
-            <p
-              className={cn(
-                "text-2xl font-display font-bold mt-1",
-                eficaciaMedia >= 70
-                  ? "text-success"
-                  : eficaciaMedia >= 50
-                  ? "text-warning"
-                  : "text-destructive"
-              )}
-            >
-              {eficaciaMedia}%
-            </p>
-          </div>
-          <Activity className="w-8 h-8 text-success/60" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
+            Eficácia média
+          </p>
+          <Activity className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p
+          className={cn(
+            "text-[24px] font-semibold tracking-[-0.02em] mt-2 nd-tabular",
+            eficaciaMedia >= 70
+              ? "text-[var(--nd-success)]"
+              : eficaciaMedia >= 50
+              ? "text-[var(--nd-warning)]"
+              : "text-[var(--nd-error)]"
+          )}
+        >
+          {eficaciaMedia}%
+        </p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Alertas
-            </p>
-            <p className="text-2xl font-display font-bold mt-1 text-warning">
-              {quantidadeAlertas}
-            </p>
-          </div>
-          <AlertTriangle className="w-8 h-8 text-warning/60" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
+            Alertas
+          </p>
+          <AlertTriangle className="w-4 h-4 text-[var(--nd-warning)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p
+          className={cn(
+            "text-[24px] font-semibold tracking-[-0.02em] mt-2 nd-tabular",
+            quantidadeAlertas > 0 ? "text-[var(--nd-warning)]" : "text-[var(--nd-text)]"
+          )}
+        >
+          {quantidadeAlertas}
+        </p>
       </div>
     </div>
   );

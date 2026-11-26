@@ -25,11 +25,11 @@ function NavegacaoCalendario({
                 {MESES[dataAtual.getMonth()]} {dataAtual.getFullYear()}
             </h2>
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={aoIrAnterior}>
-                    <ChevronLeft className="w-4 h-4" />
+                <Button variant="ghost" size="icon" onClick={aoIrAnterior} aria-label="Mês anterior">
+                    <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={aoIrProximo}>
-                    <ChevronRight className="w-4 h-4" />
+                <Button variant="ghost" size="icon" onClick={aoIrProximo} aria-label="Próximo mês">
+                    <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </Button>
             </div>
         </div>
@@ -53,9 +53,17 @@ function CelulaDia({
 }) {
     return (
         <button
+            type="button"
             onClick={() => aoClicar(dia)}
+            aria-pressed={selecionado}
+            aria-current={ehHoje ? "date" : undefined}
+            title={
+                consultasDoDia.length > 0
+                    ? `Dia ${dia} — ${consultasDoDia.length} ${consultasDoDia.length === 1 ? "consulta" : "consultas"}`
+                    : `Dia ${dia}`
+            }
             className={cn(
-                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all",
+                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 "hover:bg-primary/10",
                 ehHoje && "ring-2 ring-primary",
                 selecionado && "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -106,7 +114,7 @@ export function AppointmentCalendar({
     };
 
     return (
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+        <div className="lg:col-span-2 nd-card p-6">
             <NavegacaoCalendario
                 dataAtual={dataAtual}
                 aoIrAnterior={aoIrAnterior}

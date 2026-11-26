@@ -41,7 +41,7 @@ export function EtapaConfirmacao({
   return (
     <div className="space-y-6 animate-fade-up">
       <div className="flex items-center gap-3 pb-4 border-b border-border">
-        <div className="w-10 h-10 rounded-xl bg-neuro-gradient flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center">
           <Brain className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
         </div>
         <div>
@@ -123,7 +123,7 @@ export function EtapaConfirmacao({
       </div>
 
       {/* Aviso IA */}
-      <div className="p-4 rounded-xl bg-neuro-gradient-subtle border border-primary/20">
+      <div className="p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
         <div className="flex items-center gap-2 text-primary mb-2">
           <Sparkles className="w-4 h-4" aria-hidden="true" />
           <span className="text-sm font-medium">Análise de IA</span>

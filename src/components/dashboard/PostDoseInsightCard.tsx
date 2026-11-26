@@ -98,7 +98,7 @@ export function PostDoseInsightCard({
         <div className={cn("space-y-4 animate-fade-up", className)}>
             {/* Header */}
             <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-sm">
                     <Brain className="w-4.5 h-4.5 text-primary-foreground" aria-hidden="true" />
                 </div>
                 <div>
