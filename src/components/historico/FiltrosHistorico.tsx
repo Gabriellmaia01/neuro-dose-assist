@@ -35,6 +35,7 @@ interface PropriedadesFiltros {
   pacientes: Patient[];
   onLimpar: () => void;
   temFiltrosAtivos: boolean;
+  abaAtiva?: string;
 }
 
 export function FiltrosHistorico({
@@ -47,19 +48,27 @@ export function FiltrosHistorico({
   pacientes,
   onLimpar,
   temFiltrosAtivos,
+  abaAtiva,
 }: PropriedadesFiltros) {
+  const placeholderBusca =
+    abaAtiva === "activities"
+      ? "Buscar por entidade, descrição ou usuário…"
+      : "Buscar por paciente, medicamento ou recomendação…";
+
   return (
-    <div className="nd-card p-6 shadow-lg">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Filter className="w-4 h-4 text-primary" />
+    <div className="nd-card p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Filter className="w-4 h-4 text-primary" aria-hidden="true" />
         </div>
-        <h2 className="font-display font-semibold text-lg">Filtros</h2>
+        <h2 className="font-display font-semibold text-lg text-[var(--nd-text)]">
+          Filtros
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
         {/* Busca */}
-        <div className="lg:col-span-5 space-y-2">
+        <div className="lg:col-span-4 space-y-2">
           <Label htmlFor="history-search" className="text-sm font-semibold">
             Busca
           </Label>
@@ -72,7 +81,7 @@ export function FiltrosHistorico({
               id="history-search"
               name="historySearch"
               autoComplete="off"
-              placeholder="Buscar por paciente, medicamento ou recomendação…"
+              placeholder={placeholderBusca}
               value={termoBusca}
               onChange={(e) => onTermoBuscaChange(e.target.value)}
               className="pl-10 h-11"
@@ -82,9 +91,11 @@ export function FiltrosHistorico({
 
         {/* Paciente */}
         <div className="lg:col-span-3 space-y-2">
-          <Label className="text-sm font-semibold">Paciente</Label>
+          <Label htmlFor="history-patient" className="text-sm font-semibold">
+            Paciente
+          </Label>
           <Select value={pacienteIdSelecionado} onValueChange={onPacienteChange}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger id="history-patient" className="h-11">
               <SelectValue placeholder="Selecionar paciente" />
             </SelectTrigger>
             <SelectContent>
@@ -100,11 +111,18 @@ export function FiltrosHistorico({
 
         {/* Data */}
         <div className="lg:col-span-3 space-y-2">
-          <Label className="text-sm font-semibold">Data</Label>
+          <Label htmlFor="history-date" className="text-sm font-semibold">
+            Data
+          </Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start h-11">
-                <CalendarIcon className="w-4 h-4 mr-2" aria-hidden="true" />
+              <Button
+                id="history-date"
+                type="button"
+                variant="outline"
+                className="w-full justify-start h-11"
+              >
+                <CalendarIcon className="w-4 h-4 mr-2 shrink-0" aria-hidden="true" />
                 {data
                   ? new Intl.DateTimeFormat("pt-BR", {
                       dateStyle: "short",
@@ -124,8 +142,9 @@ export function FiltrosHistorico({
         </div>
 
         {/* Limpar */}
-        <div className="lg:col-span-1 flex gap-2">
+        <div className="lg:col-span-2 flex gap-2">
           <Button
+            type="button"
             variant="ghost"
             className="w-full h-11"
             onClick={onLimpar}

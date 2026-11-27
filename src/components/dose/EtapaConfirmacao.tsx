@@ -1,4 +1,3 @@
-import { Brain, Sparkles } from "lucide-react";
 import { Patient } from "@/lib/patients";
 import { Medication } from "@/lib/medications";
 
@@ -40,18 +39,13 @@ export function EtapaConfirmacao({
 }: PropriedadesConfirmacao) {
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3 pb-4 border-b border-border">
-        <div className="w-10 h-10 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center">
-          <Brain className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
-        </div>
-        <div>
-          <h2 className="font-display font-semibold text-lg">
-            Confirmação e Análise IA
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Revise os dados antes de enviar para análise
-          </p>
-        </div>
+      <div className="pb-4 border-b border-[var(--nd-border)]">
+        <h2 className="text-[18px] font-semibold text-[var(--nd-text)]">
+          Confirmação e Análise Clínica
+        </h2>
+        <p className="text-[13px] text-[var(--nd-text-secondary)] mt-0.5">
+          Revise os dados antes de registrar e calcular a resposta esperada.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -122,15 +116,13 @@ export function EtapaConfirmacao({
         </div>
       </div>
 
-      {/* Aviso IA */}
-      <div className="p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
-        <div className="flex items-center gap-2 text-primary mb-2">
-          <Sparkles className="w-4 h-4" aria-hidden="true" />
-          <span className="text-sm font-medium">Análise de IA</span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Ao confirmar, os dados serão enviados para o módulo de IA que
-          irá prever a eficácia esperada e identificar possíveis riscos.
+      {/* Aviso de análise clínica */}
+      <div className="pt-4 border-t border-[var(--nd-border)]">
+        <p className="text-[13px] font-semibold text-[var(--nd-primary)]">
+          Avaliação automatizada pós-dose
+        </p>
+        <p className="text-[13px] text-[var(--nd-text-secondary)] mt-1 max-w-[65ch]">
+          Ao confirmar, os dados serão processados para estimar a eficácia esperada e sinalizar possíveis alertas clínicos.
         </p>
       </div>
     </div>

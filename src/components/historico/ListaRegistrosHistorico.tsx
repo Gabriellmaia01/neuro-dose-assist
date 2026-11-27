@@ -12,7 +12,6 @@ import {
   ItemHistorico,
   configuracaoTipoRegistro,
   formatadorDataHoraCurto,
-  formatadorHoraCurto,
   inferirTipoRegistro,
 } from "@/lib/tiposHistorico";
 
@@ -39,7 +38,7 @@ export function ListaRegistrosHistorico({
   if (carregando) {
     return (
       <div className="nd-card p-12 flex items-center justify-center gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
         <span className="text-muted-foreground font-medium">
           Carregando histórico…
         </span>
@@ -75,7 +74,6 @@ export function ListaRegistrosHistorico({
         );
 
         const dt = new Date(item.timestamp);
-        const rotuloHora = formatadorHoraCurto.format(dt);
         const rotuloDataHora = formatadorDataHoraCurto.format(dt);
 
         return (
@@ -88,7 +86,10 @@ export function ListaRegistrosHistorico({
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               )}
               aria-label={`Abrir detalhes do registro de ${item.patientName} em ${rotuloDataHora}`}
-              style={{ contentVisibility: "auto" }}
+              style={{
+                contentVisibility: "auto",
+                containIntrinsicSize: "auto 164px",
+              }}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -110,9 +111,6 @@ export function ListaRegistrosHistorico({
                     </Badge>
                     <span className="text-sm font-semibold truncate">
                       {item.patientName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      • {rotuloHora}
                     </span>
                   </div>
 
@@ -143,7 +141,7 @@ export function ListaRegistrosHistorico({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="inline-flex items-center gap-1 text-xs text-muted-foreground nd-tabular">
                       <CalendarIcon
                         className="w-3.5 h-3.5"
                         aria-hidden="true"
@@ -162,7 +160,7 @@ export function ListaRegistrosHistorico({
                       <Badge variant="outline" className="bg-secondary/50">
                         Energia:{" "}
                         <span className="ml-1 font-semibold tabular-nums">
-                          {item.subjectiveState.energy}/5
+                          {item.subjectiveState.energy}/10
                         </span>
                       </Badge>
                     )}

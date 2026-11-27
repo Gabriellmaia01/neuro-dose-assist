@@ -11,15 +11,35 @@ import { EstatisticasHistorico } from "@/lib/tiposHistorico";
 
 interface PropriedadesEstatisticas {
   estatisticas: EstatisticasHistorico;
+  carregando?: boolean;
 }
 
-export function EstatisticasHistoricoComp({ estatisticas }: PropriedadesEstatisticas) {
+export function EstatisticasHistoricoComp({
+  estatisticas,
+  carregando = false,
+}: PropriedadesEstatisticas) {
   const { totalFiltrado, pacientesUnicos, eficaciaMedia, quantidadeAlertas } =
     estatisticas;
 
+  if (carregando) {
+    return (
+      <div
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        aria-label="Carregando estatísticas do histórico"
+      >
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="nd-card p-5 space-y-3">
+            <div className="nd-skeleton h-4 w-24 rounded-md" />
+            <div className="nd-skeleton h-8 w-16 rounded-md" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="nd-card p-4">
+      <div className="nd-card p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
             Registros
@@ -30,7 +50,7 @@ export function EstatisticasHistoricoComp({ estatisticas }: PropriedadesEstatist
           {totalFiltrado}
         </p>
       </div>
-      <div className="nd-card p-4">
+      <div className="nd-card p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
             Pacientes
@@ -41,7 +61,7 @@ export function EstatisticasHistoricoComp({ estatisticas }: PropriedadesEstatist
           {pacientesUnicos}
         </p>
       </div>
-      <div className="nd-card p-4">
+      <div className="nd-card p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
             Eficácia média
@@ -61,7 +81,7 @@ export function EstatisticasHistoricoComp({ estatisticas }: PropriedadesEstatist
           {eficaciaMedia}%
         </p>
       </div>
-      <div className="nd-card p-4">
+      <div className="nd-card p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">
             Alertas

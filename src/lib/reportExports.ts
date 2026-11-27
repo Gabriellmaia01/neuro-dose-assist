@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import type { DoseRecord } from "@/lib/doses";
 import type { Medication } from "@/lib/medications";
 import type { Patient } from "@/lib/patients";
+import type { ReportRecommendationItem } from "@/hooks/useReports";
 
 export interface ReportExportData {
     selectedPatient: string;
@@ -15,7 +16,11 @@ export interface ReportExportData {
     filteredDoses: DoseRecord[];
     totalDoses: number;
     avgEfficacy: number;
+    avgMood?: number;
+    avgEnergy?: number;
     lowMoodCount: number;
+    includeRecommendations?: boolean;
+    recommendations?: ReportRecommendationItem[];
 }
 
 function getPatientName(data: ReportExportData) {
@@ -24,58 +29,103 @@ function getPatientName(data: ReportExportData) {
         : "Todos os Pacientes";
 }
 
+function formatPeriodLabel(startDate?: Date, endDate?: Date): string {
+    if (startDate && endDate) {
+        const [from, to] = startDate <= endDate ? [startDate, endDate] : [endDate, startDate];
+        return `${format(from, "dd/MM/yyyy")} a ${format(to, "dd/MM/yyyy")}`;
+    }
+    if (startDate) return `A partir de ${format(startDate, "dd/MM/yyyy")}`;
+    if (endDate) return `Até ${format(endDate, "dd/MM/yyyy")}`;
+    return "Todo o histórico disponível";
+}
+
+/**
+ * Escapa valores CSV (RFC 4180) e neutraliza CSV Formula Injection (=, +, -, @, tab, CR).
+ */
+export function escapeCsvCell(value: unknown): string {
+    const raw = value === null || value === undefined ? "" : String(value);
+    const neutralized = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+    const escaped = neutralized.replace(/"/g, '""');
+    return `"${escaped}"`;
+}
+
 export function generateReportPDF(data: ReportExportData) {
     const doc = new jsPDF();
+    const medicationMap = new Map(
+        data.medications
+            .filter((med): med is Medication & { id: string } => Boolean(med.id))
+            .map((med) => [med.id, med.name])
+    );
 
-    doc.setFontSize(20);
-    doc.setTextColor(40, 40, 40);
-    doc.text("NeuroDose - Análise de Eficácia", 14, 22);
+    doc.setFontSize(18);
+    doc.setTextColor(15, 30, 46);
+    doc.text("NeuroDose Assist — Relatório Clínico", 14, 22);
 
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 28);
-    doc.text(`Paciente: ${getPatientName(data)}`, 14, 33);
-    doc.text(`Tipo de Relatório: ${data.reportTitle}`, 14, 38);
+    doc.setTextColor(84, 102, 118);
+    doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 29);
+    doc.text(`Paciente: ${getPatientName(data)}`, 14, 34);
+    doc.text(`Período: ${formatPeriodLabel(data.startDate, data.endDate)}`, 14, 39);
 
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, 45, 196, 45);
+    doc.setDrawColor(218, 226, 232);
+    doc.line(14, 44, 196, 44);
 
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Resumo de Eficácia", 14, 55);
+    doc.setTextColor(15, 30, 46);
+    doc.text("Resumo Executivo", 14, 53);
 
     doc.setFontSize(10);
-    doc.text(`Total de Doses: ${data.totalDoses}`, 14, 62);
-    doc.text(`Eficácia Média Geral: ${data.avgEfficacy}%`, 14, 67);
-    doc.text(`Registros com Humor Baixo: ${data.lowMoodCount}`, 14, 72);
+    doc.text(`Doses analisadas: ${data.totalDoses}`, 14, 60);
+    doc.text(`Eficácia média geral: ${data.avgEfficacy}%`, 14, 65);
+    doc.text(
+        `Humor médio (1–5): ${typeof data.avgMood === "number" && data.avgMood > 0 ? `${data.avgMood}/5` : "—"} | Energia média (0–10): ${typeof data.avgEnergy === "number" ? `${data.avgEnergy}/10` : "—"}`,
+        14,
+        70
+    );
+    doc.text(`Alertas de humor (≤ 2/5): ${data.lowMoodCount}`, 14, 75);
 
-    if (data.startDate && data.endDate) {
-        doc.text(`Período: ${format(data.startDate, "dd/MM/yyyy")} a ${format(data.endDate, "dd/MM/yyyy")}`, 14, 77);
+    let cursorY = 82;
+
+    if (data.includeRecommendations && data.recommendations && data.recommendations.length > 0) {
+        doc.setFontSize(11);
+        doc.setTextColor(27, 73, 101);
+        doc.text("Notas e Recomendações Clínicas", 14, cursorY);
+        cursorY += 6;
+        doc.setFontSize(9);
+        doc.setTextColor(55, 71, 86);
+        data.recommendations.forEach((rec) => {
+            const lines = doc.splitTextToSize(`• ${rec.title}: ${rec.description}`, 182);
+            doc.text(lines, 14, cursorY);
+            cursorY += lines.length * 4.5 + 2;
+        });
+        cursorY += 3;
     }
 
     const tableData = data.filteredDoses.map((dose) => {
-        const efficacy = dose?.analysis?.efficacyPrediction ||
-            ((dose?.subjectiveState?.energy || 0) * 10) || 0;
-        const medicationName = data.medications.find((medication) => medication.id === dose.medicationId)?.name || "Desconhecido";
+        const efficacy =
+            typeof dose?.analysis?.efficacyPrediction === "number"
+                ? dose.analysis.efficacyPrediction
+                : (dose?.subjectiveState?.energy || 0) * 10;
+        const medicationName = medicationMap.get(dose.medicationId) || "Desconhecido";
 
         return [
             format(new Date(dose.timestamp), "dd/MM/yyyy HH:mm"),
             medicationName,
-            `${dose.doseAmount}mg`,
+            `${dose.doseAmount} mg`,
             `${efficacy}%`,
-            dose.subjectiveState?.mood ? dose.subjectiveState.mood.toString() : "-",
-            dose.subjectiveState?.energy ? dose.subjectiveState.energy.toString() : "-",
+            typeof dose.subjectiveState?.mood === "number" ? `${dose.subjectiveState.mood}/5` : "—",
+            typeof dose.subjectiveState?.energy === "number" ? `${dose.subjectiveState.energy}/10` : "—",
         ];
     });
 
     autoTable(doc, {
-        startY: 85,
-        head: [["Data/Hora", "Medicamento", "Dose", "Eficácia", "Humor", "Energia"]],
+        startY: cursorY,
+        head: [["Data/Hora", "Medicamento", "Dose", "Eficácia", "Humor (1–5)", "Energia (0–10)"]],
         body: tableData,
         theme: "grid",
-        headStyles: { fillColor: [63, 81, 181], textColor: 255 },
+        headStyles: { fillColor: [27, 73, 101], textColor: 255 },
         styles: { fontSize: 9 },
-        alternateRowStyles: { fillColor: [245, 245, 255] },
+        alternateRowStyles: { fillColor: [244, 246, 248] },
     });
 
     const pageCount = (
@@ -84,46 +134,100 @@ export function generateReportPDF(data: ReportExportData) {
     for (let page = 1; page <= pageCount; page++) {
         doc.setPage(page);
         doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text("NeuroDose Assist - Relatório Gerado Automaticamente", 14, doc.internal.pageSize.height - 10);
+        doc.setTextColor(120, 134, 148);
+        doc.text("NeuroDose Assist — Relatório Clínico", 14, doc.internal.pageSize.height - 10);
         doc.text(`Página ${page} de ${pageCount}`, 196, doc.internal.pageSize.height - 10, { align: "right" });
     }
 
-    doc.save(`neurodose_eficacia_${data.selectedPatient !== "all" ? data.selectedPatient : "geral"}_${format(new Date(), "yyyyMMdd")}.pdf`);
+    doc.save(`neurodose_relatorio_${data.selectedPatient !== "all" ? data.selectedPatient : "geral"}_${format(new Date(), "yyyyMMdd")}.pdf`);
+}
+
+export function buildReportCSVString(data: ReportExportData): string {
+    const patientMap = new Map(
+        data.patients
+            .filter((patient): patient is Patient & { id: string } => Boolean(patient.id))
+            .map((patient) => [patient.id, patient.name])
+    );
+    const medicationMap = new Map(
+        data.medications
+            .filter((med): med is Medication & { id: string } => Boolean(med.id))
+            .map((med) => [med.id, med.name])
+    );
+
+    const rows: string[] = [];
+    rows.push(escapeCsvCell("RELATÓRIO CLÍNICO NEURODOSE ASSIST"));
+    rows.push([escapeCsvCell("Paciente"), escapeCsvCell(getPatientName(data))].join(","));
+    rows.push([escapeCsvCell("Período"), escapeCsvCell(formatPeriodLabel(data.startDate, data.endDate))].join(","));
+    rows.push([escapeCsvCell("Gerado em"), escapeCsvCell(new Date().toLocaleString("pt-BR"))].join(","));
+    rows.push([escapeCsvCell("Doses analisadas"), escapeCsvCell(data.totalDoses)].join(","));
+    rows.push([escapeCsvCell("Eficácia média"), escapeCsvCell(`${data.avgEfficacy}%`)].join(","));
+    rows.push([escapeCsvCell("Alertas de humor (<= 2/5)"), escapeCsvCell(data.lowMoodCount)].join(","));
+    rows.push("");
+
+    rows.push(escapeCsvCell("MEDICAMENTOS NO RECORTE"));
+    rows.push(["Nome", "Nome Comercial", "Princípio Ativo", "Classe", "Dose Mín", "Dose Máx"].map(escapeCsvCell).join(","));
+    data.medications.forEach((medication) => {
+        rows.push(
+            [
+                medication.name,
+                medication.brandName,
+                medication.activeIngredient,
+                medication.therapeuticClass,
+                medication.minDose,
+                medication.maxDose,
+            ]
+                .map(escapeCsvCell)
+                .join(",")
+        );
+    });
+    rows.push("");
+
+    rows.push(escapeCsvCell("HISTÓRICO DE DOSES"));
+    rows.push(
+        ["Data/Hora", "Paciente", "Medicamento", "Dose", "Indicação", "Energia (0-10)", "Humor (1-5)", "Eficácia Estimada"]
+            .map(escapeCsvCell)
+            .join(",")
+    );
+    data.filteredDoses.forEach((dose) => {
+        const patientName = patientMap.get(dose.patientId) || "N/A";
+        const medicationName = medicationMap.get(dose.medicationId) || "Desconhecido";
+        const dateString = new Date(dose.timestamp).toLocaleString("pt-BR");
+        const efficacy =
+            typeof dose.analysis?.efficacyPrediction === "number"
+                ? `${dose.analysis.efficacyPrediction}%`
+                : "N/A";
+
+        rows.push(
+            [
+                dateString,
+                patientName,
+                medicationName,
+                dose.doseAmount,
+                dose.indication || "",
+                dose.subjectiveState?.energy ?? "",
+                dose.subjectiveState?.mood ?? "",
+                efficacy,
+            ]
+                .map(escapeCsvCell)
+                .join(",")
+        );
+    });
+
+    return `\uFEFF${rows.join("\r\n")}`;
 }
 
 export function generateReportCSV(data: ReportExportData) {
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    csvContent += "RELATÓRIO DE PACIENTE\n";
-    csvContent += `Paciente: ${getPatientName(data)}\n`;
-    csvContent += `Gerado em: ${new Date().toLocaleString("pt-BR")}\n`;
-    csvContent += `Total de Doses: ${data.totalDoses}\n`;
-    csvContent += `Eficácia Média: ${data.avgEfficacy}%\n\n`;
-
-    csvContent += "MEDICAMENTOS CADASTRADOS\n";
-    csvContent += "Nome,Nome Comercial,Princípio Ativo,Classe,Dose Mín,Dose Máx\n";
-    data.medications.forEach((medication) => {
-        csvContent += `"${medication.name}","${medication.brandName}","${medication.activeIngredient}","${medication.therapeuticClass}",${medication.minDose},${medication.maxDose}\n`;
-    });
-    csvContent += "\n";
-
-    csvContent += "HISTÓRICO DE DOSES\n";
-    csvContent += "Data/Hora,Paciente,Medicamento,Dose,Indicação,Energia,Humor,Eficácia Estimada\n";
-    data.filteredDoses.forEach((dose) => {
-        const patientName = data.patients.find((patient) => patient.id === dose.patientId)?.name || "N/A";
-        const medicationName = data.medications.find((medication) => medication.id === dose.medicationId)?.name || "Desconhecido";
-        const dateString = new Date(dose.timestamp).toLocaleString("pt-BR");
-        const efficacy = dose.analysis?.efficacyPrediction || "N/A";
-
-        csvContent += `"${dateString}","${patientName}","${medicationName}","${dose.doseAmount}","${dose.indication}",${dose.subjectiveState?.energy},${dose.subjectiveState?.mood},${efficacy}\n`;
-    });
-
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = buildReportCSVString(data);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `relatorio_${data.selectedPatient === "all" ? "geral" : data.selectedPatient}_${format(new Date(), "yyyyMMdd")}.csv`);
+    link.href = url;
+    link.setAttribute(
+        "download",
+        `relatorio_${data.selectedPatient === "all" ? "geral" : data.selectedPatient}_${format(new Date(), "yyyyMMdd")}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }

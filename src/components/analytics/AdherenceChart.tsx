@@ -80,7 +80,7 @@ export function AdherenceChart({
                     stroke={`url(#${getGradientId()})`}
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
-                    className="transition-all duration-700 ease-out"
+                    className="transition-[stroke-dashoffset] duration-700 ease-out"
                 />
             </svg>
 
@@ -93,7 +93,7 @@ export function AdherenceChart({
                     <div className="flex items-center gap-1 mt-1">
                         <span className={cn("text-muted-foreground", label)}>Adesão</span>
                         {trend && (
-                            <span className="ml-1">
+                            <span className="ml-1" aria-hidden="true">
                                 {trend === "up" && <TrendingUp className="w-4 h-4 text-success" />}
                                 {trend === "down" && <TrendingDown className="w-4 h-4 text-destructive" />}
                                 {trend === "stable" && <Minus className="w-4 h-4 text-muted-foreground" />}

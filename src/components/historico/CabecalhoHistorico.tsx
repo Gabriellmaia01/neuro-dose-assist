@@ -24,8 +24,8 @@ export function CabecalhoHistorico({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shadow-md">
-          <Clock className="w-6 h-6 text-primary-foreground" />
+        <div className="w-12 h-12 rounded-xl bg-[var(--nd-primary)] flex items-center justify-center shrink-0">
+          <Clock className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
         </div>
         <div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance">
@@ -45,12 +45,12 @@ export function CabecalhoHistorico({
       >
         {exportando ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
             Exportando…
           </>
         ) : (
           <>
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-4 h-4 mr-2" aria-hidden="true" />
             Exportar PDF
           </>
         )}

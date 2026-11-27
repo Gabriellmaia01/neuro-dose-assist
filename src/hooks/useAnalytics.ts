@@ -20,14 +20,19 @@ export function useAnalytics() {
     const [medications, setMedications] = useState<Medication[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [erro, setErro] = useState<string | null>(null);
     const [selectedPatient, setSelectedPatient] = useState("all");
     const [periodInDays, setPeriodInDays] = useState("30");
 
     const loadData = useCallback(async (showRefresh = false) => {
-        if (!user || !effectiveUserId) return;
+        if (!user || !effectiveUserId) {
+            setLoading(false);
+            return;
+        }
 
         if (showRefresh) setRefreshing(true);
         else setLoading(true);
+        setErro(null);
 
         try {
             const [doseData, patientData, medicationData] = await Promise.all([
@@ -41,6 +46,7 @@ export function useAnalytics() {
             setMedications(medicationData || []);
         } catch (error) {
             console.error("Erro ao carregar dados de analytics:", error);
+            setErro("Não foi possível carregar os indicadores analíticos. Tente novamente.");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -93,6 +99,7 @@ export function useAnalytics() {
         patients,
         loading,
         refreshing,
+        erro,
         reload,
         selectedPatient,
         setSelectedPatient,

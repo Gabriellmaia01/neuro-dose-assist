@@ -69,50 +69,46 @@ const severityStyles = {
 };
 
 function AlertCard({ alert }: { alert: RiskAlert }) {
-    const Icon = riskIcons[alert.type];
     const style = severityStyles[alert.severity];
+    const dotClass =
+        alert.severity === "high"
+            ? "bg-[var(--nd-error)]"
+            : alert.severity === "medium"
+            ? "bg-[var(--nd-warning)]"
+            : "bg-[var(--nd-primary)]";
 
     return (
-        <div
-            className={cn(
-                "flex items-start gap-3 p-4 rounded-xl border-2 transition-all hover:scale-[1.01]",
-                style.bg,
-                style.border
-            )}
-        >
-            <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                style.bg
-            )}>
-                <Icon className={cn("w-5 h-5", style.icon)} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm">
-                        {riskLabels[alert.type]}
-                    </span>
-                    <span className={cn(
-                        "px-2 py-0.5 rounded-full text-xs font-medium uppercase",
-                        style.badge
-                    )}>
-                        {alert.severity === "high" ? "Alto" : alert.severity === "medium" ? "Médio" : "Baixo"}
-                    </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                    {alert.message}
-                </p>
-                {alert.patientName && (
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                        <User className="w-3 h-3 text-muted-foreground" />
-                        <p className="text-xs font-medium text-muted-foreground">
+        <div className="flex items-start justify-between gap-3 py-3.5">
+            <div className="flex items-start gap-2.5 min-w-0">
+                <span
+                    className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", dotClass)}
+                    aria-hidden="true"
+                />
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-[14px] text-[var(--nd-text)]">
+                            {riskLabels[alert.type]}
+                        </span>
+                        <span className={cn("text-[11px] font-semibold", style.icon)}>
+                            {alert.severity === "high"
+                                ? "Alto"
+                                : alert.severity === "medium"
+                                ? "Médio"
+                                : "Baixo"}
+                        </span>
+                    </div>
+                    <p className="text-[13px] text-[var(--nd-text-secondary)] mt-0.5 break-words">
+                        {alert.message}
+                    </p>
+                    {alert.patientName && (
+                        <p className="text-[12px] font-medium text-[var(--nd-text-secondary)] mt-1">
                             {alert.patientName}
                         </p>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            <span className="text-xs text-muted-foreground flex-shrink-0">
+            <span className="text-[12px] text-[var(--nd-text-secondary)] shrink-0 nd-tabular">
                 {format(new Date(alert.timestamp), "HH:mm", { locale: ptBR })}
             </span>
         </div>
@@ -135,66 +131,59 @@ export function RiskIndicators({
 
     return (
         <>
-            <div className={cn("nd-card p-6", className)}>
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                            <AlertTriangle className="w-4 h-4 text-destructive" />
-                        </div>
-                        <div>
-                            <h3 className="font-display font-semibold text-lg">Indicadores de Risco</h3>
-                            <p className="text-xs text-muted-foreground">
-                                {alerts.length} {alerts.length === 1 ? "alerta identificado" : "alertas identificados"}
-                            </p>
-                        </div>
+            <div className={cn("rounded-2xl border border-[var(--nd-border)] bg-[var(--nd-surface)] p-6", className)}>
+                <div className="flex items-center justify-between gap-3 pb-4 border-b border-[var(--nd-border)]">
+                    <div>
+                        <h2 className="text-[16px] font-semibold text-[var(--nd-text)]">Indicadores de Risco</h2>
+                        <p className="text-[12px] text-[var(--nd-text-secondary)] mt-0.5">
+                            {alerts.length} {alerts.length === 1 ? "alerta identificado" : "alertas identificados"}
+                        </p>
                     </div>
 
                     {alerts.length > 0 && (
-                        <div className={cn(
-                            "px-3 py-1 rounded-full text-xs font-semibold",
+                        <span className={cn(
+                            "text-[12px] font-semibold",
                             alerts.some(a => a.severity === "high")
-                                ? "bg-[var(--nd-error-bg)] text-[var(--nd-error)]"
+                                ? "text-[var(--nd-error)]"
                                 : alerts.some(a => a.severity === "medium")
-                                    ? "bg-[var(--nd-warning-bg)] text-[var(--nd-warning)]"
-                                    : "bg-[var(--nd-muted)] text-[var(--nd-primary)]"
+                                    ? "text-[var(--nd-warning)]"
+                                    : "text-[var(--nd-primary)]"
                         )}>
                             {highCount > 0
                                 ? `${highCount} crítico(s)`
                                 : mediumCount > 0
                                     ? `${mediumCount} médio(s)`
                                     : "Apenas avisos"}
-                        </div>
+                        </span>
                     )}
                 </div>
 
                 {alerts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
-                            <CheckCircle2 className="w-8 h-8 text-success" />
-                        </div>
-                        <p className="font-medium text-success">Nenhum risco identificado</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Todos os indicadores estão dentro do esperado
+                    <div className="py-8 text-center">
+                        <p className="text-[14px] font-semibold text-[var(--nd-success)]">Nenhum risco identificado</p>
+                        <p className="text-[13px] text-[var(--nd-text-secondary)] mt-1">
+                            Todos os indicadores estão dentro do esperado.
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="divide-y divide-[var(--nd-border)]">
                         {visibleAlerts.map((alert) => (
                             <AlertCard key={alert.id} alert={alert} />
                         ))}
 
                         {hasMore && (
                             <button
+                                type="button"
                                 onClick={() => setIsAllAlertsOpen(true)}
                                 className={cn(
                                     "w-full flex items-center justify-center gap-2 pt-3 pb-1",
-                                    "text-sm font-medium text-primary",
-                                    "hover:text-primary/80 transition-colors",
+                                    "text-[13px] font-medium text-[var(--nd-primary)]",
+                                    "hover:underline transition-colors",
                                     "cursor-pointer group"
                                 )}
                             >
                                 <span>+{remainingCount} {remainingCount === 1 ? "outro alerta" : "outros alertas"}</span>
-                                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                             </button>
                         )}
                     </div>

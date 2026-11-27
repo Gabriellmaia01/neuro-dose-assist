@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
 import { getDoses } from "@/lib/doses";
@@ -18,6 +18,8 @@ export interface DadosHistorico {
   pacientes: Patient[];
   logsAtividade: ActivityLog[];
   carregando: boolean;
+  erro: string | null;
+  recarregar: () => void;
 }
 
 export function useDadosHistorico(): DadosHistorico {
@@ -28,12 +30,25 @@ export function useDadosHistorico(): DadosHistorico {
   const [pacientes, setPacientes] = useState<Patient[]>([]);
   const [logsAtividade, setLogsAtividade] = useState<ActivityLog[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+
+  const recarregar = useCallback(() => {
+    setTentativa((atual) => atual + 1);
+  }, []);
 
   useEffect(() => {
+    if (!user || !effectiveUserId) {
+      setCarregando(false);
+      return;
+    }
+
+    let cancelado = false;
+
     async function buscarDados() {
-      if (!user || !effectiveUserId) return;
       try {
         setCarregando(true);
+        setErro(null);
         const [dadosDoses, dadosPacientes, dadosMedicamentos, dadosLogs] =
           await Promise.all([
             getDoses(effectiveUserId),
@@ -42,40 +57,61 @@ export function useDadosHistorico(): DadosHistorico {
             getActivityLogs(effectiveUserId),
           ]);
 
+        if (cancelado) return;
+
         setPacientes(dadosPacientes);
         setLogsAtividade(dadosLogs);
 
-        // Enriquecer doses com nomes de paciente e medicamento
-        const itensEnriquecidos: ItemHistorico[] = dadosDoses.map((dose) => {
-          const paciente = dadosPacientes.find((p) => p.id === dose.patientId);
-          const medicamento = dadosMedicamentos.find(
-            (m) => m.id === dose.medicationId
-          );
+        const mapaPacientes = new Map(
+          dadosPacientes
+            .filter((p): p is Patient & { id: string } => Boolean(p.id))
+            .map((p) => [p.id, p.name])
+        );
+        const mapaMedicamentos = new Map(
+          dadosMedicamentos
+            .filter((m): m is typeof m & { id: string } => Boolean(m.id))
+            .map((m) => [m.id, m.name])
+        );
 
-          return {
-            ...dose,
-            patientName: paciente ? paciente.name : "Paciente Removido",
-            medicationName: medicamento
-              ? medicamento.name
-              : "Medicamento Removido",
-            displayType: "dose",
-          };
-        });
+        // Enriquecer doses com nomes de paciente e medicamento em O(N + M)
+        const itensEnriquecidos: ItemHistorico[] = dadosDoses.map((dose) => ({
+          ...dose,
+          patientName: mapaPacientes.get(dose.patientId) ?? "Paciente Removido",
+          medicationName:
+            mapaMedicamentos.get(dose.medicationId) ?? "Medicamento Removido",
+          displayType: "dose",
+        }));
 
         setItensHistorico(itensEnriquecidos);
-      } catch (erro) {
-        console.error("Erro ao buscar histórico:", erro);
+      } catch (err) {
+        if (cancelado) return;
+        console.error("Erro ao buscar histórico:", err);
+        setErro("Não foi possível carregar o histórico clínico. Tente novamente.");
         toast({
           title: "Erro ao carregar histórico",
           description: "Não foi possível buscar os dados.",
           variant: "destructive",
         });
       } finally {
-        setCarregando(false);
+        if (!cancelado) {
+          setCarregando(false);
+        }
       }
     }
-    buscarDados();
-  }, [user, effectiveUserId]);
 
-  return { itensHistorico, pacientes, logsAtividade, carregando };
+    buscarDados();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [user, effectiveUserId, tentativa]);
+
+  return {
+    itensHistorico,
+    pacientes,
+    logsAtividade,
+    carregando,
+    erro,
+    recarregar,
+  };
 }

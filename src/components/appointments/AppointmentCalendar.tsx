@@ -63,7 +63,7 @@ function CelulaDia({
                     : `Dia ${dia}`
             }
             className={cn(
-                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                "aspect-square rounded-lg flex flex-col items-center justify-center relative transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 "hover:bg-primary/10",
                 ehHoje && "ring-2 ring-primary",
                 selecionado && "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -71,7 +71,7 @@ function CelulaDia({
                 ehPassado && !selecionado && "opacity-40"
             )}
         >
-            <span className={cn("text-sm font-medium", selecionado && "text-primary-foreground")}>
+            <span className={cn("text-sm font-medium nd-tabular", selecionado && "text-primary-foreground")}>
                 {dia}
             </span>
             {consultasDoDia.length > 0 && (

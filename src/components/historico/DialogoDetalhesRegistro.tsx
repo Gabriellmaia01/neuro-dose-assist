@@ -31,7 +31,7 @@ export function DialogoDetalhesRegistro({
       open={!!itemSelecionado}
       onOpenChange={(aberto) => !aberto && onFechar()}
     >
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         {itemSelecionado && (
           <div className="space-y-4">
             <DialogHeader>
@@ -88,13 +88,13 @@ export function DialogoDetalhesRegistro({
                 )}
                 {typeof itemSelecionado.subjectiveState?.energy ===
                   "number" && (
-                  <Badge variant="outline" className="bg-secondary/50">
-                    Energia:{" "}
-                    <span className="ml-1 font-semibold tabular-nums">
-                      {itemSelecionado.subjectiveState.energy}/10
-                    </span>
-                  </Badge>
-                )}
+                    <Badge variant="outline" className="bg-secondary/50">
+                      Energia:{" "}
+                      <span className="ml-1 font-semibold tabular-nums">
+                        {itemSelecionado.subjectiveState.energy}/10
+                      </span>
+                    </Badge>
+                  )}
                 {typeof itemSelecionado.subjectiveState?.sleep === "number" && (
                   <Badge variant="outline" className="bg-secondary/50">
                     Sono:{" "}
@@ -146,16 +146,16 @@ export function DialogoDetalhesRegistro({
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 {typeof itemSelecionado.analysis?.efficacyPrediction ===
                   "number" && (
-                  <Badge
-                    variant="outline"
-                    className="bg-success/10 text-success border-success/20"
-                  >
-                    Eficácia prevista:{" "}
-                    <span className="ml-1 font-semibold tabular-nums">
-                      {itemSelecionado.analysis.efficacyPrediction}%
-                    </span>
-                  </Badge>
-                )}
+                    <Badge
+                      variant="outline"
+                      className="bg-success/10 text-success border-success/20"
+                    >
+                      Eficácia prevista:{" "}
+                      <span className="ml-1 font-semibold tabular-nums">
+                        {itemSelecionado.analysis.efficacyPrediction}%
+                      </span>
+                    </Badge>
+                  )}
               </div>
               {itemSelecionado.analysis?.recommendation && (
                 <p className="mt-3 text-sm break-words">

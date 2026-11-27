@@ -25,7 +25,7 @@ export function ListaAtividadesHistorico({
   if (carregando) {
     return (
       <div className="nd-card p-12 flex items-center justify-center gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
         <span className="text-muted-foreground font-medium">
           Carregando atividades…
         </span>
@@ -92,7 +92,7 @@ export function ListaAtividadesHistorico({
                       {config.label}
                     </Badge>
                     <Badge variant="outline" className="text-xs bg-muted/50">
-                      <IconeEntidade className="w-3 h-3 mr-1" />
+                      <IconeEntidade className="w-3 h-3 mr-1" aria-hidden="true" />
                       {entidade.label}
                     </Badge>
                   </div>
@@ -110,8 +110,8 @@ export function ListaAtividadesHistorico({
                         {log.userName || log.userEmail || "Usuário"}
                       </span>
                     </div>
-                    <span>•</span>
-                    <div className="flex items-center gap-1">
+                    <span aria-hidden="true">•</span>
+                    <div className="flex items-center gap-1 nd-tabular">
                       <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                       {rotuloDataHora}
                     </div>
