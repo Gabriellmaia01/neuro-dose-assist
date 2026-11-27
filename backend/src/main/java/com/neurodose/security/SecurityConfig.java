@@ -1,8 +1,11 @@
 package com.neurodose.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,23 +42,28 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, Environment environment) throws Exception {
+        boolean sandboxActive = environment.acceptsProfiles(Profiles.of("sandbox"));
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/clinics/*/invites/*").permitAll()
-                        .requestMatchers("/api/v1/**").authenticated()
-                        .anyRequest().denyAll()
-                )
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/v1/clinics/*/invites/*").permitAll();
+                    if (sandboxActive) {
+                        auth.requestMatchers(HttpMethod.POST, "/api/v1/sandbox/auth/token").permitAll();
+                    }
+                    auth.requestMatchers("/api/v1/**").authenticated();
+                    auth.anyRequest().denyAll();
+                })
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
     }
 
     @Bean
+    @ConditionalOnMissingBean(JwtDecoder.class)
     public JwtDecoder jwtDecoder() {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
 
