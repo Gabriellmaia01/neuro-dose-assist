@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { EfficacyChart } from "@/components/dashboard/EfficacyChart";
 import type { Medication } from "@/lib/medications";
 import type { Patient } from "@/lib/patients";
-import type { ReportRecommendationItem } from "@/hooks/useReports";
+import type { ReportRecommendationItem } from "@/lib/reportExports";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";

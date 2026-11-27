@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { ReportRecommendationItem } from "@/hooks/useReports";
+import type { ReportRecommendationItem } from "@/lib/reportExports";
 
 const DOT_TONE: Record<ReportRecommendationItem["severity"], string> = {
     info: "bg-[var(--nd-primary)]",

@@ -3,8 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Reports from "@/pages/Reports";
-import { buildReportRecommendations } from "@/hooks/useReports";
-import { buildReportCSVString, escapeCsvCell } from "@/lib/reportExports";
+import {
+  buildReportCSVString,
+  buildReportRecommendations,
+  escapeCsvCell,
+} from "@/lib/reportExports";
 
 const mockUseReports = vi.fn();
 const mockGenerateReportPDF = vi.fn();
@@ -19,13 +22,9 @@ vi.mock("@/components/dashboard/EfficacyChart", () => ({
   EfficacyChart: () => <div data-testid="efficacy-chart-mock" />,
 }));
 
-vi.mock("@/hooks/useReports", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/hooks/useReports")>();
-  return {
-    ...actual,
-    useReports: () => mockUseReports(),
-  };
-});
+vi.mock("@/hooks/useReports", () => ({
+  useReports: () => mockUseReports(),
+}));
 
 vi.mock("@/lib/reportExports", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/reportExports")>();

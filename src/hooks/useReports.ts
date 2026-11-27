@@ -4,69 +4,13 @@ import { useClinic } from "@/contexts/ClinicContext";
 import { getDoses, type DoseRecord } from "@/lib/doses";
 import { getMedications, type Medication } from "@/lib/medications";
 import { getPatients, type Patient } from "@/lib/patients";
+import {
+    buildReportRecommendations,
+    type ReportRecommendationItem,
+} from "@/lib/reportExports";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
-export interface ReportRecommendationItem {
-    id: string;
-    severity: "info" | "warning" | "error";
-    title: string;
-    description: string;
-}
-
-export function buildReportRecommendations({
-    totalDoses,
-    avgEfficacy,
-    avgMood,
-    lowMoodCount,
-}: {
-    totalDoses: number;
-    avgEfficacy: number;
-    avgMood: number;
-    lowMoodCount: number;
-}): ReportRecommendationItem[] {
-    const items: ReportRecommendationItem[] = [];
-
-    if (totalDoses === 0) {
-        items.push({
-            id: "empty-sample",
-            severity: "info",
-            title: "Sem registros no recorte atual",
-            description:
-                "Ajuste o paciente ou o intervalo de datas para compor recomendações clínicas com base nas doses administradas.",
-        });
-        return items;
-    }
-
-    items.push({
-        id: "sample-overview",
-        severity: "info",
-        title: "Base amostral consolidada",
-        description: `Análise derivada de ${totalDoses} ${totalDoses === 1 ? "registro clínico" : "registros clínicos"} no período selecionado, considerando eficácia prevista e escalas subjetivas (Humor 1–5 e Energia 0–10).`,
-    });
-
-    if (avgEfficacy < 60 && totalDoses >= 3) {
-        items.push({
-            id: "low-efficacy",
-            severity: "warning",
-            title: "Eficácia média abaixo do alvo (< 60%)",
-            description: `A resposta terapêutica média está em ${avgEfficacy}%. Avalie adesão, horários de administração e eventual ajuste de titulação.`,
-        });
-    }
-
-    if ((avgMood > 0 && avgMood <= 2.5 && totalDoses >= 3) || lowMoodCount > 0) {
-        items.push({
-            id: "low-mood",
-            severity: "error",
-            title: "Sinais de humor rebaixado (≤ 2/5)",
-            description:
-                lowMoodCount > 0
-                    ? `Foram identificados ${lowMoodCount} ${lowMoodCount === 1 ? "registro" : "registros"} com humor ≤ 2/5 (média do recorte: ${avgMood}/5). Recomenda-se revisão clínica próxima.`
-                    : `O humor médio do período está em ${avgMood}/5. Recomenda-se monitoramento clínico mais frequente.`,
-        });
-    }
-
-    return items;
-}
+export { buildReportRecommendations, type ReportRecommendationItem };
 
 export function useReports() {
     const { user } = useAuth();
