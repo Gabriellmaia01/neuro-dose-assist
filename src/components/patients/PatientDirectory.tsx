@@ -84,15 +84,15 @@ export function PatientDirectory({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="nd-card p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="nd-card p-5">
                     <div className="flex items-center justify-between gap-2">
                         <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Pacientes cadastrados</p>
                         <User className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                     </div>
                     <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{patients.length}</p>
                 </div>
-                <div className="nd-card p-4">
+                <div className="nd-card p-5">
                     <div className="flex items-center justify-between gap-2">
                         <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Exibindo na lista</p>
                         <Search className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
@@ -107,17 +107,17 @@ export function PatientDirectory({
                     <span className="text-muted-foreground font-medium">Carregando pacientes…</span>
                 </div>
             ) : (
-                <div className="nd-card overflow-hidden">
+                <div className="nd-card p-5 sm:p-6">
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead>Paciente</TableHead>
+                                <TableHead className="pl-2">Paciente</TableHead>
                                 <TableHead>Condição</TableHead>
                                 <TableHead>Medicamentos</TableHead>
                                 <TableHead>Última Visita</TableHead>
                                 <TableHead>Eficácia</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
+                                <TableHead className="w-[50px] pr-2"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -130,7 +130,7 @@ export function PatientDirectory({
                             ) : (
                                 filteredPatients.map((patient) => (
                                     <TableRow key={patient.id} className="cursor-pointer">
-                                        <TableCell onClick={() => onView(patient)}>
+                                        <TableCell className="pl-2" onClick={() => onView(patient)}>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="w-10 h-10">
                                                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
@@ -159,7 +159,7 @@ export function PatientDirectory({
                                                 <span className="text-muted-foreground">—</span>
                                             )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="nd-tabular">
                                             {patient.createdAt
                                                 ? new Date(patient.createdAt).toLocaleDateString("pt-BR")
                                                 : "—"}
@@ -172,7 +172,7 @@ export function PatientDirectory({
                                                 {activeStatus.label}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="pr-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" size="icon" aria-label={`Ações para ${patient.name}`}>
