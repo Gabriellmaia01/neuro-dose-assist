@@ -36,14 +36,14 @@ export function NavegacaoEtapas({
       </Button>
       {etapa < 3 ? (
         <Button
-          variant="neuro"
+          variant="default"
           onClick={onContinuar}
           disabled={!podeContinuar}
         >
           Continuar
         </Button>
       ) : (
-        <Button variant="neuro" onClick={onEnviar} disabled={analisando}>
+        <Button variant="default" onClick={onEnviar} disabled={analisando}>
           {analisando ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

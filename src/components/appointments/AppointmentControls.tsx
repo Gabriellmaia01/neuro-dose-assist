@@ -25,28 +25,23 @@ import { Calendar as CalendarIcon, Loader2, Plus } from "lucide-react";
 
 export function AppointmentLoadingIndicator() {
     return (
-        <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="text-muted-foreground font-medium">Carregando agenda...</span>
+        <div className="rounded-2xl border border-[var(--nd-border)] bg-[var(--nd-surface)] p-12 flex items-center justify-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--nd-primary)]" aria-hidden="true" />
+            <span className="text-[14px] text-[var(--nd-text-secondary)]">Carregando agenda…</span>
         </div>
     );
 }
 
 export function AppointmentHeader() {
     return (
-        <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-                <CalendarIcon className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-                    Agenda
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                    Gerencie consultas e compromissos
-                </p>
-            </div>
-        </div>
+        <header>
+            <h1 className="font-display text-[28px] font-medium leading-[1.15] tracking-[-0.02em] text-[var(--nd-text)] text-balance">
+                Agenda Clínica
+            </h1>
+            <p className="text-[14px] text-[var(--nd-text-secondary)] mt-1.5">
+                Organize consultas, retornos e avaliações neurológicas.
+            </p>
+        </header>
     );
 }
 
@@ -178,7 +173,7 @@ function AppointmentDialog({
     return (
         <Dialog open={aberto} onOpenChange={aoMudar}>
             <DialogTrigger asChild>
-                <Button variant="neuro" onClick={aoClicarNovo}>
+                <Button variant="default" onClick={aoClicarNovo}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nova Consulta
                 </Button>
@@ -201,7 +196,7 @@ function AppointmentDialog({
                     <Button variant="outline" onClick={aoFechar} disabled={salvando}>
                         Cancelar
                     </Button>
-                    <Button variant="neuro" onClick={aoSalvar} disabled={salvando}>
+                    <Button variant="default" onClick={aoSalvar} disabled={salvando}>
                         {salvando ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

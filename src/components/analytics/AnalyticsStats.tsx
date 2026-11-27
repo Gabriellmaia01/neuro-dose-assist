@@ -1,124 +1,101 @@
-import { Activity, Brain, Minus, Pill, Sparkles, TrendingDown, TrendingUp, Users } from "lucide-react";
-import type { ReactNode } from "react";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import type { AnalyticsMetrics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
-
-function AnalyticsStatCard({
-    label,
-    value,
-    icon,
-    borderColor,
-}: {
-    label: string;
-    value: ReactNode;
-    icon: ReactNode;
-    borderColor: string;
-}) {
-    return (
-        <div className={cn("glass-card rounded-xl p-4 border-l-4", borderColor)}>
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        {label}
-                    </p>
-                    <div className="mt-1">{value}</div>
-                </div>
-                {icon}
-            </div>
-        </div>
-    );
-}
 
 function getTrendContent(direction: "up" | "down" | "stable") {
     const trend = {
         up: {
-            icon: <TrendingUp className="w-4 h-4 text-success" />,
+            icon: <TrendingUp className="w-4 h-4 text-[var(--nd-success)]" aria-hidden="true" />,
             text: "Alta",
-            textColor: "text-success",
+            textColor: "text-[var(--nd-success)]",
         },
         down: {
-            icon: <TrendingDown className="w-4 h-4 text-destructive" />,
+            icon: <TrendingDown className="w-4 h-4 text-[var(--nd-error)]" aria-hidden="true" />,
             text: "Queda",
-            textColor: "text-destructive",
+            textColor: "text-[var(--nd-error)]",
         },
         stable: {
-            icon: <Minus className="w-4 h-4 text-muted-foreground" />,
+            icon: <Minus className="w-4 h-4 text-[var(--nd-text-secondary)]" aria-hidden="true" />,
             text: "Estável",
-            textColor: "text-muted-foreground",
+            textColor: "text-[var(--nd-text-secondary)]",
         },
     };
     return trend[direction];
 }
 
 function getThresholdColor(value: number, highThreshold: number, mediumThreshold: number) {
-    if (value >= highThreshold) return "text-success";
-    if (value >= mediumThreshold) return "text-warning";
-    return "text-destructive";
+    if (value >= highThreshold) return "text-[var(--nd-success)]";
+    if (value >= mediumThreshold) return "text-[var(--nd-warning)]";
+    return "text-[var(--nd-error)]";
 }
 
 export function AnalyticsStats({ metrics }: { metrics: AnalyticsMetrics }) {
     const trend = getTrendContent(metrics.trendDirection);
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <AnalyticsStatCard
-                label="Total Doses"
-                value={<p className="text-2xl font-display font-bold">{metrics.totalDoses}</p>}
-                icon={<Pill className="w-8 h-8 text-primary/60" />}
-                borderColor="border-l-primary"
-            />
-            <AnalyticsStatCard
-                label="Pacientes"
-                value={<p className="text-2xl font-display font-bold">{metrics.totalPatients}</p>}
-                icon={<Users className="w-8 h-8 text-info/60" />}
-                borderColor="border-l-info"
-            />
-            <AnalyticsStatCard
-                label="Eficácia"
-                value={
-                    <p className={cn("text-2xl font-display font-bold", getThresholdColor(metrics.avgEfficacy, 70, 50))}>
-                        {metrics.avgEfficacy}%
-                    </p>
-                }
-                icon={<Activity className="w-8 h-8 text-success/60" />}
-                borderColor="border-l-success"
-            />
-            <AnalyticsStatCard
-                label="Adesão"
-                value={
-                    <p className={cn("text-2xl font-display font-bold", getThresholdColor(metrics.adherenceRate, 80, 60))}>
-                        {metrics.adherenceRate}%
-                    </p>
-                }
-                icon={<Brain className="w-8 h-8 text-purple-500/60" />}
-                borderColor="border-l-purple-500"
-            />
-            <AnalyticsStatCard
-                label="Alertas"
-                value={
-                    <p className={cn(
-                        "text-2xl font-display font-bold",
-                        metrics.riskAlerts > 0 ? "text-warning" : "text-success"
-                    )}>
-                        {metrics.riskAlerts}
-                    </p>
-                }
-                icon={<Sparkles className="w-8 h-8 text-warning/60" />}
-                borderColor="border-l-warning"
-            />
-            <AnalyticsStatCard
-                label="Tendência"
-                value={
-                    <div className="flex items-center gap-2">
-                        {trend.icon}
-                        <span className={cn("text-lg font-display font-bold", trend.textColor)}>
-                            {trend.text}
-                        </span>
-                    </div>
-                }
-                icon={null}
-                borderColor="border-l-accent"
-            />
-        </div>
+        <section
+            aria-label="Indicadores analíticos consolidados"
+            className="rounded-2xl border border-[var(--nd-border)] bg-[var(--nd-surface)] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y sm:divide-y-0 sm:divide-x divide-[var(--nd-border)]"
+        >
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Total de doses
+                </p>
+                <p className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[var(--nd-text)] mt-1 nd-tabular">
+                    {metrics.totalDoses}
+                </p>
+            </div>
+
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Pacientes
+                </p>
+                <p className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[var(--nd-text)] mt-1 nd-tabular">
+                    {metrics.totalPatients}
+                </p>
+            </div>
+
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Eficácia
+                </p>
+                <p className={cn("text-[24px] font-semibold leading-tight tracking-[-0.02em] mt-1 nd-tabular", getThresholdColor(metrics.avgEfficacy, 70, 50))}>
+                    {metrics.avgEfficacy}%
+                </p>
+            </div>
+
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Adesão
+                </p>
+                <p className={cn("text-[24px] font-semibold leading-tight tracking-[-0.02em] mt-1 nd-tabular", getThresholdColor(metrics.adherenceRate, 80, 60))}>
+                    {metrics.adherenceRate}%
+                </p>
+            </div>
+
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Alertas
+                </p>
+                <p className={cn(
+                    "text-[24px] font-semibold leading-tight tracking-[-0.02em] mt-1 nd-tabular",
+                    metrics.riskAlerts > 0 ? "text-[var(--nd-warning)]" : "text-[var(--nd-success)]"
+                )}>
+                    {metrics.riskAlerts}
+                </p>
+            </div>
+
+            <div className="px-5 py-4">
+                <p className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                    Tendência
+                </p>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                    {trend.icon}
+                    <span className={cn("text-[18px] font-semibold leading-tight tracking-[-0.01em]", trend.textColor)}>
+                        {trend.text}
+                    </span>
+                </div>
+            </div>
+        </section>
     );
 }

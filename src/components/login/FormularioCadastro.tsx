@@ -67,7 +67,7 @@ export function FormularioCadastro({
             placeholder="Crie uma chave de acesso"
             value={senha}
             onChange={(e) => aoMudarSenha(e.target.value)}
-            className="login-input pl-[42px] pr-11"
+            className="login-input pl-[42px] pr-12"
             required
             minLength={6}
             disabled={carregando}
@@ -75,7 +75,7 @@ export function FormularioCadastro({
           <button
             type="button"
             onClick={() => setMostrarSenha((prev) => !prev)}
-            className="login-icon-btn absolute right-2 top-1/2 -translate-y-1/2"
+            className="login-icon-btn absolute right-1 top-1/2 -translate-y-1/2"
             aria-label={mostrarSenha ? "Ocultar chave de acesso" : "Mostrar chave de acesso"}
             disabled={carregando}
           >

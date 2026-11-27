@@ -1,21 +1,13 @@
 import { cn } from "@/lib/utils";
 import { PredictiveInsights } from "@/lib/analytics";
 import {
-    Brain,
-    TrendingUp,
-    Shield,
-    Sparkles,
-    Calendar,
-    AlertTriangle,
-} from "lucide-react";
-import {
     BarChart,
     Bar,
     XAxis,
     YAxis,
     ResponsiveContainer,
     Cell,
-    Tooltip
+    Tooltip,
 } from "recharts";
 
 interface PredictiveCardProps {
@@ -25,15 +17,9 @@ interface PredictiveCardProps {
 
 export function PredictiveCard({ insights, className }: PredictiveCardProps) {
     const getRiskColor = (score: number) => {
-        if (score < 30) return "text-success";
-        if (score < 60) return "text-warning";
-        return "text-destructive";
-    };
-
-    const getRiskBg = (score: number) => {
-        if (score < 30) return "bg-success/10 border-success/20";
-        if (score < 60) return "bg-warning/10 border-warning/20";
-        return "bg-destructive/10 border-destructive/20";
+        if (score < 30) return "text-[var(--nd-success)]";
+        if (score < 60) return "text-[var(--nd-warning)]";
+        return "text-[var(--nd-error)]";
     };
 
     const getRiskLabel = (score: number) => {
@@ -50,65 +36,57 @@ export function PredictiveCard({ insights, className }: PredictiveCardProps) {
     };
 
     return (
-        <div className={cn("glass-card rounded-2xl p-6", className)}>
+        <section className={cn("rounded-2xl border border-[var(--nd-border)] bg-[var(--nd-surface)] p-6 divide-y divide-[var(--nd-border)]", className)}>
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-neuro-gradient flex items-center justify-center">
-                        <Brain className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                    <div>
-                        <h3 className="font-display font-semibold text-lg">Previsões de IA</h3>
-                        <p className="text-xs text-muted-foreground">Análise preditiva baseada em dados</p>
-                    </div>
-                </div>
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-            </div>
+            <header className="pb-4">
+                <h2 className="text-[16px] font-semibold text-[var(--nd-text)]">
+                    Projeção Clínica
+                </h2>
+                <p className="text-[13px] text-[var(--nd-text-secondary)] mt-0.5">
+                    Estimativa de adesão, risco e resposta terapêutica para os próximos 7 dias.
+                </p>
+            </header>
 
-            {/* Main metrics */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-                {/* Adherence Prediction */}
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-medium text-muted-foreground">Previsão de Adesão</span>
-                    </div>
-                    <p className={cn(
-                        "text-3xl font-display font-bold",
-                        insights.adherencePrediction >= 80 ? "text-success" :
-                            insights.adherencePrediction >= 60 ? "text-primary" : "text-warning"
+            {/* Main metrics (sem cards aninhados) */}
+            <dl className="py-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <dt className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                        Previsão de adesão (7 dias)
+                    </dt>
+                    <dd className={cn(
+                        "text-[28px] font-semibold leading-tight tracking-[-0.02em] mt-1 nd-tabular",
+                        insights.adherencePrediction >= 80
+                            ? "text-[var(--nd-success)]"
+                            : insights.adherencePrediction >= 60
+                            ? "text-[var(--nd-primary)]"
+                            : "text-[var(--nd-warning)]"
                     )}>
                         {insights.adherencePrediction}%
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">próximos 7 dias</p>
+                    </dd>
                 </div>
 
-                {/* Risk Score */}
-                <div className={cn(
-                    "p-4 rounded-xl border",
-                    getRiskBg(insights.riskScore)
-                )}>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Shield className={cn("w-4 h-4", getRiskColor(insights.riskScore))} />
-                        <span className="text-xs font-medium text-muted-foreground">Score de Risco</span>
-                    </div>
-                    <p className={cn("text-3xl font-display font-bold", getRiskColor(insights.riskScore))}>
-                        {insights.riskScore}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Nível: {getRiskLabel(insights.riskScore)}
-                    </p>
+                <div>
+                    <dt className="text-[12px] font-medium text-[var(--nd-text-secondary)]">
+                        Score de risco clínico
+                    </dt>
+                    <dd className="flex items-baseline gap-2 mt-1">
+                        <span className={cn("text-[28px] font-semibold leading-tight tracking-[-0.02em] nd-tabular", getRiskColor(insights.riskScore))}>
+                            {insights.riskScore}
+                        </span>
+                        <span className="text-[13px] text-[var(--nd-text-secondary)]">
+                            · {getRiskLabel(insights.riskScore)}
+                        </span>
+                    </dd>
                 </div>
-            </div>
+            </dl>
 
             {/* Weekly Forecast Chart */}
-            <div className={cn(insights.suggestedDoseAdjustment ? "mb-6" : "")}>
-                <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">Previsão Semanal de Eficácia</span>
-                </div>
+            <div className="py-5">
+                <h3 className="text-[14px] font-semibold text-[var(--nd-text)] mb-4">
+                    Previsão Semanal de Eficácia
+                </h3>
 
-                <ResponsiveContainer width="100%" height={120}>
+                <ResponsiveContainer width="100%" height={132}>
                     <BarChart data={insights.weeklyForecast} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <XAxis
                             dataKey="day"
@@ -150,20 +128,15 @@ export function PredictiveCard({ insights, className }: PredictiveCardProps) {
 
             {/* Suggested Adjustment — only shown when relevant */}
             {insights.suggestedDoseAdjustment && (
-                <div className="p-4 rounded-xl bg-neuro-gradient-subtle border border-primary/20">
-                    <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <AlertTriangle className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-semibold mb-1">Sugestão de Ajuste</p>
-                            <p className="text-xs text-muted-foreground">
-                                {insights.suggestedDoseAdjustment}
-                            </p>
-                        </div>
-                    </div>
+                <div className="pt-5">
+                    <p className="text-[13px] font-semibold text-[var(--nd-primary)]">
+                        Sugestão de Ajuste
+                    </p>
+                    <p className="text-[13px] text-[var(--nd-text-secondary)] mt-1 max-w-[68ch]">
+                        {insights.suggestedDoseAdjustment}
+                    </p>
                 </div>
             )}
-        </div>
+        </section>
     );
 }

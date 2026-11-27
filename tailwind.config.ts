@@ -21,8 +21,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Newsreader"', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -94,12 +94,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: { opacity: "0", transform: "translateY(-4px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "0", transform: "translateY(-4px)" },
         },
         "fade-up": {
           from: { opacity: "0", transform: "translateY(10px)" },
@@ -120,11 +120,6 @@ export default {
         "fade-up": "fade-up 0.5s ease-out forwards",
         "slide-in-right": "slide-in-right 0.4s ease-out forwards",
         "slide-in-left": "slide-in-left 0.4s ease-out forwards",
-      },
-      boxShadow: {
-        'glow-primary': '0 0 20px -5px hsl(var(--primary) / 0.3)',
-        'glow-success': '0 0 20px -5px hsl(var(--success) / 0.3)',
-        'glow-warning': '0 0 20px -5px hsl(var(--warning) / 0.3)',
       },
       spacing: {
         '18': '4.5rem',

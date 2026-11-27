@@ -1,0 +1,597 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-26T03:42:00Z",
+  "title": "Design System: NeuroDose Assist",
+  "extensions": {
+    "colorMeta": {
+      "clinical-navy": {
+        "role": "primary",
+        "displayName": "Clinical Navy",
+        "canonical": "oklch(38.9% 0.081 236.5)",
+        "tonalRamp": [
+          "oklch(16% 0.045 236.5)",
+          "oklch(24% 0.064 236.5)",
+          "oklch(32% 0.077 236.5)",
+          "oklch(39% 0.081 236.5)",
+          "oklch(52% 0.075 236.5)",
+          "oklch(68% 0.056 236.5)",
+          "oklch(83% 0.032 236.5)",
+          "oklch(95% 0.011 236.5)"
+        ]
+      },
+      "clinical-navy-hover": {
+        "role": "primary",
+        "displayName": "Clinical Navy Hover",
+        "canonical": "oklch(32.5% 0.068 237.2)",
+        "tonalRamp": [
+          "oklch(15% 0.040 237.2)",
+          "oklch(23% 0.058 237.2)",
+          "oklch(32.5% 0.068 237.2)",
+          "oklch(43% 0.068 237.2)",
+          "oklch(56% 0.058 237.2)",
+          "oklch(71% 0.042 237.2)",
+          "oklch(85% 0.022 237.2)",
+          "oklch(95% 0.008 237.2)"
+        ]
+      },
+      "abyssal-navy": {
+        "role": "primary",
+        "displayName": "Abyssal Navy",
+        "canonical": "oklch(26.5% 0.056 238.5)",
+        "tonalRamp": [
+          "oklch(15% 0.036 238.5)",
+          "oklch(26.5% 0.056 238.5)",
+          "oklch(36% 0.062 238.5)",
+          "oklch(48% 0.058 238.5)",
+          "oklch(60% 0.048 238.5)",
+          "oklch(74% 0.034 238.5)",
+          "oklch(86% 0.018 238.5)",
+          "oklch(95% 0.007 238.5)"
+        ]
+      },
+      "clinical-teal": {
+        "role": "secondary",
+        "displayName": "Clinical Teal",
+        "canonical": "oklch(53.4% 0.082 195.8)",
+        "tonalRamp": [
+          "oklch(18% 0.038 195.8)",
+          "oklch(28% 0.056 195.8)",
+          "oklch(40% 0.074 195.8)",
+          "oklch(53.4% 0.082 195.8)",
+          "oklch(65% 0.074 195.8)",
+          "oklch(77% 0.054 195.8)",
+          "oklch(88% 0.030 195.8)",
+          "oklch(96% 0.011 195.8)"
+        ]
+      },
+      "teal-mist": {
+        "role": "secondary",
+        "displayName": "Teal Mist",
+        "canonical": "oklch(95.2% 0.016 195.2)",
+        "tonalRamp": [
+          "oklch(18% 0.024 195.2)",
+          "oklch(30% 0.034 195.2)",
+          "oklch(44% 0.042 195.2)",
+          "oklch(58% 0.042 195.2)",
+          "oklch(72% 0.034 195.2)",
+          "oklch(84% 0.025 195.2)",
+          "oklch(92% 0.018 195.2)",
+          "oklch(95.2% 0.016 195.2)"
+        ]
+      },
+      "seafoam-line": {
+        "role": "secondary",
+        "displayName": "Seafoam Line",
+        "canonical": "oklch(76.4% 0.062 194.6)",
+        "tonalRamp": [
+          "oklch(18% 0.030 194.6)",
+          "oklch(30% 0.046 194.6)",
+          "oklch(44% 0.060 194.6)",
+          "oklch(58% 0.066 194.6)",
+          "oklch(70% 0.065 194.6)",
+          "oklch(76.4% 0.062 194.6)",
+          "oklch(88% 0.034 194.6)",
+          "oklch(95% 0.014 194.6)"
+        ]
+      },
+      "clinical-emerald": {
+        "role": "tertiary",
+        "displayName": "Clinical Emerald",
+        "canonical": "oklch(51.4% 0.114 156.2)",
+        "tonalRamp": [
+          "oklch(17% 0.046 156.2)",
+          "oklch(28% 0.074 156.2)",
+          "oklch(40% 0.100 156.2)",
+          "oklch(51.4% 0.114 156.2)",
+          "oklch(64% 0.104 156.2)",
+          "oklch(77% 0.078 156.2)",
+          "oklch(88% 0.044 156.2)",
+          "oklch(96% 0.016 156.2)"
+        ]
+      },
+      "emerald-wash": {
+        "role": "tertiary",
+        "displayName": "Emerald Wash",
+        "canonical": "oklch(95.3% 0.020 155.8)",
+        "tonalRamp": [
+          "oklch(18% 0.028 155.8)",
+          "oklch(30% 0.044 155.8)",
+          "oklch(44% 0.056 155.8)",
+          "oklch(58% 0.056 155.8)",
+          "oklch(72% 0.046 155.8)",
+          "oklch(84% 0.032 155.8)",
+          "oklch(92% 0.022 155.8)",
+          "oklch(95.3% 0.020 155.8)"
+        ]
+      },
+      "clinical-amber": {
+        "role": "tertiary",
+        "displayName": "Clinical Amber",
+        "canonical": "oklch(52.5% 0.145 50.8)",
+        "tonalRamp": [
+          "oklch(18% 0.052 50.8)",
+          "oklch(30% 0.088 50.8)",
+          "oklch(42% 0.125 50.8)",
+          "oklch(52.5% 0.145 50.8)",
+          "oklch(66% 0.130 50.8)",
+          "oklch(79% 0.092 50.8)",
+          "oklch(89% 0.050 50.8)",
+          "oklch(96% 0.018 50.8)"
+        ]
+      },
+      "amber-wash": {
+        "role": "tertiary",
+        "displayName": "Amber Wash",
+        "canonical": "oklch(95.8% 0.024 68.5)",
+        "tonalRamp": [
+          "oklch(18% 0.030 68.5)",
+          "oklch(31% 0.048 68.5)",
+          "oklch(45% 0.062 68.5)",
+          "oklch(59% 0.064 68.5)",
+          "oklch(73% 0.052 68.5)",
+          "oklch(85% 0.038 68.5)",
+          "oklch(92% 0.028 68.5)",
+          "oklch(95.8% 0.024 68.5)"
+        ]
+      },
+      "clinical-crimson": {
+        "role": "tertiary",
+        "displayName": "Clinical Crimson",
+        "canonical": "oklch(49.5% 0.168 27.6)",
+        "tonalRamp": [
+          "oklch(17% 0.058 27.6)",
+          "oklch(29% 0.102 27.6)",
+          "oklch(40% 0.145 27.6)",
+          "oklch(49.5% 0.168 27.6)",
+          "oklch(63% 0.148 27.6)",
+          "oklch(76% 0.102 27.6)",
+          "oklch(88% 0.054 27.6)",
+          "oklch(95% 0.020 27.6)"
+        ]
+      },
+      "crimson-wash": {
+        "role": "tertiary",
+        "displayName": "Crimson Wash",
+        "canonical": "oklch(94.8% 0.024 22.8)",
+        "tonalRamp": [
+          "oklch(18% 0.032 22.8)",
+          "oklch(31% 0.052 22.8)",
+          "oklch(45% 0.068 22.8)",
+          "oklch(59% 0.068 22.8)",
+          "oklch(73% 0.054 22.8)",
+          "oklch(85% 0.038 22.8)",
+          "oklch(91% 0.028 22.8)",
+          "oklch(94.8% 0.024 22.8)"
+        ]
+      },
+      "alabaster-canvas": {
+        "role": "neutral",
+        "displayName": "Alabaster Canvas",
+        "canonical": "oklch(97.0% 0.005 240)",
+        "tonalRamp": [
+          "oklch(18% 0.012 240)",
+          "oklch(30% 0.014 240)",
+          "oklch(44% 0.015 240)",
+          "oklch(58% 0.014 240)",
+          "oklch(72% 0.012 240)",
+          "oklch(84% 0.009 240)",
+          "oklch(92% 0.006 240)",
+          "oklch(97% 0.005 240)"
+        ]
+      },
+      "frosted-stone": {
+        "role": "neutral",
+        "displayName": "Frosted Stone",
+        "canonical": "oklch(98.4% 0.004 247)",
+        "tonalRamp": [
+          "oklch(18% 0.010 247)",
+          "oklch(30% 0.012 247)",
+          "oklch(44% 0.013 247)",
+          "oklch(58% 0.012 247)",
+          "oklch(72% 0.010 247)",
+          "oklch(84% 0.008 247)",
+          "oklch(93% 0.005 247)",
+          "oklch(98.4% 0.004 247)"
+        ]
+      },
+      "pure-surface": {
+        "role": "neutral",
+        "displayName": "Pure Surface",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(16% 0 0)",
+          "oklch(28% 0 0)",
+          "oklch(42% 0 0)",
+          "oklch(56% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(92% 0 0)",
+          "oklch(100% 0 0)"
+        ]
+      },
+      "cool-mist": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "canonical": "oklch(95.6% 0.008 238)",
+        "tonalRamp": [
+          "oklch(18% 0.014 238)",
+          "oklch(30% 0.018 238)",
+          "oklch(44% 0.020 238)",
+          "oklch(58% 0.018 238)",
+          "oklch(72% 0.015 238)",
+          "oklch(84% 0.012 238)",
+          "oklch(92% 0.009 238)",
+          "oklch(95.6% 0.008 238)"
+        ]
+      },
+      "hairline-slate": {
+        "role": "neutral",
+        "displayName": "Hairline Slate",
+        "canonical": "oklch(93.6% 0.012 236)",
+        "tonalRamp": [
+          "oklch(18% 0.016 236)",
+          "oklch(30% 0.020 236)",
+          "oklch(44% 0.024 236)",
+          "oklch(58% 0.022 236)",
+          "oklch(72% 0.018 236)",
+          "oklch(84% 0.015 236)",
+          "oklch(90% 0.013 236)",
+          "oklch(95% 0.009 236)"
+        ]
+      },
+      "input-slate": {
+        "role": "neutral",
+        "displayName": "Input Slate",
+        "canonical": "oklch(89.8% 0.018 236)",
+        "tonalRamp": [
+          "oklch(18% 0.018 236)",
+          "oklch(30% 0.024 236)",
+          "oklch(44% 0.028 236)",
+          "oklch(58% 0.028 236)",
+          "oklch(72% 0.024 236)",
+          "oklch(82% 0.021 236)",
+          "oklch(89.8% 0.018 236)",
+          "oklch(95% 0.010 236)"
+        ]
+      },
+      "hover-slate": {
+        "role": "neutral",
+        "displayName": "Hover Slate",
+        "canonical": "oklch(80.6% 0.024 236)",
+        "tonalRamp": [
+          "oklch(18% 0.020 236)",
+          "oklch(30% 0.028 236)",
+          "oklch(44% 0.032 236)",
+          "oklch(58% 0.032 236)",
+          "oklch(70% 0.028 236)",
+          "oklch(80.6% 0.024 236)",
+          "oklch(89% 0.015 236)",
+          "oklch(95% 0.008 236)"
+        ]
+      },
+      "ink-navy": {
+        "role": "neutral",
+        "displayName": "Ink Navy",
+        "canonical": "oklch(22.9% 0.036 244.5)",
+        "tonalRamp": [
+          "oklch(15% 0.028 244.5)",
+          "oklch(22.9% 0.036 244.5)",
+          "oklch(34% 0.040 244.5)",
+          "oklch(46% 0.038 244.5)",
+          "oklch(60% 0.032 244.5)",
+          "oklch(74% 0.024 244.5)",
+          "oklch(86% 0.014 244.5)",
+          "oklch(95% 0.006 244.5)"
+        ]
+      },
+      "graphite-label": {
+        "role": "neutral",
+        "displayName": "Graphite Label",
+        "canonical": "oklch(39.4% 0.028 241)",
+        "tonalRamp": [
+          "oklch(16% 0.020 241)",
+          "oklch(28% 0.026 241)",
+          "oklch(39.4% 0.028 241)",
+          "oklch(52% 0.028 241)",
+          "oklch(66% 0.024 241)",
+          "oklch(78% 0.018 241)",
+          "oklch(88% 0.011 241)",
+          "oklch(95% 0.005 241)"
+        ]
+      },
+      "slate-secondary": {
+        "role": "neutral",
+        "displayName": "Slate Secondary",
+        "canonical": "oklch(52.4% 0.026 239)",
+        "tonalRamp": [
+          "oklch(17% 0.018 239)",
+          "oklch(29% 0.024 239)",
+          "oklch(41% 0.026 239)",
+          "oklch(52.4% 0.026 239)",
+          "oklch(66% 0.023 239)",
+          "oklch(78% 0.017 239)",
+          "oklch(88% 0.010 239)",
+          "oklch(95% 0.005 239)"
+        ]
+      },
+      "muted-icon": {
+        "role": "neutral",
+        "displayName": "Muted Icon",
+        "canonical": "oklch(58.8% 0.025 237)",
+        "tonalRamp": [
+          "oklch(17% 0.018 237)",
+          "oklch(29% 0.023 237)",
+          "oklch(43% 0.025 237)",
+          "oklch(58.8% 0.025 237)",
+          "oklch(70% 0.021 237)",
+          "oklch(80% 0.015 237)",
+          "oklch(89% 0.009 237)",
+          "oklch(95% 0.005 237)"
+        ]
+      },
+      "placeholder-slate": {
+        "role": "neutral",
+        "displayName": "Placeholder Slate",
+        "canonical": "oklch(57.8% 0.024 240)",
+        "tonalRamp": [
+          "oklch(17% 0.017 240)",
+          "oklch(29% 0.022 240)",
+          "oklch(43% 0.024 240)",
+          "oklch(57.8% 0.024 240)",
+          "oklch(69% 0.020 240)",
+          "oklch(80% 0.014 240)",
+          "oklch(89% 0.009 240)",
+          "oklch(95% 0.005 240)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Metric",
+        "purpose": "Primary KPI figures (38px), semicircular efficacy gauge readout (36px), and last-dose readout (32px) with tabular numerals."
+      },
+      "headline": {
+        "displayName": "Page Headline",
+        "purpose": "Top-level workspace page h1 title (24px mobile, 28px desktop)."
+      },
+      "title": {
+        "displayName": "Module Title",
+        "purpose": "Bento card h2 headings (16px), brand wordmark (19px), and next-appointment patient name (19px)."
+      },
+      "body": {
+        "displayName": "Clinical Body",
+        "purpose": "Lead subtitles, button labels, navigation items, patient list titles, and clinical form fields."
+      },
+      "label": {
+        "displayName": "Clinical Label",
+        "purpose": "Status chips, trend badges, timestamps, secondary descriptions, and chart axis ticks."
+      },
+      "nav-section": {
+        "displayName": "Rail Section Header",
+        "purpose": "Uppercase group headers (MENU, SISTEMA) inside the light sidebar navigation rail."
+      }
+    },
+    "shadows": [
+      {
+        "name": "nd-shadow-sm",
+        "value": "0 1px 2px rgba(15, 30, 46, 0.04)",
+        "purpose": "Hairline grounding for active sidebar pills, outline pill buttons, and segmented controls."
+      },
+      {
+        "name": "nd-shadow-card",
+        "value": "0 1px 2px rgba(15, 30, 46, 0.03), 0 6px 20px -8px rgba(15, 30, 46, 0.06)",
+        "purpose": "Resting ambient elevation for standard white bento cards."
+      },
+      {
+        "name": "nd-shadow-card-hover",
+        "value": "0 6px 22px -8px rgba(15, 30, 46, 0.1)",
+        "purpose": "Hover elevation for interactive bento cards."
+      },
+      {
+        "name": "nd-shadow-hero",
+        "value": "0 10px 28px -10px rgba(14, 41, 59, 0.42)",
+        "purpose": "Tinted abyssal-navy depth under dark gradient hero anchor cards."
+      },
+      {
+        "name": "nd-shadow-btn-primary",
+        "value": "0 4px 12px -4px rgba(27, 73, 101, 0.42)",
+        "purpose": "Resting tinted elevation for primary navy gradient pill buttons."
+      },
+      {
+        "name": "nd-shadow-btn-primary-hover",
+        "value": "0 6px 16px -4px rgba(27, 73, 101, 0.5)",
+        "purpose": "Hover elevation for primary navy gradient pill buttons."
+      },
+      {
+        "name": "nd-shadow-popover",
+        "value": "0 8px 24px -6px rgba(15, 30, 46, 0.12)",
+        "purpose": "Elevated floating surfaces: search listbox, notifications popover, profile dropdown, chart tooltips."
+      },
+      {
+        "name": "nd-focus-ring",
+        "value": "0 0 0 3px rgba(44, 122, 123, 0.16)",
+        "purpose": "Soft clinical-teal focus halo for form inputs."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-press",
+        "value": "80ms",
+        "purpose": "Tactile translateY(1px) active press feedback on pill buttons."
+      },
+      {
+        "name": "dur-fast",
+        "value": "150ms",
+        "purpose": "Default hover, border, color, and tooltip entrance transitions."
+      },
+      {
+        "name": "dur-base",
+        "value": "200ms",
+        "purpose": "Sidebar drawer slide, desktop rail width collapse, and segmented tab indicator."
+      },
+      {
+        "name": "dur-enter",
+        "value": "300ms",
+        "purpose": "Subtle opacity fade on workspace page and login panel mount."
+      },
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Primary clinical easing curve across all transitions and keyframes; disabled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "475px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "shell-desktop", "value": "900px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "login-wide", "value": "1180px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Pill Button",
+      "kind": "button",
+      "refersTo": "button-primary-pill",
+      "description": "Lead clinical action button (+ Registrar Dose, Abrir agenda) in deep-to-clinical navy gradient with full-pill silhouette.",
+      "html": "<button type=\"button\" class=\"ds-btn-primary-pill\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg><span>Registrar Dose</span></button>",
+      "css": ".ds-btn-primary-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; background: linear-gradient(135deg, var(--nd-primary-deep, #0E293B) 0%, var(--nd-primary, #1B4965) 100%); color: #FFFFFF; font-family: var(--nd-font, 'Inter', system-ui, sans-serif); font-size: 14px; font-weight: 500; border: 1px solid transparent; border-radius: var(--nd-radius-pill, 9999px); box-shadow: 0 4px 12px -4px rgba(27, 73, 101, 0.42); cursor: pointer; transition: filter 150ms cubic-bezier(0.2, 0, 0, 1), box-shadow 150ms cubic-bezier(0.2, 0, 0, 1), transform 80ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-primary-pill:hover { filter: brightness(1.08); box-shadow: 0 6px 16px -4px rgba(27, 73, 101, 0.5); } .ds-btn-primary-pill:active { transform: translateY(1px); } .ds-btn-primary-pill:focus-visible { outline: 2px solid var(--nd-accent, #2C7A7B); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Pill Button",
+      "kind": "button",
+      "refersTo": "button-outline-pill",
+      "description": "Secondary clinical navigation and export action (Histórico, Relatório) with crisp white surface and input-slate hairline.",
+      "html": "<button type=\"button\" class=\"ds-btn-outline-pill\"><svg class=\"ds-btn-outline-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/></svg><span>Relatório</span></button>",
+      "css": ".ds-btn-outline-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; background-color: var(--nd-surface, #FFFFFF); color: var(--nd-text, #0F1E2E); font-family: var(--nd-font, 'Inter', system-ui, sans-serif); font-size: 14px; font-weight: 500; border: 1px solid var(--nd-border-input, #D5E0E8); border-radius: var(--nd-radius-pill, 9999px); box-shadow: var(--nd-shadow-sm, 0 1px 2px rgba(15, 30, 46, 0.04)); cursor: pointer; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), border-color 150ms cubic-bezier(0.2, 0, 0, 1), transform 80ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-outline-icon { color: var(--nd-primary, #1B4965); flex-shrink: 0; } .ds-btn-outline-pill:hover { background-color: var(--nd-muted, #EEF2F5); border-color: var(--nd-border-hover, #B4C4D0); } .ds-btn-outline-pill:active { transform: translateY(1px); } .ds-btn-outline-pill:focus-visible { outline: 2px solid var(--nd-accent, #2C7A7B); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quick Module Search",
+      "kind": "input",
+      "refersTo": "search-input",
+      "description": "Header pill search field with ⌘K shortcut keycap that filters and jumps across clinical modules.",
+      "html": "<div class=\"ds-search-wrap\"><svg class=\"ds-search-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input type=\"search\" class=\"ds-search-input\" placeholder=\"Buscar módulo clínico…\" aria-label=\"Buscar módulo clínico\" /><kbd class=\"ds-search-kbd\">⌘K</kbd></div>",
+      "css": ".ds-search-wrap { position: relative; width: 100%; max-width: 340px; font-family: var(--nd-font, 'Inter', system-ui, sans-serif); } .ds-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--nd-icon, #6D7F8E); pointer-events: none; } .ds-search-input { width: 100%; height: 40px; padding: 0 56px 0 40px; border-radius: var(--nd-radius-pill, 9999px); background-color: var(--nd-bg, #F4F6F8); border: 1px solid var(--nd-border, #E5ECF1); color: var(--nd-text, #0F1E2E); font-size: 13px; font-family: inherit; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), border-color 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-search-input::placeholder { color: var(--nd-placeholder, #6B7B8A); } .ds-search-input:hover:not(:focus) { border-color: var(--nd-border-hover, #B4C4D0); } .ds-search-input:focus { outline: none; background-color: var(--nd-surface, #FFFFFF); border-color: var(--nd-accent, #2C7A7B); } .ds-search-kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); padding: 2px 8px; border-radius: var(--nd-radius-pill, 9999px); background-color: var(--nd-surface, #FFFFFF); border: 1px solid var(--nd-border, #E5ECF1); color: var(--nd-text-secondary, #5A6B7A); font-size: 11px; font-weight: 500; font-family: inherit; pointer-events: none; }"
+    },
+    {
+      "name": "Clinical Form Input",
+      "kind": "input",
+      "refersTo": "clinical-input",
+      "description": "48px high clinical text field with 12px radius, clinical-teal caret, and 3px teal focus halo.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-dose-input\">Dosagem administrada (mg)</label><input id=\"ds-dose-input\" class=\"ds-clinical-input\" type=\"text\" placeholder=\"Ex.: 50 mg\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; font-family: var(--nd-font, 'Inter', system-ui, sans-serif); } .ds-field-label { font-size: 13px; font-weight: 500; color: var(--nd-label, #374756); } .ds-clinical-input { width: 100%; height: 48px; padding: 0 14px; background-color: var(--nd-surface, #FFFFFF); border: 1px solid var(--nd-border-input, #D5E0E8); border-radius: var(--nd-radius, 12px); color: var(--nd-text, #0F1E2E); font-size: 15px; font-family: inherit; caret-color: var(--nd-accent, #2C7A7B); transition: border-color 150ms cubic-bezier(0.2, 0, 0, 1), box-shadow 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-clinical-input::placeholder { color: var(--nd-placeholder, #6B7B8A); } .ds-clinical-input:hover:not(:disabled):not(:focus) { border-color: #C2CDD8; } .ds-clinical-input:focus { outline: none; border-color: var(--nd-accent, #2C7A7B); box-shadow: 0 0 0 3px var(--nd-focus-ring, rgba(44, 122, 123, 0.16)); } .ds-clinical-input[aria-invalid=\"true\"] { border-color: var(--nd-error, #B42318); }"
+    },
+    {
+      "name": "Light Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Frosted-stone sidebar rail with uppercase MENU group header and white elevated active pill state.",
+      "html": "<nav class=\"ds-rail\" aria-label=\"Navegação principal\"><p class=\"ds-rail-heading\">Menu</p><a href=\"#\" class=\"ds-nav-item\" aria-current=\"page\"><svg class=\"ds-nav-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/></svg><span>Dashboard</span></a><a href=\"#\" class=\"ds-nav-item\"><svg class=\"ds-nav-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg><span>Pacientes</span></a></nav>",
+      "css": ".ds-rail { width: 224px; padding: 14px; background-color: var(--nd-sidebar-bg, #F8FAFC); border: 1px solid var(--nd-border, #E5ECF1); border-radius: 16px; display: flex; flex-direction: column; gap: 4px; font-family: var(--nd-font, 'Inter', system-ui, sans-serif); } .ds-rail-heading { margin: 0 0 6px; padding: 0 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nd-icon, #6D7F8E); } .ds-nav-item { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; border-radius: var(--nd-radius, 12px); border: 1px solid transparent; font-size: 14px; font-weight: 500; color: var(--nd-text-secondary, #5A6B7A); text-decoration: none; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), color 150ms cubic-bezier(0.2, 0, 0, 1), border-color 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-nav-icon { color: var(--nd-icon, #6D7F8E); flex-shrink: 0; } .ds-nav-item:hover { background-color: var(--nd-muted, #EEF2F5); color: var(--nd-text, #0F1E2E); } .ds-nav-item[aria-current=\"page\"] { background-color: var(--nd-surface, #FFFFFF); border-color: var(--nd-border, #E5ECF1); color: var(--nd-primary, #1B4965); font-weight: 600; box-shadow: var(--nd-shadow-sm, 0 1px 2px rgba(15, 30, 46, 0.04)); } .ds-nav-item[aria-current=\"page\"] .ds-nav-icon { color: var(--nd-primary, #1B4965); } .ds-nav-item:focus-visible { outline: 2px solid var(--nd-accent, #2C7A7B); outline-offset: -2px; }"
+    },
+    {
+      "name": "Clinical Status Chips",
+      "kind": "chip",
+      "refersTo": "status-chip-success",
+      "description": "Soft semantic pill badges for therapeutic efficacy bands, interaction severity, and time horizons using tabular numerals.",
+      "html": "<div class=\"ds-chip-row\"><span class=\"ds-chip ds-chip-success\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>86% · Ótima</span><span class=\"ds-chip ds-chip-warning\">62% · Moderada</span><span class=\"ds-chip ds-chip-error\">38% · Atenção</span><span class=\"ds-chip ds-chip-info\">7 dias</span></div>",
+      "css": ".ds-chip-row { display: flex; flex-wrap: wrap; gap: 8px; font-family: var(--nd-font, 'Inter', system-ui, sans-serif); } .ds-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--nd-radius-pill, 9999px); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.35; } .ds-chip-success { background-color: var(--nd-success-bg, #E8F4ED); color: var(--nd-success, #1E7A4D); } .ds-chip-warning { background-color: var(--nd-warning-bg, #FDF1E3); color: var(--nd-warning, #B54708); } .ds-chip-error { background-color: var(--nd-error-bg, #FDECEA); color: var(--nd-error, #B42318); } .ds-chip-info { background-color: var(--nd-accent-soft, #E8F4F4); color: var(--nd-primary, #1B4965); }"
+    },
+    {
+      "name": "Bento KPI Card",
+      "kind": "card",
+      "refersTo": "card-bento",
+      "description": "Standard pure-white 20px-radius metric card with circular ArrowUpRight trigger, 38px tabular readout, and trend delta pill.",
+      "html": "<article class=\"ds-kpi-card\"><div class=\"ds-kpi-head\"><span class=\"ds-kpi-title\">Eficácia média</span><a href=\"#\" class=\"ds-circle-action\" aria-label=\"Abrir Eficácia média\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></a></div><div class=\"ds-kpi-body\"><div class=\"ds-kpi-value\">84%</div><p class=\"ds-kpi-sub\">Índice clínico geral</p></div><div class=\"ds-kpi-foot\"><span class=\"ds-kpi-trend\">+6%</span><span class=\"ds-kpi-trend-label\">vs. semana anterior</span></div></article>",
+      "css": ".ds-kpi-card { width: 260px; padding: 20px; background-color: var(--nd-surface, #FFFFFF); border: 1px solid var(--nd-border, #E5ECF1); border-radius: var(--nd-radius-lg, 20px); box-shadow: var(--nd-shadow-card, 0 1px 2px rgba(15, 30, 46, 0.03), 0 6px 20px -8px rgba(15, 30, 46, 0.06)); font-family: var(--nd-font, 'Inter', system-ui, sans-serif); display: flex; flex-direction: column; justify-content: space-between; } .ds-kpi-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; } .ds-kpi-title { font-size: 15px; font-weight: 500; color: var(--nd-text, #0F1E2E); } .ds-circle-action { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9999px; border: 1px solid var(--nd-border-input, #D5E0E8); background-color: var(--nd-surface, #FFFFFF); color: var(--nd-text, #0F1E2E); text-decoration: none; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), border-color 150ms cubic-bezier(0.2, 0, 0, 1), color 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-circle-action:hover { border-color: var(--nd-primary, #1B4965); color: var(--nd-primary, #1B4965); background-color: var(--nd-accent-soft, #E8F4F4); } .ds-circle-action:focus-visible { outline: 2px solid var(--nd-accent, #2C7A7B); outline-offset: 2px; } .ds-kpi-body { margin: 12px 0 16px; } .ds-kpi-value { font-size: 38px; font-weight: 600; line-height: 1.08; letter-spacing: -0.03em; color: var(--nd-text, #0F1E2E); font-variant-numeric: tabular-nums; } .ds-kpi-sub { margin: 4px 0 0; font-size: 12px; color: var(--nd-text-secondary, #5A6B7A); } .ds-kpi-foot { display: flex; align-items: center; gap: 8px; font-size: 12px; font-variant-numeric: tabular-nums; } .ds-kpi-trend { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; background-color: var(--nd-success-bg, #E8F4ED); color: var(--nd-success, #1E7A4D); border: 1px solid rgba(30, 122, 77, 0.2); font-weight: 500; } .ds-kpi-trend-label { color: var(--nd-text-secondary, #5A6B7A); }"
+    },
+    {
+      "name": "Hero Clinical Anchor Card",
+      "kind": "custom",
+      "refersTo": "card-hero",
+      "description": "Deep navy-to-teal focal anchor with subtle seafoam topographic waves, tabular dosing readout, and inverted white pill CTA.",
+      "html": "<section class=\"ds-hero-card\" aria-label=\"Última aplicação\"><svg class=\"ds-hero-waves\" viewBox=\"0 0 280 220\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M-20 175 C 45 110, 140 215, 300 95\" fill=\"none\" stroke=\"#7FBFBF\" stroke-width=\"1.5\"/><path d=\"M-20 198 C 60 135, 165 232, 300 128\" fill=\"none\" stroke=\"#A9C9CC\" stroke-width=\"1.2\"/></svg><div class=\"ds-hero-top\"><span>Última aplicação</span><span class=\"ds-hero-time\">14:30</span></div><div class=\"ds-hero-main\"><div class=\"ds-hero-dose\">50 mg</div><div class=\"ds-hero-med\">Sertralina</div><div class=\"ds-hero-badges\"><span class=\"ds-hero-pill\">Eficácia 88%</span><span class=\"ds-hero-pill\">Risco mínimo</span></div></div><a href=\"#\" class=\"ds-hero-cta\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg><span>Nova aplicação</span></a></section>",
+      "css": ".ds-hero-card { position: relative; overflow: hidden; width: 280px; padding: 24px; background: var(--nd-hero-gradient, linear-gradient(145deg, #0E293B 0%, #1B4965 56%, #256873 100%)); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--nd-radius-lg, 20px); color: #FFFFFF; box-shadow: 0 10px 28px -10px rgba(14, 41, 59, 0.42); font-family: var(--nd-font, 'Inter', system-ui, sans-serif); display: flex; flex-direction: column; justify-content: space-between; gap: 18px; } .ds-hero-waves { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.25; pointer-events: none; } .ds-hero-top, .ds-hero-main, .ds-hero-cta { position: relative; z-index: 1; } .ds-hero-top { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.8); } .ds-hero-time { font-size: 12px; font-variant-numeric: tabular-nums; } .ds-hero-dose { font-size: 32px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; } .ds-hero-med { margin-top: 8px; font-size: 16px; font-weight: 500; color: rgba(255, 255, 255, 0.95); } .ds-hero-badges { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; } .ds-hero-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.15); color: #FFFFFF; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; } .ds-hero-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; border-radius: 9999px; background-color: #FFFFFF; color: var(--nd-primary-deep, #0E293B); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-hero-cta:hover { background-color: var(--nd-accent-soft, #E8F4F4); } .ds-hero-cta:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Luminous Clinical Deck",
+    "overview": "NeuroDose Assist replaces heavy, dark-rail medical dashboards with an airy, high-legibility clinical bento workspace built for rapid scanning between neuropsychiatric consultations. A cool-alabaster canvas supports generous white bento modules and a frosted-stone navigation rail, letting clinicians read active caseloads, 7-day pharmacological telemetry, and interaction warnings at a single glance without visual fatigue.\n\nRather than adopting generic emerald SaaS presets, the entire system commits to NeuroDose's maritime-clinical identity: Clinical Navy and Clinical Teal anchor primary calls to action, active navigation states, and data visualization, while a deep navy-to-teal hero gradient (`linear-gradient(145deg, #0E293B 0%, #1B4965 56%, #256873 100%)`) is reserved exclusively for focal anchors—the lead KPI card, the live last-dose tracker, and the compact sidebar dosing prompt. Every interactive pill control, hairline border, and tabular numeral is calibrated for WCAG 2.1 AA legibility in daily `pt-BR` clinical practice.",
+    "keyCharacteristics": [
+      "Bright cool-alabaster canvas paired with pure white rounded bento cards (`20px` radius) and crisp `1px` slate hairlines.",
+      "Light frosted-stone navigation rail (`248px` expanded, `72px` icon-collapsed on desktop; slide-over drawer below `900px`) with white card-style active states instead of side-bar accent tabs.",
+      "Full-pill interactive controls (`9999px` radius) led by a deep-to-clinical navy gradient CTA and white outlined secondary pills.",
+      "Strict tabular numerals (`font-variant-numeric: tabular-nums`) across KPIs, dosing curves, appointment schedules, and pharmacological badges.",
+      "Selective dark navy-teal gradient anchors layered with subtle seafoam topographic SVG wave lines to create depth without ornament overload."
+    ],
+    "rules": [
+      {
+        "name": "The Selective Hero Anchor Rule",
+        "body": "The deep navy-teal hero gradient (`--nd-hero-gradient`) is limited to at most three focal anchors per viewport—the lead KPI card, the live last-dose card, and the compact sidebar dosing card. Never flood secondary bento cards with dark fills; white cards provide the breathing room that makes the hero anchors scan instantly.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Signal Rule",
+        "body": "Emerald, amber, and crimson are strictly reserved for clinical efficacy bands, pharmacological risk, trend direction, connectivity, and validation errors. Never use status colors for decorative accents or generic brand buttons.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numerals Rule",
+        "body": "Every numerical datum—KPI values, dosage quantities (`mg`), percentages, trend deltas, timestamps, and appointment counts—must carry `.nd-tabular` (`font-variant-numeric: tabular-nums`) so digits align vertically and never jitter on real-time updates.",
+        "section": "typography"
+      },
+      {
+        "name": "The Single-Heading Card Rule",
+        "body": "Bento cards open directly with a crisp `16px` `h2` title and optional inline pill action or subtitle; never stack decorative uppercase kickers or eyebrow tags above card headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tinted-Ink Shadow Rule",
+        "body": "Every shadow in the workspace is tinted with deep ink navy (`rgba(15, 30, 46, …)` or brand navy `rgba(27, 73, 101, …)`), never muddy pure black (`#000000`) and never hard offset drop shadows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Static Skeleton Rule",
+        "body": "Loading placeholders (`.nd-skeleton`) are flat Cool Mist (`#EEF2F5`) shapes with `12px` radius and zero pulsing shimmer, preserving visual calm while clinical data streams in.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do build every workspace screen on the `#F4F6F8` alabaster canvas with `#FFFFFF` `20px`-radius bento cards, `1px solid #E5ECF1` borders, and `20px` grid gutters (`gap-5`).",
+      "Do reserve the deep navy-teal hero gradient (`#0E293B → #1B4965 → #256873`) for 1–3 high-priority anchors per viewport so the lead metric and primary clinical action stand out immediately.",
+      "Do apply `.nd-tabular` (`font-variant-numeric: tabular-nums`) to every dosage, percentage, trend delta, date, and count.",
+      "Do use full-pill (`9999px`) buttons (`min-height: 44px`) for dashboard actions, keeping `+ Registrar Dose` as the single primary gradient pill per header.",
+      "Do pair semantic status colors with explicit text labels and icons (never color alone) and honor `prefers-reduced-motion: reduce` by disabling entrance animations and press transforms."
+    ],
+    "donts": [
+      "Don't reintroduce the legacy dark navy sidebar (`#0F1E2E`) or left accent tabs on navigation items; the authenticated workspace uses the light `#F8FAFC` frosted-stone rail with white active pill items.",
+      "Don't substitute generic SaaS emerald greens for NeuroDose's primary brand color—emerald (`#1E7A4D`) is strictly a semantic success/optimal-efficacy indicator, while `#1B4965` and `#2C7A7B` own brand identity.",
+      "Don't add pulsing shimmer animations to skeletons, hard offset drop shadows, or uppercase eyebrow kickers above bento card headings.",
+      "Don't fabricate clinical metrics, patient trends, or alerts in empty states—render calm, truthful empty cards with a direct pill CTA to record real data.",
+      "Don't use pure black (`#000000`) for text or shadows; stay within Ink Navy (`#0F1E2E`) and ink-tinted alpha shadows so the maritime-clinical register remains cohesive."
+    ]
+  }
+}

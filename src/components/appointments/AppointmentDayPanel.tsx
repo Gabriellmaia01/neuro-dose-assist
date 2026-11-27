@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,8 +39,12 @@ function MenuAcoesConsulta({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="w-4 h-4" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Ações para consulta de ${consulta.patientName}`}
+                >
+                    <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -79,15 +84,15 @@ function CartaoConsulta({
 }: PropsAcoesConsulta & { consulta: Appointment }) {
     return (
         <div className="p-4 rounded-xl border bg-card hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-                        <Clock className="w-4 h-4 text-primary mb-0.5" />
-                        <span className="text-xs font-medium">{consulta.time}</span>
+            <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-primary/10 shrink-0">
+                        <Clock className="w-4 h-4 text-primary mb-0.5" aria-hidden="true" />
+                        <span className="text-xs font-medium nd-tabular">{consulta.time}</span>
                     </div>
-                    <div>
-                        <p className="font-medium">{consulta.patientName}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                    <div className="min-w-0">
+                        <p className="font-medium truncate">{consulta.patientName}</p>
+                        <div className="flex items-center flex-wrap gap-2 mt-1">
                             <Badge variant="outline" className={ESTILOS_TIPO_CONSULTA[consulta.type]}>
                                 {consulta.type}
                             </Badge>
@@ -105,7 +110,7 @@ function CartaoConsulta({
                 />
             </div>
             {consulta.notes && (
-                <p className="text-sm text-muted-foreground mt-2 pl-15">
+                <p className="text-sm text-muted-foreground mt-2 sm:pl-[60px] break-words">
                     {consulta.notes}
                 </p>
             )}
@@ -175,7 +180,7 @@ export function AppointmentDayPanel({
         : "Selecione um dia";
 
     return (
-        <div className="glass-card rounded-2xl p-6">
+        <div className="nd-card p-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-semibold">{tituloData}</h3>
             </div>
@@ -202,4 +207,3 @@ export function AppointmentDayPanel({
         </div>
     );
 }
-import { useMemo } from "react";

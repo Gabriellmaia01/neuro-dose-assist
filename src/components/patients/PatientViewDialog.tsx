@@ -84,7 +84,7 @@ export function PatientViewDialog({
                 )}
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="h-11">Fechar</Button>
-                    <Button variant="neuro" onClick={onEdit}>
+                    <Button variant="default" onClick={onEdit}>
                         <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
                         Editar Perfil
                     </Button>

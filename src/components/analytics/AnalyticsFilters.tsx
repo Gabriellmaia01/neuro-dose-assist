@@ -28,9 +28,9 @@ export function AnalyticsFilters({
     onReload: () => void;
 }) {
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <Select value={selectedPatient} onValueChange={onPatientChange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full xs:flex-1 sm:flex-none sm:w-[180px] min-h-[44px] sm:min-h-0">
                     <SelectValue placeholder="Paciente" />
                 </SelectTrigger>
                 <SelectContent>
@@ -44,7 +44,7 @@ export function AnalyticsFilters({
             </Select>
 
             <Select value={periodInDays} onValueChange={onPeriodChange}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="flex-1 sm:flex-none sm:w-[140px] min-h-[44px] sm:min-h-0">
                     <SelectValue placeholder="Período" />
                 </SelectTrigger>
                 <SelectContent>
@@ -59,10 +59,12 @@ export function AnalyticsFilters({
             <Button
                 variant="outline"
                 size="icon"
+                className="h-11 w-11 sm:h-10 sm:w-10 shrink-0"
                 onClick={onReload}
                 disabled={refreshing}
+                aria-label="Atualizar dados de analytics"
             >
-                <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+                <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} aria-hidden="true" />
             </Button>
         </div>
     );

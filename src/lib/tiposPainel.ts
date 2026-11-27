@@ -65,6 +65,8 @@ export interface Alerta {
  */
 export interface DadosPainel {
   carregando: boolean;
+  erro?: string | null;
+  recarregar?: () => void;
   estatisticas: EstatisticasPainel;
   dadosGrafico: DadosGrafico[];
   pacientesRecentes: PacienteRecente[];

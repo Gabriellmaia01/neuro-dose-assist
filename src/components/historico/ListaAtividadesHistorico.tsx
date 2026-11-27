@@ -24,8 +24,8 @@ export function ListaAtividadesHistorico({
 }: PropriedadesListaAtividades) {
   if (carregando) {
     return (
-      <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="nd-card p-12 flex items-center justify-center gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
         <span className="text-muted-foreground font-medium">
           Carregando atividades…
         </span>
@@ -35,7 +35,7 @@ export function ListaAtividadesHistorico({
 
   if (logs.length === 0) {
     return (
-      <div className="glass-card rounded-2xl p-12 text-center">
+      <div className="nd-card p-12 text-center">
         <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
           <FileText
             className="w-7 h-7 text-muted-foreground"
@@ -70,7 +70,7 @@ export function ListaAtividadesHistorico({
           <li key={log.id}>
             <div
               className={cn(
-                "w-full glass-card rounded-2xl p-5 transition-colors duration-200 hover:bg-card/90"
+                "w-full nd-card p-5 transition-colors duration-200 hover:bg-card/90"
               )}
             >
               <div className="flex items-start gap-4">
@@ -92,7 +92,7 @@ export function ListaAtividadesHistorico({
                       {config.label}
                     </Badge>
                     <Badge variant="outline" className="text-xs bg-muted/50">
-                      <IconeEntidade className="w-3 h-3 mr-1" />
+                      <IconeEntidade className="w-3 h-3 mr-1" aria-hidden="true" />
                       {entidade.label}
                     </Badge>
                   </div>
@@ -110,8 +110,8 @@ export function ListaAtividadesHistorico({
                         {log.userName || log.userEmail || "Usuário"}
                       </span>
                     </div>
-                    <span>•</span>
-                    <div className="flex items-center gap-1">
+                    <span aria-hidden="true">•</span>
+                    <div className="flex items-center gap-1 nd-tabular">
                       <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                       {rotuloDataHora}
                     </div>

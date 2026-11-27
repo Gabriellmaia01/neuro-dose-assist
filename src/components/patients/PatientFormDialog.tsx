@@ -60,7 +60,7 @@ export function PatientFormDialog({
             }}
         >
             <DialogTrigger asChild>
-                <Button variant="neuro" onClick={onReset} className="h-11">
+                <Button variant="default" onClick={onReset} className="h-11">
                     <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                     Novo Paciente
                 </Button>
@@ -266,7 +266,7 @@ export function PatientFormDialog({
                     >
                         Cancelar
                     </Button>
-                    <Button variant="neuro" onClick={onSave} disabled={saving}>
+                    <Button variant="default" onClick={onSave} disabled={saving}>
                         {saving ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

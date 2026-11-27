@@ -23,41 +23,33 @@ export function MedicationStats({
 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-primary">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
-            <p className="text-2xl font-display font-bold mt-1 tabular-nums">{total}</p>
-          </div>
-          <Pill className="w-8 h-8 text-primary/60" aria-hidden="true" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Total</p>
+          <Pill className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{total}</p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-info">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Classes</p>
-            <p className="text-2xl font-display font-bold mt-1 tabular-nums">{uniqueClasses}</p>
-          </div>
-          <Beaker className="w-8 h-8 text-info/60" aria-hidden="true" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Classes</p>
+          <Beaker className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{uniqueClasses}</p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-success">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Exibindo</p>
-            <p className="text-2xl font-display font-bold mt-1 tabular-nums">{filteredTotal}</p>
-          </div>
-          <Search className="w-8 h-8 text-success/60" aria-hidden="true" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Exibindo</p>
+          <Search className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{filteredTotal}</p>
       </div>
-      <div className="glass-card rounded-xl p-4 border-l-4 border-l-warning">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Filtros</p>
-            <p className="text-2xl font-display font-bold mt-1 tabular-nums">{filterCount}</p>
-          </div>
-          <Filter className="w-8 h-8 text-warning/60" aria-hidden="true" />
+      <div className="nd-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[var(--nd-text-secondary)]">Filtros ativos</p>
+          <Filter className="w-4 h-4 text-[var(--nd-icon)] shrink-0" strokeWidth={1.5} aria-hidden="true" />
         </div>
+        <p className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] mt-2 nd-tabular">{filterCount}</p>
       </div>
     </div>
   );
@@ -83,12 +75,10 @@ export function MedicationFilterPanel({
   onClear: () => void;
 }) {
   return (
-    <div className="glass-card rounded-2xl p-6 shadow-lg">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Filter className="w-4 h-4 text-primary" aria-hidden="true" />
-        </div>
-        <h2 className="font-display font-semibold text-lg">Busca e Filtros</h2>
+    <div className="nd-card p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Filter className="w-4 h-4 text-[var(--nd-icon)]" strokeWidth={1.5} aria-hidden="true" />
+        <h2 className="text-[15px] font-semibold text-[var(--nd-text)]">Busca e Filtros</h2>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
         <div className="lg:col-span-8 space-y-2">

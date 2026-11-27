@@ -27,21 +27,22 @@ export function MedicationCard({
   return (
     <div
       className={cn(
-        "glass-card rounded-2xl p-6",
-        "transition-[transform,box-shadow,background-color] duration-200",
-        "hover:shadow-lg hover:bg-card/90"
+        "rounded-2xl border border-[var(--nd-border)] bg-[var(--nd-surface)] p-5 sm:p-6",
+        "transition-colors duration-150 hover:border-[var(--nd-border-hover)]"
       )}
-      style={{ contentVisibility: "auto" }}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "auto 240px",
+      }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Pill className="w-6 h-6 text-primary" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-display font-semibold truncate">{medication.name}</h3>
-            <p className="text-sm text-muted-foreground truncate">{medication.brandName}</p>
-          </div>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="min-w-0">
+          <h3 className="text-[16px] font-semibold text-[var(--nd-text)] truncate">
+            {medication.name}
+          </h3>
+          <p className="text-[13px] text-[var(--nd-text-secondary)] truncate mt-0.5">
+            {medication.brandName}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

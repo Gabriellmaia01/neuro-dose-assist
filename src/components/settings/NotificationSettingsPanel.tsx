@@ -11,7 +11,7 @@ export function NotificationSettingsPanel({
     onChange: (key: keyof NotificationSettings, value: boolean) => void;
 }) {
     return (
-        <div className="glass-card rounded-2xl p-6 space-y-6">
+        <div className="nd-card p-6 space-y-6">
             <div>
                 <h2 className="font-display font-semibold text-lg">
                     Preferências de Notificação

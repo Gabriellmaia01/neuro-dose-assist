@@ -1,29 +1,31 @@
-import { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowUpRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: ReactNode;
+  footerLabel?: string;
+  href?: string;
+  featured?: boolean;
   trend?: {
     value: number;
     label: string;
   };
-  variant?: "default" | "success" | "warning" | "danger";
   className?: string;
 }
 
 /**
- * MetricCard - Cartão de indicador clínico (KPI).
- * Superfície branca neutra, números tabulares em 28px e variação com ícone e texto.
+ * MetricCard - Cartão KPI institucional com heading semântico <h2>, linha de base alinhada e alto contraste.
  */
 export function MetricCard({
   title,
   value,
   subtitle,
-  icon,
+  footerLabel,
+  href,
+  featured = false,
   trend,
   className,
 }: MetricCardProps) {
@@ -35,60 +37,115 @@ export function MetricCard({
         : Minus
     : null;
 
-  const trendColorClass = trend
-    ? trend.value > 0
-      ? "text-[var(--nd-success)]"
-      : trend.value < 0
-        ? "text-[var(--nd-error)]"
-        : "text-[var(--nd-text-secondary)]"
-    : "";
-
   const formattedTrend = trend
     ? trend.value > 0
       ? `+${trend.value}%`
       : `${trend.value}%`
     : "";
 
-  return (
-    <div className={cn("nd-card p-5 flex flex-col justify-between h-full", className)}>
-      <div>
-        {/* Rótulo 13px sentence case + ícone fino neutro (sem caixinha colorida) */}
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-medium text-[var(--nd-text-secondary)] truncate">
-            {title}
-          </span>
-          <span className="text-[var(--nd-icon)] shrink-0" aria-hidden="true">
-            {icon}
-          </span>
-        </div>
+  const trendBadgeClass = featured
+    ? "bg-[var(--nd-dark-surface)] text-[var(--nd-dark-text)] border-[var(--nd-dark-border)]"
+    : trend && trend.value > 0
+      ? "bg-[var(--nd-success-bg)] text-[var(--nd-success)] border-[var(--nd-success)]/20"
+      : trend && trend.value < 0
+        ? "bg-[var(--nd-error-bg)] text-[var(--nd-error)] border-[var(--nd-error)]/20"
+        : "bg-[var(--nd-muted)] text-[var(--nd-label)] border-[var(--nd-border)]";
 
-        {/* Número de destaque 28px peso 600 com tabular-nums */}
-        <div className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--nd-text)] nd-tabular">
+  return (
+    <div
+      className={cn(
+        featured ? "nd-card-hero" : "nd-card",
+        "relative overflow-hidden p-5 flex flex-col h-full",
+        className
+      )}
+    >
+      {/* Cabeçalho semântico: <h2> + botão circular ArrowUpRight */}
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <h2
+          className={cn(
+            "text-[15px] font-medium leading-snug truncate",
+            featured ? "text-[var(--nd-surface)]" : "text-[var(--nd-text)]"
+          )}
+        >
+          {title}
+        </h2>
+
+        {href ? (
+          <Link
+            to={href}
+            aria-label={`Abrir ${title}`}
+            className={cn(
+              featured ? "nd-circle-action-hero" : "nd-circle-action",
+              "shrink-0"
+            )}
+          >
+            <ArrowUpRight className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+          </Link>
+        ) : (
+          <span
+            aria-hidden="true"
+            className={cn(
+              featured ? "nd-circle-action-hero" : "nd-circle-action",
+              "shrink-0 pointer-events-none"
+            )}
+          >
+            <ArrowUpRight className="w-4 h-4" strokeWidth={1.75} />
+          </span>
+        )}
+      </div>
+
+      {/* Número principal tabular ancorado no mesmo eixo horizontal */}
+      <div className="relative z-10 mt-3 mb-4">
+        <div
+          className={cn(
+            "text-[38px] font-semibold leading-[1.08] tracking-[-0.03em] nd-tabular",
+            featured ? "text-[var(--nd-surface)]" : "text-[var(--nd-text)]"
+          )}
+        >
           {value}
         </div>
-
-        {/* Descrição 13px cor secundária */}
         {subtitle && (
-          <p className="mt-1 text-[13px] font-normal text-[var(--nd-text-secondary)] truncate">
+          <p
+            className={cn(
+              "mt-1 text-[12px] font-normal truncate",
+              featured ? "text-[var(--nd-dark-text)]" : "text-[var(--nd-text-secondary)]"
+            )}
+          >
             {subtitle}
           </p>
         )}
       </div>
 
-      {/* Linha de variação no rodapé com divisória fina */}
-      {trend && (
-        <div className="mt-4 pt-3 border-t border-[var(--nd-border)] flex items-center gap-1.5 text-[12px] nd-tabular">
+      {/* Rodapé alinhado na base com variação percentual ou status clínico */}
+      {trend ? (
+        <div className="relative z-10 mt-auto flex items-center gap-2 text-[12px] nd-tabular">
           {TrendIcon && (
-            <span className={cn("inline-flex items-center gap-1 font-medium shrink-0", trendColorClass)}>
-              <TrendIcon className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium shrink-0",
+                trendBadgeClass
+              )}
+            >
+              <TrendIcon className="w-3 h-3" strokeWidth={1.75} aria-hidden="true" />
               <span>{formattedTrend}</span>
             </span>
           )}
-          <span className="text-[var(--nd-text-secondary)] truncate">
+          <span
+            className={cn(
+              "truncate",
+              featured ? "text-[var(--nd-dark-text)]" : "text-[var(--nd-text-secondary)]"
+            )}
+          >
             {trend.label}
           </span>
         </div>
-      )}
+      ) : footerLabel ? (
+        <div className="relative z-10 mt-auto flex items-center gap-2 text-[12px]">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-[var(--nd-border)] bg-[var(--nd-muted)] text-[var(--nd-label)] font-medium truncate">
+            {footerLabel}
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

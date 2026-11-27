@@ -42,33 +42,37 @@ function ClinicMemberCard({
     onRemove: (uid: string) => void;
 }) {
     const RoleIcon = ICONES_FUNCAO[role];
+    const displayName = name || (email ? email.split("@")[0] : "Membro");
+    const avatarInitial = (name || email || "M").charAt(0).toUpperCase();
 
     return (
-        <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-            <div className="flex items-center gap-3">
-                <Avatar>
+        <div className="flex items-center justify-between gap-3 p-4 rounded-xl border bg-card">
+            <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="shrink-0">
                     <AvatarFallback className="bg-primary/10 text-primary">
-                        {email[0].toUpperCase()}
+                        {avatarInitial}
                     </AvatarFallback>
                 </Avatar>
-                <div>
-                    <p className="font-medium">{name || email.split("@")[0]}</p>
-                    <p className="text-sm text-muted-foreground">{email}</p>
+                <div className="min-w-0">
+                    <p className="font-medium truncate">{displayName}</p>
+                    <p className="text-sm text-muted-foreground truncate">{email}</p>
                 </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <Badge variant="outline" className={ESTILOS_FUNCAO[role]}>
-                    <RoleIcon className="w-3 h-3 mr-1" />
+                    <RoleIcon className="w-3 h-3 mr-1" aria-hidden="true" />
                     {ROTULOS_FUNCAO[role]}
                 </Badge>
                 {isOwner && role !== "owner" && (
                     <Button
+                        type="button"
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="h-11 w-11 sm:h-10 sm:w-10 text-destructive hover:text-destructive"
+                        aria-label={`Remover ${displayName} da clínica`}
                         onClick={() => onRemove(uid)}
                     >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </Button>
                 )}
             </div>
@@ -98,7 +102,7 @@ function InviteMemberDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button variant="neuro" size="sm">
+                <Button variant="default" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Convidar
                 </Button>
@@ -116,6 +120,7 @@ function InviteMemberDialog({
                         <Input
                             id="invite-email"
                             type="email"
+                            autoComplete="email"
                             placeholder="email@exemplo.com"
                             value={email}
                             onChange={(e) => onEmailChange(e.target.value)}
@@ -141,7 +146,7 @@ function InviteMemberDialog({
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="neuro" onClick={onSend} disabled={saving || !email.trim()}>
+                    <Button variant="default" onClick={onSend} disabled={saving || !email.trim()}>
                         {saving ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -204,7 +209,7 @@ function ClinicTeamCard({
                 <div className="space-y-3">
                     {clinic.members.map((member, index) => (
                         <ClinicMemberCard
-                            key={index}
+                            key={member.uid || member.email || index}
                             email={member.email}
                             name={member.name}
                             role={member.role}

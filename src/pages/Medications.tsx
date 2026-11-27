@@ -60,20 +60,15 @@ export default function Medications() {
   return (
     <MainLayout>
       <div className="space-y-8 pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-neuro-gradient flex items-center justify-center shadow-md">
-              <Pill className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance">
-                Medicamentos
-              </h1>
-              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                Gerencie catálogo terapêutico, dosagens seguras e classes
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <header className="min-w-0">
+            <h1 className="font-display text-[28px] font-medium leading-[1.15] tracking-[-0.02em] text-[var(--nd-text)] text-balance">
+              Medicamentos
+            </h1>
+            <p className="text-[14px] text-[var(--nd-text-secondary)] mt-1.5">
+              Catálogo terapêutico, faixas seguras de dosagem e classes farmacológicas.
+            </p>
+          </header>
 
           <div className="flex flex-wrap items-center gap-2">
             {missingStandardMedications.length > 0 && (
@@ -158,12 +153,12 @@ export default function Medications() {
         />
 
         {loading ? (
-          <div className="glass-card rounded-2xl p-12 flex items-center justify-center gap-3">
+          <div className="nd-card p-12 flex items-center justify-center gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
             <span className="text-muted-foreground font-medium">Carregando medicamentos…</span>
           </div>
         ) : filteredMedications.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center">
+          <div className="nd-card p-12 text-center">
             <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
               <Pill className="w-7 h-7 text-muted-foreground" aria-hidden="true" />
             </div>
@@ -197,7 +192,7 @@ export default function Medications() {
                   )}
                 </Button>
               )}
-              <Button variant="neuro" onClick={() => setIsDialogOpen(true)} className="h-11">
+              <Button variant="default" onClick={() => setIsDialogOpen(true)} className="h-11">
                 <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                 Cadastrar Medicamento
               </Button>

@@ -20,16 +20,12 @@ export default defineConfig(({ mode }) => ({
       usePolling: true, // Força polling para detectar mudanças
     },
   },
-  optimizeDeps: {
-    force: true, // Força re-bundle das dependências
-  },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
           'vendor-charts': ['recharts'],
           'vendor-radix': [
             '@radix-ui/react-dialog',

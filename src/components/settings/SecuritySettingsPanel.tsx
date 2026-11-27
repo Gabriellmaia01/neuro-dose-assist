@@ -25,7 +25,7 @@ export function SecuritySettingsPanel({
 }) {
     return (
         <div className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 space-y-6">
+            <div className="nd-card p-6 space-y-6">
                 <div>
                     <h2 className="font-display font-semibold text-lg">
                         Alterar Senha
@@ -84,7 +84,7 @@ export function SecuritySettingsPanel({
 
                 <div className="flex justify-end">
                     <Button
-                        variant="neuro"
+                        variant="default"
                         onClick={onChangePassword}
                         disabled={changingPassword}
                     >
@@ -103,7 +103,7 @@ export function SecuritySettingsPanel({
                 </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-6 space-y-6">
+            <div className="nd-card p-6 space-y-6">
                 <div>
                     <h2 className="font-display font-semibold text-lg text-destructive">
                         Zona de Perigo

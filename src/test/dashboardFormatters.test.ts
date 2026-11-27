@@ -75,7 +75,7 @@ describe("Formatadores e dados do dashboard", () => {
     expect(resultado[0]).toMatchObject({
       id: "patient-1",
       age: 0,
-      lastDose: "06:00",
+      lastDose: "09/11 · 06:00",
       medication: "Medicamento 25mg",
       efficacy: 75,
     });
@@ -86,14 +86,24 @@ describe("Formatadores e dados do dashboard", () => {
     });
   });
 
-  it("formata a última dose ou retorna null quando não há registro", () => {
+  it("formata a última dose com data em registros antigos e apenas hora no dia atual", () => {
     expect(formatarUltimaDose([], [])).toBeNull();
     expect(formatarUltimaDose([criarDose()], [])).toMatchObject({
       medication: "Desconhecido",
       dose: "20mg",
-      time: "06:00",
+      time: "09/11 · 06:00",
       efficacy: 80,
       riskLevel: "low",
     });
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 9, 12, 0));
+    try {
+      expect(formatarUltimaDose([criarDose()], [])).toMatchObject({
+        time: "06:00",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
