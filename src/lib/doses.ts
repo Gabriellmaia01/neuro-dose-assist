@@ -1,7 +1,11 @@
 import { doseService } from "@/services/firebase/doseService";
+import { springDoseService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
 import type { AnalysisResult, SubjectiveState } from "@/services/aiService";
 import type { UserAuditInfo } from "@/services/contracts/common.types";
 import type { DoseQueryOptions } from "@/services/contracts/domain.types";
+
+const activeService = () => (isSpringApiEnabled() ? springDoseService : doseService);
 
 export type { DoseQueryOptions };
 
@@ -24,14 +28,14 @@ export function saveDose(
   doseInfo?: { patientName?: string; medicationName?: string },
   userInfo?: UserAuditInfo
 ): Promise<string> {
-  return doseService.saveDose(dose, userId, doseInfo, userInfo);
+  return activeService().saveDose(dose, userId, doseInfo, userInfo);
 }
 
 export function getDoses(
   userId: string,
   options?: DoseQueryOptions
 ): Promise<DoseRecord[]> {
-  return doseService.getDoses(userId, options);
+  return activeService().getDoses(userId, options);
 }
 
 export function deleteDose(
@@ -40,5 +44,5 @@ export function deleteDose(
   doseName?: string,
   userInfo?: UserAuditInfo
 ): Promise<void> {
-  return doseService.deleteDose(doseId, userId, doseName, userInfo);
+  return activeService().deleteDose(doseId, userId, doseName, userInfo);
 }

@@ -27,3 +27,22 @@ jobs:
 
       - name: Build production bundle
         run: npm run build
+
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run Spring Boot integration tests
+        run: chmod +x mvnw && ./mvnw -B test

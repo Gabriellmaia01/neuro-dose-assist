@@ -1,4 +1,8 @@
 import { activityLogService } from "@/services/firebase/activityLogService";
+import { springActivityLogService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
+
+const activeService = () => (isSpringApiEnabled() ? springActivityLogService : activityLogService);
 
 export type ActivityAction = 'create' | 'update' | 'delete';
 export type EntityType = 'patient' | 'medication' | 'appointment' | 'dose' | 'invite' | 'clinic_member';
@@ -29,11 +33,11 @@ export interface LogActivityParams {
 }
 
 export function logActivity(params: LogActivityParams): Promise<string | null> {
-  return activityLogService.logActivity(params);
+  return activeService().logActivity(params);
 }
 
 export function getActivityLogs(userId: string, limit: number = 100): Promise<ActivityLog[]> {
-  return activityLogService.getActivityLogs(userId, limit);
+  return activeService().getActivityLogs(userId, limit);
 }
 
 export function getActivityLogsByEntity(
@@ -41,7 +45,7 @@ export function getActivityLogsByEntity(
   entityType: EntityType,
   limit: number = 50
 ): Promise<ActivityLog[]> {
-  return activityLogService.getActivityLogsByEntity(userId, entityType, limit);
+  return activeService().getActivityLogsByEntity(userId, entityType, limit);
 }
 
 export function getActivityLogsByAction(
@@ -49,5 +53,5 @@ export function getActivityLogsByAction(
   action: ActivityAction,
   limit: number = 50
 ): Promise<ActivityLog[]> {
-  return activityLogService.getActivityLogsByAction(userId, action, limit);
+  return activeService().getActivityLogsByAction(userId, action, limit);
 }

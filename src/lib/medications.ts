@@ -1,5 +1,9 @@
 import { medicationService } from "@/services/firebase/medicationService";
+import { springMedicationService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
 import type { UserAuditInfo } from "@/services/contracts/common.types";
+
+const activeService = () => (isSpringApiEnabled() ? springMedicationService : medicationService);
 
 export interface Medication {
   id?: string;
@@ -22,18 +26,18 @@ export function saveMedication(
   userId: string,
   userInfo?: UserAuditInfo
 ): Promise<string> {
-  return medicationService.saveMedication(medication, userId, userInfo);
+  return activeService().saveMedication(medication, userId, userInfo);
 }
 
 export function getMedications(userId: string): Promise<Medication[]> {
-  return medicationService.getMedications(userId);
+  return activeService().getMedications(userId);
 }
 
 export function getMedicationById(
   medicationId: string,
   userId: string
 ): Promise<Medication | null> {
-  return medicationService.getMedicationById(medicationId, userId);
+  return activeService().getMedicationById(medicationId, userId);
 }
 
 export function updateMedication(
@@ -41,7 +45,7 @@ export function updateMedication(
   medication: Partial<Medication>,
   userId: string
 ): Promise<void> {
-  return medicationService.updateMedication(medicationId, medication, userId);
+  return activeService().updateMedication(medicationId, medication, userId);
 }
 
 export function deleteMedication(
@@ -50,5 +54,5 @@ export function deleteMedication(
   medicationName?: string,
   userInfo?: UserAuditInfo
 ): Promise<void> {
-  return medicationService.deleteMedication(medicationId, userId, medicationName, userInfo);
+  return activeService().deleteMedication(medicationId, userId, medicationName, userInfo);
 }

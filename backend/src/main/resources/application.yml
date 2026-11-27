@@ -1,0 +1,16 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/neurodose}
+      database: ${MONGODB_DATABASE:neurodose}
+      auto-index-creation: true
+
+app:
+  firebase:
+    project-id: ${FIREBASE_PROJECT_ID:${VITE_FIREBASE_PROJECT_ID:}}
+    jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8081,http://localhost:5173,http://localhost:4173,http://localhost:8080}

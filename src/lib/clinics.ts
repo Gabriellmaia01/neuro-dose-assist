@@ -1,4 +1,8 @@
 import { clinicService } from "@/services/firebase/clinicService";
+import { springClinicService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
+
+const activeService = () => (isSpringApiEnabled() ? springClinicService : clinicService);
 
 export type MemberRole = "owner" | "admin" | "member";
 
@@ -45,26 +49,26 @@ export function createClinic(
   userId: string,
   userEmail: string
 ): Promise<string> {
-  return clinicService.createClinic(name, userId, userEmail);
+  return activeService().createClinic(name, userId, userEmail);
 }
 
 export function getUserClinic(userId: string): Promise<Clinic | null> {
-  return clinicService.getUserClinic(userId);
+  return activeService().getUserClinic(userId);
 }
 
 export function getClinicMembership(userId: string): Promise<ClinicMembership | null> {
-  return clinicService.getClinicMembership(userId);
+  return activeService().getClinicMembership(userId);
 }
 
 export function getEffectiveUserId(userId: string): Promise<string> {
-  return clinicService.getEffectiveUserId(userId);
+  return activeService().getEffectiveUserId(userId);
 }
 
 export function updateClinic(
   clinicId: string,
   data: Partial<Clinic>
 ): Promise<void> {
-  return clinicService.updateClinic(clinicId, data);
+  return activeService().updateClinic(clinicId, data);
 }
 
 export function sendClinicInvite(
@@ -75,21 +79,21 @@ export function sendClinicInvite(
   invitedBy: string,
   invitedByName?: string
 ): Promise<{ inviteId: string; emailSent: boolean }> {
-  return clinicService.sendClinicInvite(clinicId, clinicName, email, role, invitedBy, invitedByName);
+  return activeService().sendClinicInvite(clinicId, clinicName, email, role, invitedBy, invitedByName);
 }
 
 export function getInviteById(
   clinicId: string,
   inviteId: string
 ): Promise<ClinicInvite | null> {
-  return clinicService.getInviteById(clinicId, inviteId);
+  return activeService().getInviteById(clinicId, inviteId);
 }
 
 export function getPendingInvitesFromClinic(
   clinicId: string,
   email: string
 ): Promise<ClinicInvite[]> {
-  return clinicService.getPendingInvitesFromClinic(clinicId, email);
+  return activeService().getPendingInvitesFromClinic(clinicId, email);
 }
 
 export function acceptClinicInvite(
@@ -99,7 +103,7 @@ export function acceptClinicInvite(
   userEmail: string,
   userName?: string
 ): Promise<void> {
-  return clinicService.acceptClinicInvite(inviteId, clinicId, userId, userEmail, userName);
+  return activeService().acceptClinicInvite(inviteId, clinicId, userId, userEmail, userName);
 }
 
 export function addClinicMember(
@@ -108,16 +112,16 @@ export function addClinicMember(
   memberName: string,
   role: MemberRole
 ): Promise<void> {
-  return clinicService.addClinicMember(clinicOwnerId, memberEmail, memberName, role);
+  return activeService().addClinicMember(clinicOwnerId, memberEmail, memberName, role);
 }
 
 export function removeClinicMember(
   clinicOwnerId: string,
   memberUid: string
 ): Promise<void> {
-  return clinicService.removeClinicMember(clinicOwnerId, memberUid);
+  return activeService().removeClinicMember(clinicOwnerId, memberUid);
 }
 
 export function getClinicMembers(clinicOwnerId: string): Promise<ClinicMember[]> {
-  return clinicService.getClinicMembers(clinicOwnerId);
+  return activeService().getClinicMembers(clinicOwnerId);
 }

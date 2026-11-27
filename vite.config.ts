@@ -19,6 +19,12 @@ export default defineConfig(({ mode }) => ({
     watch: {
       usePolling: true, // Força polling para detectar mudanças
     },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

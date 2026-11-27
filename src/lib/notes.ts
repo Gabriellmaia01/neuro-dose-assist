@@ -1,4 +1,8 @@
 import { noteService } from "@/services/firebase/noteService";
+import { springNoteService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
+
+const activeService = () => (isSpringApiEnabled() ? springNoteService : noteService);
 
 export interface PatientNote {
   id?: string;
@@ -12,17 +16,17 @@ export interface PatientNote {
 }
 
 export function saveNote(note: PatientNote, userId: string): Promise<string> {
-  return noteService.saveNote(note, userId);
+  return activeService().saveNote(note, userId);
 }
 
 export function getPatientNotes(userId: string, patientId: string): Promise<PatientNote[]> {
-  return noteService.getPatientNotes(userId, patientId);
+  return activeService().getPatientNotes(userId, patientId);
 }
 
 export function getAllNotes(userId: string): Promise<PatientNote[]> {
-  return noteService.getAllNotes(userId);
+  return activeService().getAllNotes(userId);
 }
 
 export function deleteNote(noteId: string, userId: string): Promise<void> {
-  return noteService.deleteNote(noteId, userId);
+  return activeService().deleteNote(noteId, userId);
 }
