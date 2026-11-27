@@ -3,13 +3,16 @@ import { type EstatisticasPainel } from "@/lib/tiposPainel";
 
 interface PropriedadesGradeMetricas {
   estatisticas: EstatisticasPainel;
+  alertasAtivos?: number;
 }
 
 /**
- * GradeMetricas - Grade bento dos 4 KPIs principais do painel.
- * O primeiro card recebe o destaque hero em gradiente institucional (#1B4965 / #2C7A7B).
+ * GradeMetricas - Grade dos 4 KPIs distintos do painel (sem duplicar o Índice de Eficácia do mostrador inferior).
  */
-export function GradeMetricas({ estatisticas }: PropriedadesGradeMetricas) {
+export function GradeMetricas({
+  estatisticas,
+  alertasAtivos = 0,
+}: PropriedadesGradeMetricas) {
   return (
     <section aria-label="Indicadores clínicos">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -36,18 +39,22 @@ export function GradeMetricas({ estatisticas }: PropriedadesGradeMetricas) {
 
         <MetricCard
           href="/analytics"
-          title="Eficácia média"
-          value={`${estatisticas.eficaciaMedia}%`}
-          subtitle="Índice clínico geral"
-          trend={{ value: estatisticas.tendenciaEficacia, label: "vs. semana anterior" }}
+          title="Análises pós-dose"
+          value={estatisticas.inferenciasIA.toString()}
+          subtitle="Avaliações clínicas processadas"
+          trend={{ value: estatisticas.tendenciaIA, label: "vs. semana anterior" }}
         />
 
         <MetricCard
-          href="/analytics"
-          title="Inferências IA"
-          value={estatisticas.inferenciasIA.toString()}
-          subtitle="Análises processadas"
-          trend={{ value: estatisticas.tendenciaIA, label: "vs. semana anterior" }}
+          href="/medications"
+          title="Alertas ativos"
+          value={alertasAtivos.toString()}
+          subtitle={
+            alertasAtivos > 0
+              ? "Interações e sinais em revisão"
+              : "Nenhum alerta pendente"
+          }
+          footerLabel={alertasAtivos > 0 ? "Revisar interações" : "Monitoramento ativo"}
         />
       </div>
     </section>

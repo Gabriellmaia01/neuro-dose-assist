@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import {
   ComposedChart,
   Bar,
@@ -27,8 +28,6 @@ interface EfficacyChartProps {
 interface TooltipPayloadItem {
   name?: string;
   value?: number;
-  color?: string;
-  stroke?: string;
   payload?: {
     efficacy?: number;
     dose?: number;
@@ -56,76 +55,90 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
     return null;
   }
 
+  const ponto = payload[0]?.payload;
+  const semRegistro = (ponto?.efficacy ?? 0) === 0 && (ponto?.dose ?? 0) === 0;
+
   return (
-    <div className="nd-tooltip-surface p-3 text-[12px] min-w-[164px] nd-tabular">
+    <div className="nd-tooltip-surface p-3 text-[12px] min-w-[168px] nd-tabular">
       <div className="font-semibold text-[var(--nd-text)] pb-1.5 mb-1.5 border-b border-[var(--nd-border)]">
         Data: {label}
       </div>
-      <div className="space-y-1">
-        {payload.map((item) => {
-          const isEfficacy = item.name === "efficacy";
-          const displayValue = isEfficacy
-            ? item.payload?.efficacy ?? item.value ?? 0
-            : item.payload?.dose ?? item.value ?? 0;
-          return (
-            <div
-              key={item.name}
-              className="flex items-center justify-between gap-4"
-            >
-              <span className="inline-flex items-center gap-2 text-[var(--nd-text-secondary)]">
-                <span
-                  aria-hidden="true"
-                  className={
-                    isEfficacy
-                      ? "w-2.5 h-2.5 rounded-full bg-[var(--nd-primary)]"
-                      : "w-3 border-t-2 border-dashed border-[var(--nd-accent)]"
-                  }
-                />
-                <span>{isEfficacy ? "Eficácia" : "Dose"}</span>
-              </span>
-              <span className="font-semibold text-[var(--nd-text)]">
-                {displayValue}
-                {isEfficacy ? "%" : " mg"}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      {semRegistro ? (
+        <p className="text-[var(--nd-text-secondary)]">Sem dose registrada neste dia.</p>
+      ) : (
+        <div className="space-y-1">
+          {payload.map((item) => {
+            const isEfficacy = item.name === "efficacy";
+            const displayValue = isEfficacy
+              ? item.payload?.efficacy ?? item.value ?? 0
+              : item.payload?.dose ?? item.value ?? 0;
+            return (
+              <div
+                key={item.name}
+                className="flex items-center justify-between gap-4"
+              >
+                <span className="inline-flex items-center gap-2 text-[var(--nd-text-secondary)]">
+                  <span
+                    aria-hidden="true"
+                    className={
+                      isEfficacy
+                        ? "w-2.5 h-2.5 rounded-full bg-[var(--nd-primary)]"
+                        : "w-3 border-t-2 border-dashed border-[var(--nd-accent)]"
+                    }
+                  />
+                  <span>{isEfficacy ? "Eficácia" : "Dose"}</span>
+                </span>
+                <span className="font-semibold text-[var(--nd-text)]">
+                  {displayValue}
+                  {isEfficacy ? "%" : " mg"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
 /**
- * EfficacyChart - Telemetria farmacológica dos últimos 7 dias em barras-pílula e linha de dosagem.
+ * EfficacyChart - Telemetria farmacológica fiel à escala 0–100% (dias sem dose permanecem em 0%).
  */
-export function EfficacyChart({ data, className }: EfficacyChartProps) {
-  const hasData =
-    data.length > 0 && data.some((point) => point.efficacy > 0 || point.dose > 0);
+export const EfficacyChart = memo(function EfficacyChart({
+  data,
+  className,
+}: EfficacyChartProps) {
+  const {
+    hasData,
+    doseTicks,
+    doseMaxDomain,
+    peakEfficacy,
+    accessibleSummary,
+  } = useMemo(() => {
+    const hasPoints =
+      data.length > 0 && data.some((point) => point.efficacy > 0 || point.dose > 0);
+    const maxDoseValue = data.reduce((max, p) => Math.max(max, p.dose), 0);
+    const ticks = buildDoseTicks(maxDoseValue);
+    const activePoints = data.filter((p) => p.efficacy > 0 || p.dose > 0);
+    const avg =
+      activePoints.length > 0
+        ? Math.round(
+            activePoints.reduce((sum, p) => sum + p.efficacy, 0) / activePoints.length
+          )
+        : 0;
+    const peak = data.reduce((max, p) => Math.max(max, p.efficacy), 0);
+    const summary = hasPoints
+      ? `Gráfico de telemetria farmacológica nos últimos 7 dias. ${activePoints.length} dia(s) com registro de dose, eficácia média de ${avg}% e dose máxima de ${maxDoseValue} mg.`
+      : "Gráfico de telemetria farmacológica nos últimos 7 dias: sem doses registradas no período.";
 
-  const maxDose = data.reduce((max, p) => Math.max(max, p.dose), 0);
-  const doseTicks = buildDoseTicks(maxDose);
-  const doseMaxDomain = doseTicks[doseTicks.length - 1];
-
-  const activePoints = data.filter((p) => p.efficacy > 0 || p.dose > 0);
-  const avgEfficacy =
-    activePoints.length > 0
-      ? Math.round(
-        activePoints.reduce((sum, p) => sum + p.efficacy, 0) / activePoints.length
-      )
-      : 0;
-
-  const peakEfficacy = data.reduce((max, p) => Math.max(max, p.efficacy), 0);
-
-  const accessibleSummary = hasData
-    ? `Gráfico de telemetria farmacológica nos últimos 7 dias. ${activePoints.length} dia(s) com registro de dose, eficácia média de ${avgEfficacy}% e dose máxima de ${maxDose} mg.`
-    : "Gráfico de telemetria farmacológica nos últimos 7 dias: sem doses registradas no período.";
-
-  // Para dias sem registro (0%), exibe uma barra-pílula hachurada sutil de referência visual
-  const chartData = data.map((point) => ({
-    ...point,
-    displayBar: point.efficacy > 0 ? point.efficacy : 18,
-    isEmptyDay: point.efficacy === 0,
-  }));
+    return {
+      hasData: hasPoints,
+      doseTicks: ticks,
+      doseMaxDomain: ticks[ticks.length - 1],
+      peakEfficacy: peak,
+      accessibleSummary: summary,
+    };
+  }, [data]);
 
   return (
     <section
@@ -139,7 +152,7 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
             <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
               Telemetria Farmacológica
             </h2>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[var(--nd-accent-soft)] text-[var(--nd-primary)] text-[11px] font-semibold">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[var(--nd-accent-soft)] text-[var(--nd-primary)] text-[12px] font-semibold">
               7 dias
             </span>
           </div>
@@ -148,7 +161,7 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
           </p>
         </div>
 
-        {/* Legenda em pílulas */}
+        {/* Legenda */}
         <div className="flex items-center gap-4 text-[12px] font-medium text-[var(--nd-label)] shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--nd-primary)]" aria-hidden="true" />
@@ -197,28 +210,9 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
           <div className="h-full min-w-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart
-                data={chartData}
+                data={data}
                 margin={{ top: 8, right: 12, left: -6, bottom: 2 }}
               >
-                <defs>
-                  <pattern
-                    id="nd-bar-hatch"
-                    width="6"
-                    height="6"
-                    patternTransform="rotate(42 0 0)"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <line
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="6"
-                      stroke="var(--nd-border-input)"
-                      strokeWidth="2"
-                    />
-                  </pattern>
-                </defs>
-
                 <CartesianGrid
                   stroke="var(--nd-border)"
                   strokeDasharray="3 3"
@@ -248,7 +242,7 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
                   width={44}
                   tick={{
                     fill: "var(--nd-text-secondary)",
-                    fontSize: 11,
+                    fontSize: 12,
                     fontFamily: "var(--nd-font)",
                   }}
                 />
@@ -264,33 +258,31 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
                   width={52}
                   tick={{
                     fill: "var(--nd-text-secondary)",
-                    fontSize: 11,
+                    fontSize: 12,
                     fontFamily: "var(--nd-font)",
                   }}
                 />
 
                 <Tooltip
                   content={<CustomTooltip />}
-                  cursor={{ fill: "rgba(27, 73, 101, 0.04)", radius: 12 }}
+                  cursor={{ fill: "var(--nd-chart-cursor)", radius: 12 }}
                 />
 
                 <Bar
                   yAxisId="efficacy"
-                  dataKey="displayBar"
+                  dataKey="efficacy"
                   name="efficacy"
                   barSize={26}
-                  radius={[999, 999, 999, 999]}
+                  radius={[8, 8, 2, 2]}
                   isAnimationActive={false}
                 >
-                  {chartData.map((entry, idx) => (
+                  {data.map((entry, idx) => (
                     <Cell
                       key={`cell-${idx}`}
                       fill={
-                        entry.isEmptyDay
-                          ? "url(#nd-bar-hatch)"
-                          : entry.efficacy === peakEfficacy
-                            ? "var(--nd-primary-deep)"
-                            : "var(--nd-primary)"
+                        entry.efficacy > 0 && entry.efficacy === peakEfficacy
+                          ? "var(--nd-primary-deep)"
+                          : "var(--nd-primary)"
                       }
                     />
                   ))}
@@ -320,4 +312,4 @@ export function EfficacyChart({ data, className }: EfficacyChartProps) {
       )}
     </section>
   );
-}
+});

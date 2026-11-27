@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
 import { getPatients } from "@/lib/patients";
@@ -45,8 +45,7 @@ const servicosPadrao: ServicosPainel = {
 
 /**
  * Hook que orquestra o carregamento e processamento de todos os dados do painel.
- * Aplica Inversão de Dependência (DIP): recebe os serviços como parâmetro opcional.
- * Aplica Responsabilidade Única (SRP): delega cálculos para utilitários especializados.
+ * Inclui guarda de cancelamento contra race conditions ao alternar clínica e recuperação explícita de erro.
  */
 export function useDadosPainel(
   servicos: ServicosPainel = servicosPadrao
@@ -54,7 +53,9 @@ export function useDadosPainel(
   const { user } = useAuth();
   const { effectiveUserId } = useClinic();
   const [carregando, setCarregando] = useState(true);
-  const [dados, setDados] = useState<Omit<DadosPainel, "carregando">>({
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+  const [dados, setDados] = useState<Omit<DadosPainel, "carregando" | "erro" | "recarregar">>({
     estatisticas: estatisticasIniciais,
     dadosGrafico: [],
     pacientesRecentes: [],
@@ -63,15 +64,25 @@ export function useDadosPainel(
     consultas: [],
   });
 
+  const recarregar = useCallback(() => {
+    setTentativa((atual) => atual + 1);
+  }, []);
+
   useEffect(() => {
+    let cancelado = false;
+
     async function carregarDadosPainel() {
       if (!user || !effectiveUserId) {
-        setCarregando(false);
+        if (!cancelado) {
+          setErro(null);
+          setCarregando(false);
+        }
         return;
       }
 
       try {
         setCarregando(true);
+        setErro(null);
 
         // Busca paralela de todos os dados (DIP — usa serviços injetados)
         const [pacientes, doses, medicamentos, consultas] = await Promise.all([
@@ -80,6 +91,8 @@ export function useDadosPainel(
           servicos.buscarMedicamentos(effectiveUserId),
           servicos.buscarConsultas(effectiveUserId),
         ]);
+
+        if (cancelado) return;
 
         // Delega processamento para utilitários especializados (SRP)
         const estatisticas = calcularEstatisticasPainel(
@@ -106,18 +119,29 @@ export function useDadosPainel(
           alertas,
           consultas: consultas || [],
         });
-      } catch (erro) {
-        console.error("Falha ao carregar dados do painel:", erro);
+      } catch (falha) {
+        if (cancelado) return;
+        console.error("Falha ao carregar dados do painel:", falha);
+        setErro(
+          "Não foi possível carregar os indicadores clínicos. Verifique sua conexão e tente novamente."
+        );
       } finally {
-        setCarregando(false);
+        if (!cancelado) {
+          setCarregando(false);
+        }
       }
     }
 
     carregarDadosPainel();
-  }, [user, effectiveUserId]);
+    return () => {
+      cancelado = true;
+    };
+  }, [user, effectiveUserId, servicos, tentativa]);
 
   return {
     carregando,
+    erro,
+    recarregar,
     ...dados,
   };
 }

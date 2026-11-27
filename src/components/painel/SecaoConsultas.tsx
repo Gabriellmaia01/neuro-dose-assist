@@ -34,7 +34,7 @@ export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
       {proxima ? (
         <div className="my-5 space-y-4">
           <div className="space-y-1.5">
-            <p className="text-[19px] font-semibold tracking-[-0.015em] leading-snug text-[var(--nd-primary-deep)] truncate">
+            <p className="text-[18px] font-semibold tracking-[-0.015em] leading-snug text-[var(--nd-primary-deep)] truncate">
               {proxima.patientName}
             </p>
             <p className="text-[13px] text-[var(--nd-text-secondary)] nd-tabular">
@@ -95,8 +95,8 @@ export function SecaoConsultas({ consultas }: PropriedadesSecaoConsultas) {
         </div>
       )}
 
-      <Link to="/appointments" className="nd-btn-primary-pill w-full">
-        <Calendar className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+      <Link to="/appointments" className="nd-btn-outline-pill w-full">
+        <Calendar className="w-4 h-4 text-[var(--nd-primary)]" strokeWidth={1.75} aria-hidden="true" />
         <span>{proxima ? "Abrir agenda" : "Agendar consulta"}</span>
       </Link>
     </section>

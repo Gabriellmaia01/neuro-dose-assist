@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, LogOut, Mail, Menu, Search, ShieldCheck, WifiOff } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,6 +44,7 @@ export function Header({ onMenuClick, menuButtonRef }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const blurTimeoutRef = useRef<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -67,20 +68,23 @@ export function Header({ onMenuClick, menuButtonRef }: HeaderProps) {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("keydown", handleShortcut);
+      if (blurTimeoutRef.current !== null) {
+        window.clearTimeout(blurTimeoutRef.current);
+      }
     };
   }, []);
 
   const currentSection = ROUTE_TITLES[location.pathname] ?? "Dashboard";
 
-  const filteredRoutes = searchQuery.trim()
-    ? ROUTE_ITEMS.filter((item) => {
-      const q = searchQuery.trim().toLowerCase();
-      return (
+  const filteredRoutes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return ROUTE_ITEMS.slice(0, 5);
+    return ROUTE_ITEMS.filter(
+      (item) =>
         item.label.toLowerCase().includes(q) ||
         item.keywords.includes(q)
-      );
-    })
-    : ROUTE_ITEMS.slice(0, 5);
+    );
+  }, [searchQuery]);
 
   const handleSelectRoute = (href: string) => {
     setSearchQuery("");
@@ -146,7 +150,15 @@ export function Header({ onMenuClick, menuButtonRef }: HeaderProps) {
               setSearchOpen(true);
               setActiveIndex(0);
             }}
-            onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+            onBlur={() => {
+              if (blurTimeoutRef.current !== null) {
+                window.clearTimeout(blurTimeoutRef.current);
+              }
+              blurTimeoutRef.current = window.setTimeout(() => {
+                setSearchOpen(false);
+                blurTimeoutRef.current = null;
+              }, 150);
+            }}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setSearchOpen(true);

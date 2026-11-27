@@ -27,64 +27,70 @@ colors:
   muted-icon: "#6D7F8E"
   placeholder-slate: "#546473"
 typography:
-  display:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    fontSize: "2.375rem"
-    fontWeight: 600
+  hero-display:
+    fontFamily: "'Newsreader', Georgia, serif"
+    fontSize: "3rem"
+    fontWeight: 500
     lineHeight: 1.08
-    letterSpacing: "-0.03em"
+    letterSpacing: "-0.025em"
+  display:
+    fontFamily: "'Newsreader', Georgia, serif"
+    fontSize: "2.375rem"
+    fontWeight: 500
+    lineHeight: 1.1
+    letterSpacing: "-0.02em"
     fontFeature: "'tnum' 1"
   headline:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "1.75rem"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.025em"
   metric-compact:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "1.5rem"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.02em"
     fontFeature: "'tnum' 1"
   subtitle:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-0.015em"
   title:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "1rem"
     fontWeight: 600
     lineHeight: 1.35
     letterSpacing: "-0.01em"
   body-lg:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "0em"
   body:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "0em"
   caption:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "0em"
   label:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.35
     letterSpacing: "0em"
   nav-section:
-    fontFamily: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     fontSize: "0.6875rem"
     fontWeight: 600
     lineHeight: 1.2
@@ -270,11 +276,11 @@ A disciplined maritime-clinical palette built on cool neutral paper, authoritati
 
 ## Typography
 
-**Display Font:** `'Inter'` (with `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` fallback)
-**Body Font:** `'Inter'` (with `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` fallback)
-**Label/Mono Font:** `'Inter'` with `font-variant-numeric: tabular-nums` (`.nd-tabular`) for clinical numerals and telemetry readouts.
+**Display Font:** `'Newsreader'` (with `Georgia, serif` fallback — self-hosted WOFF2)
+**Body Font:** `'IBM Plex Sans'` (with `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` fallback — self-hosted WOFF2)
+**Label/Mono Font:** `'IBM Plex Sans'` with `font-variant-numeric: tabular-nums` (`.nd-tabular`) for clinical numerals and telemetry readouts.
 
-**Character:** A single-family humanist geometric sans-serif tuned for clinical precision: tight negative tracking on large numerals and titles paired with crisp `1.5` body leading and tabular alignment so multi-patient dosages and percentages stack cleanly in columns.
+**Character:** Pairs an editorial scientific-journal serif (`Newsreader`) for gateway display statements with a precision clinical sans-serif (`IBM Plex Sans`) whose distinct `1`/`l`/`I` and `0`/`O` glyphs and tabular numerals support safe dosage reading.
 
 ### Hierarchy
 - **Display** (`600`, `32px–38px` / `2rem–2.375rem`, `1.0`–`1.08` line-height, `-0.03em` tracking, tabular): Primary KPI figures (`38px` in `MetricCard`), semicircular efficacy gauge percentage (`36px` in `EfficacyGaugeCard`), and last-dose readout (`32px` in `LastDoseCard`).

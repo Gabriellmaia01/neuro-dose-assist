@@ -59,7 +59,7 @@ export function AlertsCard({ alerts, className }: AlertsCardProps) {
         </h2>
         <Link
           to="/medications"
-          className="inline-flex items-center min-h-[44px] sm:min-h-[32px] px-3.5 rounded-full border border-[var(--nd-border-input)] text-[12px] font-medium text-[var(--nd-label)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
+          className="inline-flex items-center min-h-[44px] lg:min-h-[36px] px-3.5 rounded-full border border-[var(--nd-border-input)] text-[12px] font-medium text-[var(--nd-label)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
         >
           Interações
         </Link>
@@ -92,8 +92,13 @@ export function AlertsCard({ alerts, className }: AlertsCardProps) {
               <li key={alert.id}>
                 <button
                   type="button"
-                  onClick={() => navigate("/history")}
-                  className="nd-list-row p-2.5 -mx-2.5 rounded-xl items-start gap-3"
+                  aria-label={`Ver histórico do alerta ${alert.title}`}
+                  onClick={() =>
+                    navigate("/history", {
+                      state: { alertId: alert.id, alertTitle: alert.title },
+                    })
+                  }
+                  className="nd-list-row p-2.5 rounded-xl items-start gap-3"
                 >
                   <span
                     className={cn(
@@ -109,18 +114,16 @@ export function AlertsCard({ alerts, className }: AlertsCardProps) {
                   </span>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-[13px] font-semibold text-[var(--nd-text)] leading-snug truncate">
-                        <span className="sr-only">{config.label}: </span>
-                        {alert.title}
-                      </p>
-                      <span className="text-[11px] text-[var(--nd-text-secondary)] shrink-0 nd-tabular">
-                        {alert.time}
-                      </span>
-                    </div>
+                    <p className="text-[13px] font-semibold text-[var(--nd-text)] leading-snug break-words">
+                      <span className="sr-only">{config.label}: </span>
+                      {alert.title}
+                    </p>
                     <p className="text-[12px] text-[var(--nd-text-secondary)] leading-snug mt-0.5 line-clamp-2">
                       {alert.description}
                     </p>
+                    <span className="inline-block mt-1 text-[11px] font-medium text-[var(--nd-label)] nd-tabular">
+                      {alert.time}
+                    </span>
                   </div>
                 </button>
               </li>

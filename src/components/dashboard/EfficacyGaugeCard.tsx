@@ -52,17 +52,17 @@ export function EfficacyGaugeCard({
 
         <Link
           to="/analytics"
-          className="inline-flex items-center min-h-[44px] sm:min-h-[32px] px-3.5 rounded-full border border-[var(--nd-border-input)] text-[12px] font-medium text-[var(--nd-label)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
+          className="inline-flex items-center min-h-[44px] lg:min-h-[36px] px-3.5 rounded-full border border-[var(--nd-border-input)] text-[12px] font-medium text-[var(--nd-label)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
         >
           Analytics
         </Link>
       </div>
 
-      {/* Semicírculo 180° */}
+      {/* Semicírculo 180° contido no viewBox (sem overflow-visible) */}
       <div className="relative my-3 flex flex-col items-center justify-center">
         <svg
-          viewBox="0 0 260 144"
-          className="w-full max-w-[248px] overflow-visible"
+          viewBox="0 0 260 152"
+          className="w-full max-w-[248px]"
           role="img"
           aria-label={`Eficácia clínica média de ${clamped}%`}
         >
@@ -84,8 +84,7 @@ export function EfficacyGaugeCard({
               />
             </pattern>
             <linearGradient id="nd-gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--nd-accent)" />
-              <stop offset="60%" stopColor="var(--nd-primary)" />
+              <stop offset="0%" stopColor="var(--nd-primary)" />
               <stop offset="100%" stopColor="var(--nd-primary-deep)" />
             </linearGradient>
           </defs>
@@ -114,7 +113,7 @@ export function EfficacyGaugeCard({
         </svg>
 
         <div className="absolute bottom-1 flex flex-col items-center text-center">
-          <span className="text-[36px] font-semibold tracking-[-0.03em] leading-none text-[var(--nd-text)] nd-tabular">
+          <span className="text-[38px] font-semibold tracking-[-0.03em] leading-none text-[var(--nd-text)] nd-tabular">
             {clamped}%
           </span>
           <span className="mt-1 text-[12px] font-medium text-[var(--nd-text-secondary)]">
@@ -136,7 +135,7 @@ export function EfficacyGaugeCard({
           </span>
         </div>
         <span className="font-medium text-[var(--nd-label)]">
-          {dosesCount} doses · {inferencesCount} IA
+          {dosesCount} doses · {inferencesCount} análises
         </span>
       </div>
     </section>

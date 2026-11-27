@@ -147,10 +147,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       data-collapsed={collapsed ? "true" : "false"}
       className="nd-sidebar"
     >
-      {/* Topo: marca Neuro-Dose em superfície clara */}
+      {/* Topo: marca Neuro-Dose alinhada à borda inferior do Header (72px) */}
       <div
         className={cn(
-          "h-[72px] flex items-center shrink-0",
+          "h-[72px] flex items-center shrink-0 border-b border-[var(--nd-border)]",
           showLabels ? "justify-between px-5" : "justify-center px-2"
         )}
       >
@@ -166,7 +166,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <Brain className="w-5 h-5" strokeWidth={1.75} />
           </div>
           {showLabels && (
-            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] truncate">
+            <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--nd-text)] truncate">
               Neuro-Dose
             </span>
           )}
@@ -283,7 +283,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       <button
         type="button"
         onClick={() => setCollapsed((prev) => !prev)}
-        className="nd-desktop-only items-center justify-center absolute -right-3.5 top-[22px] w-7 h-7 rounded-full bg-[var(--nd-surface)] border border-[var(--nd-border-input)] text-[var(--nd-label)] hover:border-[var(--nd-border-hover)] hover:text-[var(--nd-text)] shadow-[var(--nd-shadow-sm)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] z-50"
+        className="nd-desktop-only nd-sidebar-toggle items-center justify-center absolute -right-4 top-[18px] w-9 h-9 rounded-full bg-[var(--nd-surface)] border border-[var(--nd-border-input)] text-[var(--nd-label)] hover:border-[var(--nd-border-hover)] hover:text-[var(--nd-text)] shadow-[var(--nd-shadow-sm)] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--nd-accent)] z-50"
         aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
         aria-expanded={!collapsed}
       >

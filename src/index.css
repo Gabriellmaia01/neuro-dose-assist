@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted variable fonts: IBM Plex Sans (clinical UI & tabular data) + Newsreader (editorial display) */
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url("/fonts/newsreader-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url("/fonts/newsreader-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ==========================================================================
    Neuro-Dose Clinical Design System — Single Unified Theme
    Shared tokens across Login and Dashboard (WCAG AA compliant)
@@ -11,10 +48,12 @@
   :root {
     /* Motion tokens */
     --dur-fast: 150ms;
-    --dur-base: 200ms;
+    --dur-base: 220ms;
     --dur-press: 80ms;
-    --dur-enter: 300ms;
+    --dur-enter: 340ms;
+    --dur-stage: 480ms;
     --ease: cubic-bezier(0.2, 0, 0, 1);
+    --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
     /* Shared clinical tokens (Neuro-Dose Bento Light System — #1B4965 / #2C7A7B) */
     --nd-dark-bg: #0F1E2E;
@@ -46,7 +85,8 @@
     --nd-accent: #2C7A7B;
     --nd-accent-soft: #E8F4F4;
     --nd-focus-ring: rgba(44, 122, 123, 0.16);
-    --nd-hero-gradient: linear-gradient(145deg, #0E293B 0%, #1B4965 56%, #256873 100%);
+    --nd-chart-cursor: rgba(27, 73, 101, 0.04);
+    --nd-hero-gradient: var(--nd-dark-bg);
 
     --nd-success: #1E7A4D;
     --nd-success-bg: #E8F4ED;
@@ -71,7 +111,8 @@
     --nd-space-7: 56px;
     --nd-space-9: 72px;
 
-    --nd-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --nd-font: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --nd-font-display: 'Newsreader', Georgia, serif;
 
     /* Aliases for Login screen tokens */
     --login-dark-bg: var(--nd-dark-bg);
@@ -111,6 +152,7 @@
     --login-space-7: var(--nd-space-7);
     --login-space-9: var(--nd-space-9);
     --login-font: var(--nd-font);
+    --login-font-display: var(--nd-font-display);
 
     /* Shadcn / Tailwind HSL semantic mappings (single light clinical theme) */
     --background: 210 20% 96.5%;
@@ -203,6 +245,11 @@
   h6 {
     font-family: var(--nd-font);
     letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
@@ -222,11 +269,11 @@
 }
 
 .nd-card-hero {
-  background: var(--nd-hero-gradient);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--nd-dark-bg);
+  border: 1px solid var(--nd-dark-border);
   border-radius: var(--nd-radius-lg);
-  color: #FFFFFF;
-  box-shadow: 0 10px 28px -10px rgba(14, 41, 59, 0.42);
+  color: var(--nd-surface);
+  box-shadow: 0 10px 28px -10px rgba(15, 30, 46, 0.36);
 }
 
 .nd-card-interactive {
@@ -258,24 +305,24 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 20px;
-  background: linear-gradient(135deg, var(--nd-primary-deep) 0%, var(--nd-primary) 100%);
-  color: #FFFFFF;
+  background-color: var(--nd-primary);
+  color: var(--nd-surface);
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid transparent;
+  border: 1px solid var(--nd-primary-hover);
   border-radius: var(--nd-radius-pill);
-  box-shadow: 0 4px 12px -4px rgba(27, 73, 101, 0.42);
+  box-shadow: 0 4px 12px -4px rgba(27, 73, 101, 0.36);
   text-decoration: none;
   cursor: pointer;
   transition:
-    filter var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease),
     box-shadow var(--dur-fast) var(--ease),
     transform var(--dur-press) var(--ease);
 }
 
 .nd-btn-primary-pill:hover:not(:disabled) {
-  filter: brightness(1.08);
-  box-shadow: 0 6px 16px -4px rgba(27, 73, 101, 0.5);
+  background-color: var(--nd-primary-hover);
+  box-shadow: 0 6px 16px -4px rgba(27, 73, 101, 0.46);
 }
 
 .nd-btn-primary-pill:active:not(:disabled) {
@@ -547,7 +594,7 @@
     flex-shrink: 0;
     transform: none;
     visibility: visible;
-    transition: width var(--dur-base) var(--ease);
+    transition: none;
   }
 
   .nd-sidebar[data-collapsed="true"] {
@@ -733,7 +780,7 @@
 }
 
 /* ==========================================================================
-   Neuro-Dose Clinical Login — Split Layout & Form Controls
+   Neuro-Dose Clinical Login — Premium Gateway & Scroll Choreography
    ========================================================================== */
 
 .login-shell {
@@ -741,84 +788,210 @@
   display: flex;
   flex-direction: column;
   font-family: var(--login-font);
-  background-color: var(--login-light-bg);
+  background-color: var(--nd-bg);
   color: var(--login-light-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.login-shell h1,
-.login-shell h2,
-.login-shell h3,
-.login-shell h4,
-.login-shell button,
-.login-shell input,
-.login-shell label,
-.login-shell a,
-.login-shell p,
-.login-shell span {
-  font-family: var(--login-font);
+.login-hero-grid {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
 }
 
 .login-panel-left {
-  display: none;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  background-color: var(--nd-dark-bg);
+  border-bottom: 1px solid var(--nd-dark-border);
+  padding: max(18px, env(safe-area-inset-top)) 20px 20px;
+  color: var(--login-dark-text);
 }
 
 .login-panel-right {
   width: 100%;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: var(--login-light-bg);
-  padding: max(var(--login-space-3), env(safe-area-inset-top)) max(var(--login-space-3), env(safe-area-inset-right)) max(var(--login-space-3), env(safe-area-inset-bottom)) max(var(--login-space-3), env(safe-area-inset-left));
+  justify-content: center;
+  background-color: var(--nd-bg);
+  padding: 16px max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 
-.login-mobile-header {
-  display: flex;
+.login-auth-card {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  background-color: var(--nd-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-lg);
+  box-shadow: var(--nd-shadow-popover);
+  padding: 22px 20px;
+}
+
+@media (min-width: 640px) {
+  .login-auth-card {
+    padding: 36px 32px;
+  }
 }
 
 @media (min-width: 900px) {
-  .login-shell {
-    flex-direction: row;
+  .login-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.85fr);
+    min-height: 100svh;
   }
 
   .login-panel-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 55%;
-    min-height: 100vh;
-    background-color: var(--login-dark-bg);
-    padding: var(--login-space-6) var(--login-space-5);
-    color: var(--login-dark-text);
+    min-height: 100svh;
+    border-bottom: none;
+    border-right: 1px solid var(--nd-dark-border);
+    padding: 36px 40px;
   }
 
   .login-panel-right {
-    width: 45%;
-    padding: var(--login-space-6) var(--login-space-4);
-  }
-
-  .login-mobile-header {
-    display: none;
+    min-height: 100svh;
+    padding: 36px 32px;
   }
 }
 
-@media (min-width: 1180px) {
+@media (min-width: 1280px) {
   .login-panel-left {
-    padding: var(--login-space-7) var(--login-space-9);
+    padding: 48px 64px;
   }
 
   .login-panel-right {
-    padding: var(--login-space-7) var(--login-space-6);
+    padding: 48px 56px;
   }
+}
+
+/* Floating header that glides in while scrolling down the showcase */
+.login-scroll-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--nd-border);
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 300ms var(--ease-expo),
+    opacity 220ms var(--ease);
+}
+
+.login-scroll-bar[data-visible="true"] {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.login-progress-fill {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--nd-accent), var(--nd-primary));
+  transform-origin: left center;
+}
+
+/* Authored pharmacokinetic curve drawing (settles cleanly, zero infinite idle loops) */
+@keyframes login-pk-draw {
+  from {
+    stroke-dashoffset: 560;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.login-pk-curve {
+  stroke-dasharray: 560;
+  stroke-dashoffset: 0;
+  animation: login-pk-draw 420ms var(--ease-expo) both;
+}
+
+@keyframes login-pk-settle {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}
+
+.login-pk-pulse-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-pk-settle 320ms var(--ease-expo) 220ms both;
+}
+
+.login-scroll-cue-icon {
+  transition: transform var(--dur-fast) var(--ease-expo);
+}
+
+button:hover .login-scroll-cue-icon {
+  transform: translateY(2px);
+}
+
+/* Scroll-locked sticky stage morph */
+@keyframes login-stage-in {
+  from {
+    opacity: 0.78;
+    transform: translateY(6px) scale(0.992);
+    clip-path: inset(0 0 4% 0 round 16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0 round 16px);
+  }
+}
+
+.login-stage-pane {
+  animation: login-stage-in 380ms var(--ease-expo) both;
+}
+
+/* Progressive scroll reveal — always legible (already-visible default per craft-floor) */
+.login-reveal {
+  transition:
+    transform 480ms var(--ease-expo),
+    opacity 420ms var(--ease-expo);
+}
+
+.login-reveal[data-reveal="hidden"] {
+  opacity: 0.92;
+  transform: translateY(14px);
+}
+
+.login-reveal[data-reveal="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.login-display {
+  font-family: var(--login-font-display);
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+.login-pk-node {
+  transition: transform 420ms var(--ease-expo);
 }
 
 .login-form-container {
   width: 100%;
-  max-width: 400px;
-  margin: auto;
-  padding: var(--login-space-4) 0;
 }
 
 @keyframes login-panel-fade {
@@ -839,10 +1012,10 @@
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: 40px;
+  height: 44px;
   padding: 4px;
   background-color: var(--login-segmented-bg);
-  border-radius: var(--login-radius);
+  border-radius: var(--nd-radius-pill);
 }
 
 .login-tab-indicator {
@@ -852,10 +1025,10 @@
   left: 4px;
   width: calc(50% - 4px);
   background-color: var(--login-light-surface);
-  border: 1px solid var(--login-light-border);
-  border-radius: 6px;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-pill);
   box-shadow: var(--login-shadow-sm);
-  transition: transform var(--dur-base) var(--ease);
+  transition: transform 280ms var(--ease-expo);
   pointer-events: none;
 }
 
@@ -870,7 +1043,7 @@
   color: var(--login-light-text-secondary);
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--nd-radius-pill);
   cursor: pointer;
   transition: color var(--dur-fast) var(--ease);
 }
@@ -880,7 +1053,8 @@
 }
 
 .login-tab-trigger[aria-selected="true"] {
-  color: var(--login-light-text);
+  color: var(--nd-primary);
+  font-weight: 600;
 }
 
 .login-tab-trigger:focus-visible {
@@ -890,16 +1064,18 @@
 
 @keyframes login-tab-fade {
   from {
-    opacity: 0;
+    opacity: 0.82;
+    transform: translateY(3px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .login-tab-panel {
-  animation: login-tab-fade var(--dur-fast) var(--ease) both;
+  animation: login-tab-fade 180ms var(--ease-expo) both;
 }
 
 .login-input {
@@ -924,7 +1100,7 @@
 }
 
 .login-input:hover:not(:disabled):not(:focus) {
-  border-color: #C2CDD8;
+  border-color: var(--nd-border-hover);
 }
 
 .login-input:focus {
@@ -934,7 +1110,7 @@
 }
 
 .login-input:disabled {
-  background-color: #F1F4F8;
+  background-color: var(--nd-muted);
   color: var(--login-light-text-secondary);
   cursor: not-allowed;
 }
@@ -997,21 +1173,23 @@
   justify-content: center;
   gap: 8px;
   background-color: var(--login-primary);
-  color: #FFFFFF;
+  color: var(--nd-surface);
   font-size: 15px;
   font-weight: 500;
   border: 1px solid transparent;
-  border-radius: var(--login-radius);
+  border-radius: var(--nd-radius-pill);
+  box-shadow: 0 6px 18px -6px rgba(27, 73, 101, 0.42);
   cursor: pointer;
   transition:
     background-color var(--dur-fast) var(--ease),
-    color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
     opacity var(--dur-fast) var(--ease),
     transform var(--dur-press) var(--ease);
 }
 
 .login-btn-primary:hover:not(:disabled) {
   background-color: var(--login-primary-hover);
+  box-shadow: 0 8px 22px -6px rgba(27, 73, 101, 0.52);
 }
 
 .login-btn-primary:active:not(:disabled) {
@@ -1040,7 +1218,7 @@
   font-size: 14px;
   font-weight: 500;
   border: 1px solid var(--login-light-border);
-  border-radius: var(--login-radius);
+  border-radius: var(--nd-radius-pill);
   box-shadow: var(--login-shadow-sm);
   cursor: pointer;
   transition:
@@ -1168,7 +1346,8 @@
   }
 
   .nd-circle-action,
-  .nd-circle-action-hero {
+  .nd-circle-action-hero,
+  .nd-sidebar-toggle {
     width: 44px;
     height: 44px;
   }
@@ -1185,6 +1364,10 @@
   .login-tab-panel,
   .login-error-text,
   .login-shake,
+  .login-pk-curve,
+  .login-pk-pulse-ring,
+  .login-scroll-cue-icon,
+  .login-stage-pane,
   .nd-page-enter,
   .nd-tooltip-surface,
   .animate-fade-up,
@@ -1194,12 +1377,22 @@
     animation: none;
   }
 
+  .login-reveal[data-reveal="hidden"] {
+    opacity: 1;
+    transform: none;
+  }
+
   .login-tab-indicator,
+  .login-scroll-bar,
+  .login-scroll-cue-icon,
+  .login-pk-node,
+  .login-reveal,
   .nd-sidebar,
   .nd-sidebar-backdrop {
     transition: none;
   }
 
+  button:hover .login-scroll-cue-icon,
   .login-btn-primary:active:not(:disabled),
   .login-btn-google:active:not(:disabled),
   .nd-shortcut-primary:active,

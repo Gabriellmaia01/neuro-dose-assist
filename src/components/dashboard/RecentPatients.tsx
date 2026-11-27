@@ -60,7 +60,7 @@ export function RecentPatients({ patients, className }: RecentPatientsProps) {
 
         <Link
           to="/patients"
-          className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[34px] px-3.5 rounded-full border border-[var(--nd-border-input)] bg-[var(--nd-surface)] text-[12px] font-medium text-[var(--nd-text)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
+          className="inline-flex items-center gap-1 min-h-[44px] lg:min-h-[36px] px-3.5 rounded-full border border-[var(--nd-border-input)] bg-[var(--nd-surface)] text-[12px] font-medium text-[var(--nd-text)] hover:bg-[var(--nd-bg)] transition-colors shrink-0"
         >
           <Plus className="w-3.5 h-3.5 text-[var(--nd-primary)]" strokeWidth={2} aria-hidden="true" />
           <span>Pacientes</span>
@@ -92,8 +92,13 @@ export function RecentPatients({ patients, className }: RecentPatientsProps) {
               <li key={patient.id}>
                 <button
                   type="button"
-                  onClick={() => navigate("/patients")}
-                  className="nd-list-row p-2.5 -mx-2.5 rounded-2xl gap-3"
+                  aria-label={`Ver prontuário de ${patient.name}`}
+                  onClick={() =>
+                    navigate("/patients", {
+                      state: { patientId: patient.id, patientName: patient.name },
+                    })
+                  }
+                  className="nd-list-row p-2.5 rounded-2xl gap-3 items-start sm:items-center"
                 >
                   <Avatar className="w-10 h-10 shrink-0 border border-[var(--nd-border)]">
                     <AvatarFallback className="bg-[var(--nd-accent-soft)] text-[var(--nd-primary)] text-[13px] font-semibold">
@@ -102,22 +107,23 @@ export function RecentPatients({ patients, className }: RecentPatientsProps) {
                   </Avatar>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-[var(--nd-text)] leading-snug truncate">
-                      {patient.name}
-                    </p>
-                    <p className="text-[12px] text-[var(--nd-text-secondary)] leading-snug mt-0.5 truncate nd-tabular">
-                      {patient.age} anos • <span className="font-medium text-[var(--nd-label)]">{patient.medication}</span> · {patient.lastDose}
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <p className="text-[14px] font-semibold text-[var(--nd-text)] leading-snug truncate">
+                        {patient.name}
+                      </p>
+                      <span
+                        className={cn(
+                          "inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-semibold shrink-0 nd-tabular",
+                          pill.className
+                        )}
+                      >
+                        {pill.label}
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-[var(--nd-text-secondary)] leading-snug mt-0.5 nd-tabular">
+                      {patient.age} anos · <span className="font-medium text-[var(--nd-label)]">{patient.medication}</span> · {patient.lastDose}
                     </p>
                   </div>
-
-                  <span
-                    className={cn(
-                      "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 nd-tabular",
-                      pill.className
-                    )}
-                  >
-                    {pill.label}
-                  </span>
                 </button>
               </li>
             );

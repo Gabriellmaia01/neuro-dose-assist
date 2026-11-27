@@ -91,4 +91,42 @@ describe("PainelDeControle", () => {
       "/reports"
     );
   });
+
+  it("exibe alerta acessível e botão de recuperação quando ocorre falha de carregamento", () => {
+    const recarregar = vi.fn();
+    vi.mocked(useDadosPainel).mockReturnValue({
+      carregando: false,
+      erro: "Não foi possível carregar os indicadores clínicos.",
+      recarregar,
+      estatisticas: {
+        pacientesAtivos: 0,
+        pacientesAtivosNovos: 0,
+        tendenciaPacientes: 0,
+        dosesUltimos7Dias: 0,
+        tendenciaDoses: 0,
+        eficaciaMedia: 0,
+        tendenciaEficacia: 0,
+        inferenciasIA: 0,
+        tendenciaIA: 0,
+      },
+      dadosGrafico: [],
+      pacientesRecentes: [],
+      ultimaDose: null,
+      alertas: [],
+      consultas: [],
+    });
+
+    render(
+      <MemoryRouter>
+        <PainelDeControle />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /Não foi possível carregar os indicadores clínicos/
+    );
+    const botaoRetry = screen.getByRole("button", { name: /Tentar novamente/ });
+    botaoRetry.click();
+    expect(recarregar).toHaveBeenCalledTimes(1);
+  });
 });

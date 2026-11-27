@@ -121,7 +121,7 @@ export function PostDoseInsightCard({
                         <div
                             key={index}
                             className={cn(
-                                "relative p-4 rounded-xl border transition-all duration-200",
+                                "relative p-4 rounded-xl border transition-colors duration-200",
                                 "hover:shadow-md hover:-translate-y-0.5",
                                 style.bg,
                                 style.border

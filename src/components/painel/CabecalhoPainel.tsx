@@ -13,11 +13,11 @@ export function CabecalhoPainel({ estatisticas }: PropriedadesCabecalhoPainel) {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div className="space-y-1 min-w-0">
-        <h1 className="text-[24px] sm:text-[28px] font-semibold tracking-[-0.025em] leading-[1.2] text-[var(--nd-text)]">
+        <h1 className="login-display text-[24px] sm:text-[28px] leading-[1.18] text-[var(--nd-text)]">
           Centro de Telemetria e Decisão Farmacológica
         </h1>
         <p className="text-[14px] sm:text-[15px] font-normal leading-[1.5] text-[var(--nd-text-secondary)]">
-          Acompanhe {estatisticas.pacientesAtivos} pacientes ativos, curvas posológicas e alertas clínicos em tempo real.
+          Acompanhe {estatisticas.pacientesAtivos} pacientes ativos, curvas posológicas e alertas clínicos em tempo{"\u00A0"}real.
         </p>
       </div>
 
