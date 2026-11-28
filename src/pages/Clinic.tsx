@@ -15,7 +15,7 @@ import {
 
 export default function ClinicPage() {
     const dados = useDadosClinica();
-    const conviteUrl = useConviteUrl(dados.user);
+    const conviteUrl = useConviteUrl(dados.user, Boolean(dados.clinica));
     const formularios = useFormulariosClinica();
     const acoes = useAcoesClinica(dados, conviteUrl);
 
@@ -70,6 +70,7 @@ export default function ClinicPage() {
                             <ExistingClinicSection
                                 clinic={dados.clinica}
                                 isOwner={dados.ehProprietario}
+                                pendingInvites={dados.convitesPendentesClinica}
                                 forms={formularios}
                                 onSendInvite={aoClicarEnviarConvite}
                                 onRemoveMember={aoRemoverMembro}

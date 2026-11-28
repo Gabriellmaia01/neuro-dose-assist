@@ -87,7 +87,7 @@ export function PatientFormDialog({
                                 value={formData.name}
                                 onChange={(event) => {
                                     const value = event.target.value;
-                                    if (/^[a-zA-ZÀ-ÿ\s]*$/.test(value)) {
+                                    if (/^[a-zA-ZÀ-ÿ\s'-]*$/.test(value)) {
                                         setFormData({ ...formData, name: value });
                                     }
                                 }}
@@ -177,11 +177,11 @@ export function PatientFormDialog({
                             id="patient-allergies"
                             name="patientAllergies"
                             autoComplete="off"
-                            placeholder="Liste sensibilidades conhecidas…"
+                            placeholder="Ex.: Dipirona 500 mg, Corante INS 102…"
                             value={formData.allergies}
                             onChange={(event) => {
                                 const value = event.target.value;
-                                if (/^[a-zA-ZÀ-ÿ\s,]*$/.test(value)) {
+                                if (/^[a-zA-ZÀ-ÿ0-9\s,.;:/()%+-]*$/.test(value)) {
                                     setFormData({ ...formData, allergies: value });
                                 }
                             }}

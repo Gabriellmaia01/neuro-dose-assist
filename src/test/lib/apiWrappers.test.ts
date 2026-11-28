@@ -112,7 +112,10 @@ vi.mock("@/services/firebase/userSettingsService", () => ({
 }));
 
 describe("API wrappers", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("VITE_API_PROVIDER", "firebase");
+  });
 
   it("encaminha cada operação para o serviço Firebase correspondente", async () => {
     const user = { name: "Profissional", email: "u@example.com" };

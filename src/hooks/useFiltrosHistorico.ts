@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { ItemHistorico, EstatisticasHistorico } from "@/lib/tiposHistorico";
+import type { ActivityLog } from "@/lib/activityLog";
+import type { Patient } from "@/lib/patients";
 
 /**
  * Hook responsável por gerenciar filtros e calcular dados derivados do histórico.
@@ -24,11 +26,14 @@ export interface FiltrosHistorico {
 export interface RetornoFiltrosHistorico {
   filtros: FiltrosHistorico;
   historicoFiltrado: ItemHistorico[];
+  atividadesFiltradas: ActivityLog[];
   estatisticas: EstatisticasHistorico;
 }
 
 export function useFiltrosHistorico(
-  itensHistorico: ItemHistorico[]
+  itensHistorico: ItemHistorico[],
+  logsAtividade: ActivityLog[] = [],
+  pacientes: Patient[] = []
 ): RetornoFiltrosHistorico {
   const [termoBusca, setTermoBusca] = useState("");
   const [data, setData] = useState<Date | undefined>(undefined);
@@ -45,14 +50,14 @@ export function useFiltrosHistorico(
   };
 
   const historicoFiltrado = useMemo(() => {
+    const query = termoBusca.trim().toLowerCase();
     return itensHistorico.filter((item) => {
       // Busca textual
       const correspondeBusca =
-        item.patientName.toLowerCase().includes(termoBusca.toLowerCase()) ||
-        item.medicationName.toLowerCase().includes(termoBusca.toLowerCase()) ||
-        (item.analysis?.recommendation || "")
-          .toLowerCase()
-          .includes(termoBusca.toLowerCase());
+        !query ||
+        item.patientName.toLowerCase().includes(query) ||
+        item.medicationName.toLowerCase().includes(query) ||
+        (item.analysis?.recommendation || "").toLowerCase().includes(query);
 
       // Filtro de data
       const correspondeData = data
@@ -86,6 +91,48 @@ export function useFiltrosHistorico(
       );
     });
   }, [itensHistorico, termoBusca, data, pacienteIdSelecionado, abaAtiva]);
+
+  const atividadesFiltradas = useMemo(() => {
+    const safeLogs = Array.isArray(logsAtividade) ? logsAtividade : [];
+    const query = termoBusca.trim().toLowerCase();
+    const pacienteSelecionadoNome =
+      pacienteIdSelecionado !== "all"
+        ? pacientes
+            .find((p) => p.id === pacienteIdSelecionado)
+            ?.name?.toLowerCase() || ""
+        : "";
+
+    return safeLogs.filter((log) => {
+      const entityName = (log.entityName || "").toLowerCase();
+      const description = (log.description || "").toLowerCase();
+      const userName = (log.userName || "").toLowerCase();
+      const userEmail = (log.userEmail || "").toLowerCase();
+
+      const correspondeBusca =
+        !query ||
+        entityName.includes(query) ||
+        description.includes(query) ||
+        userName.includes(query) ||
+        userEmail.includes(query);
+
+      const correspondeData = data
+        ? (() => {
+            const dt = new Date(log.timestamp);
+            return !Number.isNaN(dt.getTime()) && dt.toDateString() === data.toDateString();
+          })()
+        : true;
+
+      const correspondePaciente =
+        pacienteIdSelecionado === "all"
+          ? true
+          : log.entityId === pacienteIdSelecionado ||
+            (pacienteSelecionadoNome.length > 0 &&
+              (entityName.includes(pacienteSelecionadoNome) ||
+                description.includes(pacienteSelecionadoNome)));
+
+      return correspondeBusca && correspondeData && correspondePaciente;
+    });
+  }, [logsAtividade, pacientes, termoBusca, data, pacienteIdSelecionado]);
 
   const estatisticas = useMemo<EstatisticasHistorico>(() => {
     const totalFiltrado = historicoFiltrado.length;
@@ -122,6 +169,7 @@ export function useFiltrosHistorico(
       temFiltrosAtivos,
     },
     historicoFiltrado,
+    atividadesFiltradas,
     estatisticas,
   };
 }

@@ -1,13 +1,18 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const apiPort = (env.VITE_SANDBOX_API_PORT || "8080").trim();
+  const webPort = Number(env.VITE_SANDBOX_WEB_PORT || "8081");
+
+  return ({
   server: {
     host: "::",
-    port: 8081,
+    port: webPort,
     hmr: {
       overlay: false,
     },
@@ -18,6 +23,12 @@ export default defineConfig(({ mode }) => ({
     },
     watch: {
       usePolling: true, // Força polling para detectar mudanças
+    },
+    proxy: {
+      "/api": {
+        target: `http://localhost:${apiPort}`,
+        changeOrigin: true,
+      },
     },
   },
   build: {
@@ -46,5 +57,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));
+  });
+});
 

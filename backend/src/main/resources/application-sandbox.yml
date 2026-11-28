@@ -1,0 +1,15 @@
+server:
+  port: ${SANDBOX_PORT:8090}
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+
+app:
+  cors:
+    allowed-origins: http://localhost:8091,http://127.0.0.1:8091
+  firebase:
+    project-id: ""

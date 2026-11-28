@@ -23,6 +23,7 @@ interface DataPoint {
 interface EfficacyChartProps {
   data: DataPoint[];
   className?: string;
+  embedded?: boolean;
 }
 
 interface TooltipPayloadItem {
@@ -107,6 +108,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 export const EfficacyChart = memo(function EfficacyChart({
   data,
   className,
+  embedded = false,
 }: EfficacyChartProps) {
   const {
     hasData,
@@ -140,22 +142,31 @@ export const EfficacyChart = memo(function EfficacyChart({
     };
   }, [data]);
 
+  const Container = embedded ? "div" : "section";
+
   return (
-    <section
-      aria-label="Curva de Eficácia Farmacológica"
-      className={cn("nd-card p-6 flex flex-col justify-between", className)}
+    <Container
+      aria-label={embedded ? undefined : "Curva de Eficácia Farmacológica"}
+      className={cn(
+        embedded
+          ? "flex flex-col justify-between"
+          : "nd-card p-6 flex flex-col justify-between",
+        className
+      )}
     >
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
         <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
-              Telemetria Farmacológica
-            </h2>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[var(--nd-accent-soft)] text-[var(--nd-primary)] text-[12px] font-semibold">
-              7 dias
-            </span>
-          </div>
+          {!embedded && (
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--nd-text)]">
+                Telemetria Farmacológica
+              </h2>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[var(--nd-accent-soft)] text-[var(--nd-primary)] text-[12px] font-semibold">
+                7 dias
+              </span>
+            </div>
+          )}
           <p className="text-[13px] font-normal text-[var(--nd-text-secondary)]">
             Eficácia terapêutica (%) × dosagem administrada (mg)
           </p>
@@ -310,6 +321,6 @@ export const EfficacyChart = memo(function EfficacyChart({
           </div>
         </div>
       )}
-    </section>
+    </Container>
   );
 });

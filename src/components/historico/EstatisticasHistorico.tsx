@@ -74,8 +74,8 @@ export function EstatisticasHistoricoComp({
             eficaciaMedia >= 70
               ? "text-[var(--nd-success)]"
               : eficaciaMedia >= 50
-              ? "text-[var(--nd-warning)]"
-              : "text-[var(--nd-error)]"
+                ? "text-[var(--nd-warning)]"
+                : "text-[var(--nd-error)]"
           )}
         >
           {eficaciaMedia}%

@@ -136,6 +136,14 @@ export function Header({ onMenuClick, menuButtonRef }: HeaderProps) {
           <input
             ref={searchInputRef}
             type="search"
+            name="module-quick-search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-bwignore="true"
             role="combobox"
             aria-expanded={searchOpen}
             aria-controls="header-quick-search-list"
@@ -268,6 +276,14 @@ export function Header({ onMenuClick, menuButtonRef }: HeaderProps) {
               />
               <input
                 type="search"
+                name="module-quick-search-mobile"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-bwignore="true"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar módulo clínico…"

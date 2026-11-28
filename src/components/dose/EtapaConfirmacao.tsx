@@ -50,37 +50,37 @@ export function EtapaConfirmacao({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Dados da Dose */}
-        <div className="space-y-4 p-4 rounded-xl bg-muted/30">
-          <h3 className="font-medium text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
             Dados da Dose
           </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Paciente</span>
-              <span className="font-medium">
+          <div className="space-y-2.5 text-sm">
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-muted-foreground shrink-0">Paciente</span>
+              <span className="font-medium text-right break-words min-w-0">
                 {pacienteSelecionado?.name || "Não selecionado"}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Medicamento</span>
-              <span className="font-medium">
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-muted-foreground shrink-0">Medicamento</span>
+              <span className="font-medium text-right break-words min-w-0">
                 {medicamentoSelecionado?.name || "Não selecionado"}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Dose</span>
-              <span className="font-medium tabular-nums">{quantidadeDose || "-"} mg</span>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-muted-foreground shrink-0">Dose</span>
+              <span className="font-medium tabular-nums text-right">{quantidadeDose || "-"} mg</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Horário</span>
-              <span className="font-medium">{horarioDose}</span>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-muted-foreground shrink-0">Horário</span>
+              <span className="font-medium tabular-nums text-right">{horarioDose}</span>
             </div>
           </div>
         </div>
 
         {/* Estado Subjetivo */}
-        <div className="space-y-4 p-4 rounded-xl bg-muted/30">
-          <h3 className="font-medium text-sm text-muted-foreground">
+        <div className="space-y-4 pt-4 border-t border-[var(--nd-border)] md:pt-0 md:border-t-0 md:border-l md:pl-6">
+          <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
             Estado Subjetivo
           </h3>
           <div className="space-y-2 text-sm">

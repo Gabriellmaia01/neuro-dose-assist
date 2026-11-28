@@ -43,27 +43,33 @@ export function PainelResumoLateral({
         </div>
 
         <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Paciente</span>
-            <span className="font-medium truncate">{pacienteSelecionado?.name || "—"}</span>
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-muted-foreground shrink-0">Paciente</span>
+            <span className="font-medium text-right break-words min-w-0">
+              {pacienteSelecionado?.name || "—"}
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Medicamento</span>
-            <span className="font-medium truncate">{medicamentoSelecionado?.name || "—"}</span>
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-muted-foreground shrink-0">Medicamento</span>
+            <span className="font-medium text-right break-words min-w-0">
+              {medicamentoSelecionado?.name || "—"}
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Dose</span>
-            <span className="font-medium tabular-nums">
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-muted-foreground shrink-0">Dose</span>
+            <span className="font-medium tabular-nums text-right">
               {quantidadeDose ? `${quantidadeDose} mg` : "—"}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Horário</span>
-            <span className="font-medium tabular-nums">{horarioDose || "—"}</span>
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-muted-foreground shrink-0">Horário</span>
+            <span className="font-medium tabular-nums text-right">{horarioDose || "—"}</span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Indicação</span>
-            <span className="font-medium truncate">{indicacao || "—"}</span>
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-muted-foreground shrink-0">Indicação</span>
+            <span className="font-medium text-right break-words min-w-0 leading-snug">
+              {indicacao || "—"}
+            </span>
           </div>
         </div>
 

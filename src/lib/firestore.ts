@@ -1,4 +1,8 @@
 import { userSettingsService } from "@/services/firebase/userSettingsService";
+import { springUserSettingsService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
+
+const activeService = () => (isSpringApiEnabled() ? springUserSettingsService : userSettingsService);
 
 export interface UserProfile {
   fullName?: string;
@@ -33,33 +37,33 @@ export interface UserSettings {
 }
 
 export function getUserSettings(userId: string): Promise<UserSettings | null> {
-  return userSettingsService.getUserSettings(userId);
+  return activeService().getUserSettings(userId);
 }
 
 export function saveUserSettings(
   userId: string,
   settings: Partial<UserSettings>
 ): Promise<void> {
-  return userSettingsService.saveUserSettings(userId, settings);
+  return activeService().saveUserSettings(userId, settings);
 }
 
 export function updateUserProfile(
   userId: string,
   profile: Partial<UserProfile>
 ): Promise<void> {
-  return userSettingsService.updateUserProfile(userId, profile);
+  return activeService().updateUserProfile(userId, profile);
 }
 
 export function updateNotificationSettings(
   userId: string,
   notifications: NotificationSettings
 ): Promise<void> {
-  return userSettingsService.updateNotificationSettings(userId, notifications);
+  return activeService().updateNotificationSettings(userId, notifications);
 }
 
 export function updateAISettings(
   userId: string,
   ai: AISettings
 ): Promise<void> {
-  return userSettingsService.updateAISettings(userId, ai);
+  return activeService().updateAISettings(userId, ai);
 }

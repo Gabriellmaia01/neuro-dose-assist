@@ -21,6 +21,7 @@ export interface MedicationFormData {
   minDose: string;
   maxDose: string;
   unit: string;
+  halfLifeHours: string;
 }
 
 const EMPTY_FORM: MedicationFormData = {
@@ -32,6 +33,7 @@ const EMPTY_FORM: MedicationFormData = {
   minDose: "",
   maxDose: "",
   unit: "mg",
+  halfLifeHours: "",
 };
 
 export function useMedications() {
@@ -176,6 +178,10 @@ export function useMedications() {
       minDose: medication.minDose.toString(),
       maxDose: medication.maxDose.toString(),
       unit: medication.unit,
+      halfLifeHours:
+        medication.halfLifeHours !== undefined && medication.halfLifeHours !== null
+          ? medication.halfLifeHours.toString()
+          : "",
     });
     setIsDialogOpen(true);
   };
@@ -288,6 +294,20 @@ export function useMedications() {
       return;
     }
 
+    const trimmedHalfLife = formData.halfLifeHours.trim();
+    let parsedHalfLife: number | undefined;
+    if (trimmedHalfLife !== "") {
+      parsedHalfLife = parseFloat(trimmedHalfLife);
+      if (isNaN(parsedHalfLife) || parsedHalfLife <= 0) {
+        toast({
+          title: "Meia-vida inválida",
+          description: "A meia-vida deve ser um número positivo em horas.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       const medicationData: Medication = {
@@ -300,6 +320,7 @@ export function useMedications() {
         minDose,
         maxDose,
         unit: formData.unit,
+        ...(parsedHalfLife !== undefined ? { halfLifeHours: parsedHalfLife } : {}),
       };
 
       if (!targetUserId) return;

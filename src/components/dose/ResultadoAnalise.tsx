@@ -2,15 +2,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EfficacyRing } from "@/components/dashboard/EfficacyRing";
 import { PostDoseInsightCard } from "@/components/dashboard/PostDoseInsightCard";
-import { Brain, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnalysisResult } from "@/services/aiService";
 
 /**
- * Card de resultado exibido após a análise IA.
- * Princípio SOLID:
- *  - Responsabilidade Única (S): apenas exibição de resultado
- *  - Segregação de Interfaces (I): recebe resultado e callbacks
+ * Painel de resultado pós-registro de dose.
+ * Layout editorial em bento plano (sem cards aninhados), alinhado à linguagem clínica do sistema.
  */
 
 interface PropriedadesResultado {
@@ -18,107 +16,138 @@ interface PropriedadesResultado {
   onNovoRegistro: () => void;
 }
 
+const RISK_STYLES: Record<string, { dot: string; text: string }> = {
+  Baixo: {
+    dot: "bg-[var(--nd-success)]",
+    text: "text-[var(--nd-success)]",
+  },
+  Médio: {
+    dot: "bg-[var(--nd-warning)]",
+    text: "text-[var(--nd-warning)]",
+  },
+  Alto: {
+    dot: "bg-[var(--nd-danger)]",
+    text: "text-[var(--nd-danger)]",
+  },
+};
+
 export function ResultadoAnalise({ resultadoAnalise, onNovoRegistro }: PropriedadesResultado) {
   return (
-    <div className="nd-card p-8 animate-fade-up">
-      {/* Cabeçalho de sucesso */}
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="w-8 h-8 text-success" aria-hidden="true" />
-        </div>
-        <h2 className="font-display font-bold text-2xl mb-2">
-          Dose Registrada com Sucesso
-        </h2>
-        <p className="text-muted-foreground">
-          A análise de IA foi concluída
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Eficácia Prevista */}
-        <div className="text-center p-6 rounded-xl bg-muted/30">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
-            Eficácia Prevista
-          </h3>
-          <div className="flex justify-center mb-4">
-            <EfficacyRing value={resultadoAnalise.efficacyPrediction || 0} size="lg" />
+    <div className="space-y-6 animate-fade-up">
+      {/* Cabeçalho editorial de confirmação + ações rápidas */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-2">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--nd-success)]">
+            <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>Registro salvo no prontuário</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Baseado no histórico do paciente e condições atuais
+          <h2 className="font-display text-[24px] sm:text-[28px] font-medium leading-[1.15] tracking-[-0.02em] text-[var(--nd-text)] mt-1.5">
+            Dose Registrada com Sucesso
+          </h2>
+          <p className="text-[14px] text-[var(--nd-text-secondary)] mt-1">
+            Síntese farmacológica e pontos de vigilância clínica calculados para esta administração.
           </p>
         </div>
 
-        {/* Avaliação de Risco */}
-        <div className="p-6 rounded-xl bg-muted/30">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
-            Avaliação de Risco
-          </h3>
-          <div className="space-y-4">
-            {resultadoAnalise.riskAssessment.map((risco, indice) => (
-              <div
-                key={indice}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-lg border",
-                  risco.level === "Baixo"
-                    ? "bg-success/10 border-success/20"
-                    : risco.level === "Médio"
-                    ? "bg-warning/10 border-warning/20"
-                    : "bg-destructive/10 border-destructive/20"
-                )}
-              >
-                <div className="flex flex-col text-left">
-                  <span className="text-sm font-medium">{risco.category}</span>
-                  <span className="text-xs text-muted-foreground">{risco.description}</span>
-                </div>
-                <span
-                  className={cn(
-                    "text-sm font-medium ml-2",
-                    risco.level === "Baixo"
-                      ? "text-success"
-                      : risco.level === "Médio"
-                      ? "text-warning"
-                      : "text-destructive"
-                  )}
-                >
-                  {risco.level}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Button variant="outline" onClick={onNovoRegistro} className="h-11">
+            <Plus className="w-4 h-4 mr-1.5" aria-hidden="true" />
+            Novo Registro
+          </Button>
+          <Button asChild variant="default" className="h-11">
+            <Link to="/history">
+              Ver Histórico
+              <ArrowRight className="w-4 h-4 ml-1.5" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* Recomendação da IA */}
-      <div className="mt-6 p-4 rounded-xl bg-[var(--nd-accent-soft)] border border-primary/20">
-        <div className="flex items-start gap-3">
-          <Brain className="w-5 h-5 text-primary mt-0.5" aria-hidden="true" />
+      {/* Bento principal: Eficácia (5 cols) + Conduta & Risco (7 cols) — nível único, zero nested cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <section
+          aria-label="Eficácia prevista"
+          className="lg:col-span-5 nd-card p-6 sm:p-7 flex flex-col justify-between"
+        >
           <div>
-            <h4 className="font-medium text-sm mb-1">
-              Recomendação da IA
-            </h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--nd-text-secondary)]">
+              Eficácia Prevista
+            </p>
+            <p className="text-[13px] text-[var(--nd-text-secondary)] mt-1">
+              Estimativa baseada na posologia, histórico e estado subjetivo informado.
+            </p>
+          </div>
+
+          <div className="py-6 flex justify-center">
+            <EfficacyRing value={resultadoAnalise.efficacyPrediction || 0} size="lg" />
+          </div>
+
+          <div className="pt-4 border-t border-[var(--nd-border)] flex items-center justify-between text-[12px] text-[var(--nd-text-secondary)]">
+            <span>Modelo clínico determinístico</span>
+            <span className="font-medium text-[var(--nd-text)] tabular-nums">
+              {resultadoAnalise.efficacyPrediction || 0}% de aderência esperada
+            </span>
+          </div>
+        </section>
+
+        <section
+          aria-label="Conduta e avaliação de risco"
+          className="lg:col-span-7 nd-card p-6 sm:p-7 flex flex-col justify-between gap-6"
+        >
+          {/* Conduta recomendada (editorial com filete lateral, sem caixa aninhada) */}
+          <div className="border-l-2 border-[var(--nd-primary)] pl-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--nd-primary)]">
+              Conduta Recomendada
+            </p>
+            <p className="text-[15px] leading-relaxed text-[var(--nd-text)] font-medium mt-1.5">
               {resultadoAnalise.recommendation}
             </p>
           </div>
-        </div>
+
+          {/* Avaliação de risco em linhas tabulares com divisória fina */}
+          <div className="pt-5 border-t border-[var(--nd-border)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--nd-text-secondary)] mb-3">
+              Avaliação de Risco Clínico
+            </p>
+            <ul className="divide-y divide-[var(--nd-border)]">
+              {resultadoAnalise.riskAssessment.map((risco, indice) => {
+                const style = RISK_STYLES[risco.level] ?? RISK_STYLES.Baixo;
+                return (
+                  <li
+                    key={indice}
+                    className="py-3 first:pt-0 last:pb-0 flex items-start justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium text-[var(--nd-text)] leading-snug">
+                        {risco.category}
+                      </p>
+                      <p className="text-[13px] text-[var(--nd-text-secondary)] mt-0.5 leading-relaxed">
+                        {risco.description}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-[12px] font-semibold shrink-0 mt-0.5",
+                        style.text
+                      )}
+                    >
+                      <span className={cn("w-2 h-2 rounded-full", style.dot)} aria-hidden="true" />
+                      {risco.level}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
       </div>
 
-      {/* Insights Pós-Dose */}
+      {/* Orientações pós-dose em card próprio de nível único (com linhas editoriais sem nested cards) */}
       {resultadoAnalise.postDoseInsights && resultadoAnalise.postDoseInsights.length > 0 && (
-        <div className="mt-6">
+        <section aria-label="Orientações pós-dose" className="nd-card p-6 sm:p-7">
           <PostDoseInsightCard insights={resultadoAnalise.postDoseInsights} />
-        </div>
+        </section>
       )}
-
-      {/* Ações */}
-      <div className="flex justify-center gap-4 mt-8">
-        <Button variant="outline" onClick={onNovoRegistro}>
-          Novo Registro
-        </Button>
-        <Button asChild variant="default">
-          <Link to="/history">Ver Histórico</Link>
-        </Button>
-      </div>
     </div>
   );
 }

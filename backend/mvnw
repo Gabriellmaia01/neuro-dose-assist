@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+
+MAVEN_VERSION="3.9.9"
+MAVEN_HOME_PARENT="${HOME}/.m2/wrapper/dists/apache-maven-${MAVEN_VERSION}"
+MAVEN_HOME="${MAVEN_HOME_PARENT}/apache-maven-${MAVEN_VERSION}"
+MAVEN_BIN="${MAVEN_HOME}/bin/mvn"
+
+if [ ! -x "${MAVEN_BIN}" ]; then
+  echo "Downloading Apache Maven ${MAVEN_VERSION}..."
+  mkdir -p "${MAVEN_HOME_PARENT}"
+  ZIP_FILE="${MAVEN_HOME_PARENT}/maven.zip"
+  curl -fsSL "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.zip" -o "${ZIP_FILE}"
+  unzip -q -o "${ZIP_FILE}" -d "${MAVEN_HOME_PARENT}"
+  rm -f "${ZIP_FILE}"
+  chmod +x "${MAVEN_BIN}"
+fi
+
+exec "${MAVEN_BIN}" "$@"

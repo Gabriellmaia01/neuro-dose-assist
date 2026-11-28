@@ -125,8 +125,8 @@ export function FiltrosHistorico({
                 <CalendarIcon className="w-4 h-4 mr-2 shrink-0" aria-hidden="true" />
                 {data
                   ? new Intl.DateTimeFormat("pt-BR", {
-                      dateStyle: "short",
-                    }).format(data)
+                    dateStyle: "short",
+                  }).format(data)
                   : "Selecionar data"}
               </Button>
             </PopoverTrigger>

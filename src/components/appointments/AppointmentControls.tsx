@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Patient } from "@/lib/patients";
 import type { Appointment, AppointmentType } from "@/lib/appointments";
 import type { DadosFormulario } from "@/hooks/useAppointmentSchedule";
+import { obterDataLocalISO } from "@/lib/appointmentCalendar";
 import { Calendar as CalendarIcon, Loader2, Plus } from "lucide-react";
 
 export function AppointmentLoadingIndicator() {
@@ -81,7 +82,7 @@ function AppointmentForm({
                         id="apt-date"
                         type="date"
                         value={dadosFormulario.date}
-                        min={new Date().toISOString().split("T")[0]}
+                        min={obterDataLocalISO()}
                         onChange={(e) => aoAtualizar({ date: e.target.value })}
                     />
                 </div>

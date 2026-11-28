@@ -215,6 +215,34 @@ export class FirebaseClinicService implements IClinicService {
     }
   }
 
+  async getClinicPendingInvites(clinicId: string): Promise<ClinicInvite[]> {
+    try {
+      const invitesRef = ref(realtimeDb, `users/${clinicId}/clinicInvites`);
+      const snapshot = await get(invitesRef);
+
+      if (!snapshot.exists()) return [];
+
+      const invitesData = snapshot.val();
+      const invites: ClinicInvite[] = [];
+
+      Object.entries(invitesData).forEach(([key, value]) => {
+        const invite = value as Omit<ClinicInvite, "id">;
+        if (invite.status === "pending") {
+          invites.push({ id: key, ...invite });
+        }
+      });
+
+      return invites.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+    } catch (error) {
+      console.error("Error getting clinic pending invites:", error);
+      return [];
+    }
+  }
+
+  async getMyPendingInvites(): Promise<ClinicInvite[]> {
+    return [];
+  }
+
   async acceptClinicInvite(
     inviteId: string,
     clinicId: string,
@@ -233,6 +261,13 @@ export class FirebaseClinicService implements IClinicService {
       const invite = inviteSnapshot.val() as ClinicInvite;
       if (invite.status !== "pending") {
         throw new Error("Este convite já foi utilizado");
+      }
+
+      if (
+        invite.email &&
+        (!userEmail || invite.email.trim().toLowerCase() !== userEmail.trim().toLowerCase())
+      ) {
+        throw new Error("Este convite foi enviado para outro endereço de e-mail");
       }
 
       const clinicRef = ref(realtimeDb, `users/${clinicId}/clinic`);

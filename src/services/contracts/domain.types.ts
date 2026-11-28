@@ -79,6 +79,8 @@ export interface IClinicService {
   ): Promise<{ inviteId: string; emailSent: boolean }>;
   getInviteById(clinicId: string, inviteId: string): Promise<ClinicInvite | null>;
   getPendingInvitesFromClinic(clinicId: string, email: string): Promise<ClinicInvite[]>;
+  getClinicPendingInvites?(clinicId: string): Promise<ClinicInvite[]>;
+  getMyPendingInvites?(email: string): Promise<ClinicInvite[]>;
   acceptClinicInvite(inviteId: string, clinicId: string, userId: string, userEmail: string, userName?: string): Promise<void>;
   addClinicMember(clinicOwnerId: string, memberEmail: string, memberName: string, role: MemberRole): Promise<void>;
   removeClinicMember(clinicOwnerId: string, memberUid: string): Promise<void>;

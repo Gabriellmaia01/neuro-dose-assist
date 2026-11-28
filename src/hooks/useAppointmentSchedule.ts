@@ -11,7 +11,7 @@ import {
     type AppointmentStatus,
     type AppointmentType,
 } from "@/lib/appointments";
-import { gerarDiasCalendario, formatarDataISO, verificarConflitoHorario, validarDataHoraFutura } from "@/lib/appointmentCalendar";
+import { gerarDiasCalendario, formatarDataISO, obterDataLocalISO, verificarConflitoHorario, validarDataHoraFutura } from "@/lib/appointmentCalendar";
 import { getPatients, type Patient } from "@/lib/patients";
 
 export interface DadosFormulario {
@@ -82,8 +82,9 @@ export function useCalendario() {
     };
 
     const irParaHoje = () => {
-        setDataAtual(new Date());
-        setDataSelecionada(new Date().toISOString().split("T")[0]);
+        const agora = new Date();
+        setDataAtual(agora);
+        setDataSelecionada(obterDataLocalISO(agora));
     };
 
     const selecionarDia = (dia: number) => {

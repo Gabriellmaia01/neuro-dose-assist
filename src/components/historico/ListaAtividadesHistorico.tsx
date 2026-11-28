@@ -19,9 +19,11 @@ interface PropriedadesListaAtividades {
 }
 
 export function ListaAtividadesHistorico({
-  logs,
+  logs = [],
   carregando,
 }: PropriedadesListaAtividades) {
+  const safeLogs = Array.isArray(logs) ? logs : [];
+
   if (carregando) {
     return (
       <div className="nd-card p-12 flex items-center justify-center gap-3">
@@ -33,7 +35,7 @@ export function ListaAtividadesHistorico({
     );
   }
 
-  if (logs.length === 0) {
+  if (safeLogs.length === 0) {
     return (
       <div className="nd-card p-12 text-center">
         <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
@@ -54,7 +56,7 @@ export function ListaAtividadesHistorico({
 
   return (
     <ul className="space-y-3">
-      {logs.map((log) => {
+      {safeLogs.map((log, idx) => {
         const config = configuracaoAcao[log.action] || configuracaoAcao.create;
         const entidade =
           configuracaoEntidade[log.entityType] || configuracaoEntidade.patient;
@@ -62,12 +64,14 @@ export function ListaAtividadesHistorico({
         const IconeEntidade = entidade.icon;
 
         const dt = new Date(log.timestamp);
-        const rotuloDataHora = format(dt, "dd/MM/yyyy 'às' HH:mm", {
-          locale: ptBR,
-        });
+        const rotuloDataHora = Number.isNaN(dt.getTime())
+          ? "—"
+          : format(dt, "dd/MM/yyyy 'às' HH:mm", {
+              locale: ptBR,
+            });
 
         return (
-          <li key={log.id}>
+          <li key={log.id || `${log.timestamp}-${idx}`}>
             <div
               className={cn(
                 "w-full nd-card p-5 transition-colors duration-200 hover:bg-card/90"
@@ -99,7 +103,7 @@ export function ListaAtividadesHistorico({
 
                   <p className="font-medium mt-2">{log.entityName}</p>
 
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 max-w-[65ch] leading-relaxed">
                     {log.description}
                   </p>
 

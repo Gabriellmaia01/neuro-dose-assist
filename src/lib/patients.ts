@@ -1,5 +1,9 @@
 import { patientService } from "@/services/firebase/patientService";
+import { springPatientService } from "@/services/spring/domainServices";
+import { isSpringApiEnabled } from "@/services/provider";
 import type { UserAuditInfo } from "@/services/contracts/common.types";
+
+const activeService = () => (isSpringApiEnabled() ? springPatientService : patientService);
 
 export interface Patient {
   id?: string;
@@ -21,7 +25,7 @@ export function savePatient(
   userId: string,
   userInfo?: UserAuditInfo
 ): Promise<string> {
-  return patientService.savePatient(patient, userId, userInfo);
+  return activeService().savePatient(patient, userId, userInfo);
 }
 
 export function updatePatient(
@@ -29,18 +33,18 @@ export function updatePatient(
   patient: Partial<Patient>,
   userId: string
 ): Promise<void> {
-  return patientService.updatePatient(patientId, patient, userId);
+  return activeService().updatePatient(patientId, patient, userId);
 }
 
 export function getPatients(userId: string): Promise<Patient[]> {
-  return patientService.getPatients(userId);
+  return activeService().getPatients(userId);
 }
 
 export function getPatientById(
   patientId: string,
   userId: string
 ): Promise<Patient | null> {
-  return patientService.getPatientById(patientId, userId);
+  return activeService().getPatientById(patientId, userId);
 }
 
 export function deletePatient(
@@ -49,5 +53,5 @@ export function deletePatient(
   patientName?: string,
   userInfo?: UserAuditInfo
 ): Promise<void> {
-  return patientService.deletePatient(patientId, userId, patientName, userInfo);
+  return activeService().deletePatient(patientId, userId, patientName, userInfo);
 }

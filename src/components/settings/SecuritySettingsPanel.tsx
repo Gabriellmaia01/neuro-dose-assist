@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Key, Loader2, Trash2 } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 type PasswordData = {
     currentPassword: string;
@@ -17,15 +17,40 @@ export function SecuritySettingsPanel({
     setPasswordData,
     changingPassword,
     onChangePassword,
+    userEmail,
 }: {
     passwordData: PasswordData;
     setPasswordData: Dispatch<SetStateAction<PasswordData>>;
     changingPassword: boolean;
     onChangePassword: () => void;
+    userEmail?: string;
 }) {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!changingPassword) {
+            onChangePassword();
+        }
+    };
+
     return (
         <div className="space-y-6">
-            <div className="nd-card p-6 space-y-6">
+            <form
+                onSubmit={handleSubmit}
+                autoComplete="off"
+                className="nd-card p-6 space-y-6"
+            >
+                {/* Âncora oculta de usuário para conter a heurística de autofill do navegador dentro deste formulário */}
+                <input
+                    type="email"
+                    name="username"
+                    autoComplete="username"
+                    value={userEmail || ""}
+                    readOnly
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="sr-only"
+                />
+
                 <div>
                     <h2 className="font-display font-semibold text-lg">
                         Alterar Senha
@@ -39,9 +64,12 @@ export function SecuritySettingsPanel({
 
                 <div className="space-y-4 max-w-md">
                     <div className="space-y-2">
-                        <Label>Senha Atual</Label>
+                        <Label htmlFor="settings-current-password">Senha Atual</Label>
                         <Input
+                            id="settings-current-password"
+                            name="currentPassword"
                             type="password"
+                            autoComplete="new-password"
                             placeholder="••••••••"
                             value={passwordData.currentPassword}
                             onChange={(event) =>
@@ -53,9 +81,12 @@ export function SecuritySettingsPanel({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label>Nova Senha</Label>
+                        <Label htmlFor="settings-new-password">Nova Senha</Label>
                         <Input
+                            id="settings-new-password"
+                            name="newPassword"
                             type="password"
+                            autoComplete="new-password"
                             placeholder="••••••••"
                             value={passwordData.newPassword}
                             onChange={(event) =>
@@ -67,9 +98,12 @@ export function SecuritySettingsPanel({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label>Confirmar Nova Senha</Label>
+                        <Label htmlFor="settings-confirm-password">Confirmar Nova Senha</Label>
                         <Input
+                            id="settings-confirm-password"
+                            name="confirmPassword"
                             type="password"
+                            autoComplete="new-password"
                             placeholder="••••••••"
                             value={passwordData.confirmPassword}
                             onChange={(event) =>
@@ -84,8 +118,8 @@ export function SecuritySettingsPanel({
 
                 <div className="flex justify-end">
                     <Button
+                        type="submit"
                         variant="default"
-                        onClick={onChangePassword}
                         disabled={changingPassword}
                     >
                         {changingPassword ? (
@@ -101,7 +135,7 @@ export function SecuritySettingsPanel({
                         )}
                     </Button>
                 </div>
-            </div>
+            </form>
 
             <div className="nd-card p-6 space-y-6">
                 <div>
