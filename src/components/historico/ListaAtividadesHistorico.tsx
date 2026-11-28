@@ -103,7 +103,7 @@ export function ListaAtividadesHistorico({
 
                   <p className="font-medium mt-2">{log.entityName}</p>
 
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 max-w-[65ch] leading-relaxed">
                     {log.description}
                   </p>
 

@@ -124,14 +124,14 @@ export function ListaRegistrosHistorico({
                     </span>
                   </p>
 
-                  <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                  <div className="mt-2 space-y-1 text-sm text-muted-foreground max-w-[65ch]">
                     {item.subjectiveState?.effects && (
-                      <p className="line-clamp-2 break-words">
+                      <p className="line-clamp-2 break-words leading-relaxed">
                         "{item.subjectiveState.effects}"
                       </p>
                     )}
                     {item.analysis?.recommendation && (
-                      <p className="text-xs line-clamp-2 break-words">
+                      <p className="text-xs line-clamp-2 break-words leading-relaxed">
                         <span className="font-semibold text-foreground/80">
                           Recomendação:
                         </span>{" "}

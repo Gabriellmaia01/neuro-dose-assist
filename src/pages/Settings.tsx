@@ -67,6 +67,7 @@ export default function Settings() {
                             setPasswordData={settings.setPasswordData}
                             changingPassword={settings.changingPassword}
                             onChangePassword={settings.handleChangePassword}
+                            userEmail={settings.profile.email}
                         />
                     </TabsContent>
 
