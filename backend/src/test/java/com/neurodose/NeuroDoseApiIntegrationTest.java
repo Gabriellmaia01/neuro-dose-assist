@@ -214,6 +214,24 @@ class NeuroDoseApiIntegrationTest {
                                     && status.equals(i.status))
                             .toList();
                 });
+        when(clinicInviteRepository.findByClinicIdAndStatusOrderByCreatedAtDesc(anyString(), anyString()))
+                .thenAnswer(inv -> {
+                    String clinicId = inv.getArgument(0);
+                    String status = inv.getArgument(1);
+                    return invites.values().stream()
+                            .filter(i -> clinicId.equals(i.clinicId) && status.equals(i.status))
+                            .sorted(Comparator.comparing((ClinicInviteEntity i) -> i.createdAt).reversed())
+                            .toList();
+                });
+        when(clinicInviteRepository.findByEmailIgnoreCaseAndStatusOrderByCreatedAtDesc(anyString(), anyString()))
+                .thenAnswer(inv -> {
+                    String email = inv.getArgument(0);
+                    String status = inv.getArgument(1);
+                    return invites.values().stream()
+                            .filter(i -> email.equalsIgnoreCase(i.email) && status.equals(i.status))
+                            .sorted(Comparator.comparing((ClinicInviteEntity i) -> i.createdAt).reversed())
+                            .toList();
+                });
 
         when(userSettingsRepository.save(any(UserSettingsEntity.class))).thenAnswer(inv -> {
             UserSettingsEntity e = inv.getArgument(0);
@@ -332,6 +350,19 @@ class NeuroDoseApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("owner-1"));
 
+        // Rejeita tentativa de escalar papel para "owner" via convite (400 Bad Request)
+        mockMvc.perform(post("/api/v1/clinics/owner-1/invites")
+                        .with(ownerJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clinicName": "Clínica Neuro Vida",
+                                  "email": "residente@neurodose.com",
+                                  "role": "owner"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
         MvcResult inviteRes = mockMvc.perform(post("/api/v1/clinics/owner-1/invites")
                         .with(ownerJwt)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -346,10 +377,52 @@ class NeuroDoseApiIntegrationTest {
                 .andReturn();
         String inviteId = objectMapper.readTree(inviteRes.getResponse().getContentAsString()).get("inviteId").asText();
 
-        // Leitura pública de prévia do convite funciona sem autenticação
+        // Reenvio para o mesmo e-mail deduplica em vez de criar convites pendentes duplicados
+        mockMvc.perform(post("/api/v1/clinics/owner-1/invites")
+                        .with(ownerJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clinicName": "Clínica Neuro Vida",
+                                  "email": "residente@neurodose.com",
+                                  "role": "member"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.inviteId").value(inviteId));
+
+        // Leitura pública de prévia do convite funciona sem autenticação, mascarando PII (e-mail e invitedBy)
         mockMvc.perform(get("/api/v1/clinics/owner-1/invites/" + inviteId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.clinicName").value("Clínica Neuro Vida"));
+                .andExpect(jsonPath("$.clinicName").value("Clínica Neuro Vida"))
+                .andExpect(jsonPath("$.email").value("re***@neurodose.com"))
+                .andExpect(jsonPath("$.invitedBy").doesNotExist());
+
+        // Terceiro não autorizado não consegue enumerar convites de outro e-mail (403 Forbidden)
+        mockMvc.perform(get("/api/v1/clinics/owner-1/invites")
+                        .param("email", "residente@neurodose.com")
+                        .with(outsiderJwt))
+                .andExpect(status().isForbidden());
+
+        // Proprietário consegue listar convites pendentes da clínica e convidado descobre automaticamente
+        mockMvc.perform(get("/api/v1/clinics/owner-1/invites").with(ownerJwt))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].email").value("residente@neurodose.com"));
+
+        mockMvc.perform(get("/api/v1/invites/pending").with(memberJwt))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(inviteId));
+
+        // P1 Segurança: usuário com outro e-mail NÃO consegue sequestrar o convite (403 Forbidden)
+        mockMvc.perform(post("/api/v1/clinics/owner-1/invites/" + inviteId + "/accept")
+                        .with(outsiderJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "userEmail": "outro@neurodose.com", "userName": "Dr. Outro" }
+                                """))
+                .andExpect(status().isForbidden());
 
         // Membro aceita convite e passa a enxergar o workspace compartilhado owner-1
         mockMvc.perform(post("/api/v1/clinics/owner-1/invites/" + inviteId + "/accept")
@@ -367,6 +440,20 @@ class NeuroDoseApiIntegrationTest {
         mockMvc.perform(get("/api/v1/workspaces/owner-1/patients").with(memberJwt))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Lucas Silva"));
+
+        // DevSecOps RBAC: membro comum (role="member") não pode excluir prontuário de paciente (403), mas owner pode (204)
+        mockMvc.perform(delete("/api/v1/workspaces/owner-1/patients/" + patientId).with(memberJwt))
+                .andExpect(status().isForbidden());
+
+        // DevSecOps Validação: payload inválido (nome em branco) retorna 400 Bad Request
+        mockMvc.perform(post("/api/v1/workspaces/owner-1/patients")
+                        .with(ownerJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "name": "   ", "age": 20 }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("validation-error"));
 
         // 5. Configurações de usuário
         mockMvc.perform(patch("/api/v1/users/owner-1/settings/profile")

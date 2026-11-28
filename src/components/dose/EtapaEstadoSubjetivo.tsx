@@ -132,15 +132,15 @@ export function EtapaEstadoSubjetivo({
 
         {/* Bloco Opcional de Escalas Clínicas Padronizadas */}
         {onUsarEscalasClinicasChange && (
-          <div className="rounded-xl border border-border p-4 space-y-5 bg-muted/20">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <ClipboardList className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
-                <div>
-                  <Label htmlFor="toggle-clinical-scales" className="cursor-pointer font-semibold text-sm">
+          <div className="pt-6 border-t border-[var(--nd-border)] space-y-5">
+            <div className="flex items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-2.5 min-w-0">
+                <ClipboardList className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="min-w-0">
+                  <Label htmlFor="toggle-clinical-scales" className="cursor-pointer font-semibold text-sm leading-snug block">
                     Avaliação Clínica Padronizada (PHQ-2, GAD-2 e CGI-S)
                   </Label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                     Rastreio psicométrico validado para acompanhamento objetivo de resposta terapêutica
                   </p>
                 </div>
@@ -149,16 +149,17 @@ export function EtapaEstadoSubjetivo({
                 id="toggle-clinical-scales"
                 checked={usarEscalasClinicas}
                 onCheckedChange={onUsarEscalasClinicasChange}
+                className="shrink-0"
               />
             </div>
 
             {usarEscalasClinicas && (
-              <div className="space-y-6 pt-3 border-t border-border">
+              <div className="space-y-6 pt-4 border-t border-dashed border-[var(--nd-border)]">
                 {/* PHQ-2 */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <Label className="text-xs sm:text-sm">
-                      PHQ-2 — Rastreio Depressivo (anedomia + humor deprimido)
+                      PHQ-2 — Rastreio Depressivo (anedonia + humor deprimido)
                     </Label>
                     <Badge
                       variant="outline"

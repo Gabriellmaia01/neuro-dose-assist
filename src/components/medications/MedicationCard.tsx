@@ -94,6 +94,12 @@ export function MedicationCard({
               {medication.minDose} - {medication.maxDose} {medication.unit}
             </span>
           </div>
+          {medication.halfLifeHours !== undefined && medication.halfLifeHours !== null && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Meia-vida (t½)</span>
+              <span className="font-medium tabular-nums">{medication.halfLifeHours} h</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Cadastrado em</span>
             <span className="font-medium tabular-nums">

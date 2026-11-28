@@ -25,6 +25,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -58,7 +60,7 @@ import java.util.function.Function;
  * sem conectar ao MongoDB Atlas nem alterar dados reais de produção.
  */
 @Configuration
-@Profile("sandbox")
+@Profile("sandbox & !prod")
 public class SandboxEnvironmentConfig {
 
     private final SecretKey ephemeralKey;
@@ -74,7 +76,14 @@ public class SandboxEnvironmentConfig {
     private final Map<String, ClinicInviteEntity> invites = new ConcurrentHashMap<>();
     private final Map<String, UserSettingsEntity> settings = new ConcurrentHashMap<>();
 
-    public SandboxEnvironmentConfig() {
+    public SandboxEnvironmentConfig(Environment environment) {
+        if (environment.acceptsProfiles(Profiles.of("prod"))) {
+            throw new IllegalStateException("Perfil sandbox não pode ser ativado junto com prod.");
+        }
+        String mongoUri = environment.getProperty("MONGODB_URI", "");
+        if (mongoUri.startsWith("mongodb+srv://")) {
+            throw new IllegalStateException("Perfil sandbox bloqueado quando MONGODB_URI de nuvem (Atlas) está configurado.");
+        }
         byte[] bytes = new byte[32];
         new SecureRandom().nextBytes(bytes);
         this.ephemeralKey = new SecretKeySpec(bytes, "HmacSHA256");
@@ -94,7 +103,7 @@ public class SandboxEnvironmentConfig {
     }
 
     @RestController
-    @Profile("sandbox")
+    @Profile("sandbox & !prod")
     @RequestMapping("/api/v1/sandbox/auth")
     public static class SandboxAuthController {
         private final JwtEncoder jwtEncoder;
@@ -417,6 +426,22 @@ public class SandboxEnvironmentConfig {
                 String status = (String) args[2];
                 yield invites.values().stream()
                         .filter(i -> cid.equals(i.clinicId) && email.equalsIgnoreCase(i.email) && status.equals(i.status))
+                        .toList();
+            }
+            case "findByClinicIdAndStatusOrderByCreatedAtDesc" -> {
+                String cid = (String) args[0];
+                String status = (String) args[1];
+                yield invites.values().stream()
+                        .filter(i -> cid.equals(i.clinicId) && status.equals(i.status))
+                        .sorted(Comparator.comparing((ClinicInviteEntity i) -> nullSafe(i.createdAt)).reversed())
+                        .toList();
+            }
+            case "findByEmailIgnoreCaseAndStatusOrderByCreatedAtDesc" -> {
+                String email = (String) args[0];
+                String status = (String) args[1];
+                yield invites.values().stream()
+                        .filter(i -> email.equalsIgnoreCase(i.email) && status.equals(i.status))
+                        .sorted(Comparator.comparing((ClinicInviteEntity i) -> nullSafe(i.createdAt)).reversed())
                         .toList();
             }
             default -> defaultCrud(invites, i -> i.id, method, args);

@@ -512,6 +512,24 @@ export class SpringClinicService implements IClinicService {
     }
   }
 
+  async getClinicPendingInvites(clinicId: string): Promise<ClinicInvite[]> {
+    try {
+      return (
+        (await springRequest<ClinicInvite[]>(`/clinics/${encodeURIComponent(clinicId)}/invites`)) ?? []
+      );
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async getMyPendingInvites(): Promise<ClinicInvite[]> {
+    try {
+      return (await springRequest<ClinicInvite[]>("/invites/pending")) ?? [];
+    } catch (error) {
+      return [];
+    }
+  }
+
   async acceptClinicInvite(
     inviteId: string,
     clinicId: string,

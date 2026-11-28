@@ -10,3 +10,6 @@ app:
     project-id: neuro-dose-test
   cors:
     allowed-origins: http://localhost:8081
+  security:
+    rate-limit:
+      enabled: false

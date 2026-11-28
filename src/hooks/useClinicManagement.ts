@@ -6,7 +6,9 @@ import { toast } from "@/hooks/use-toast";
 import {
     acceptClinicInvite,
     createClinic,
+    getClinicPendingInvites,
     getInviteById,
+    getMyPendingInvites,
     getUserClinic,
     removeClinicMember,
     sendClinicInvite,
@@ -21,6 +23,7 @@ export function useDadosClinica() {
     const { refreshClinic } = useClinic();
 
     const [clinica, setClinica] = useState<Clinic | null>(null);
+    const [convitesPendentesClinica, setConvitesPendentesClinica] = useState<ClinicInvite[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
 
@@ -32,6 +35,12 @@ export function useDadosClinica() {
                 setCarregando(true);
                 const dadosClinica = await getUserClinic(user.uid);
                 setClinica(dadosClinica);
+                if (dadosClinica?.id && dadosClinica.ownerId === user.uid) {
+                    const pendentes = await getClinicPendingInvites(dadosClinica.id);
+                    setConvitesPendentesClinica(pendentes);
+                } else {
+                    setConvitesPendentesClinica([]);
+                }
             } catch (erro) {
                 console.error("Erro ao carregar dados da clínica:", erro);
             } finally {
@@ -46,15 +55,31 @@ export function useDadosClinica() {
         if (!user) return;
         const atualizada = await getUserClinic(user.uid);
         setClinica(atualizada);
+        if (atualizada?.id && atualizada.ownerId === user.uid) {
+            const pendentes = await getClinicPendingInvites(atualizada.id);
+            setConvitesPendentesClinica(pendentes);
+        } else {
+            setConvitesPendentesClinica([]);
+        }
         await refreshClinic();
     };
 
     const ehProprietario = clinica?.ownerId === user?.uid;
 
-    return { clinica, carregando, salvando, setSalvando, recarregar, user, ehProprietario, refreshClinic };
+    return {
+        clinica,
+        convitesPendentesClinica,
+        carregando,
+        salvando,
+        setSalvando,
+        recarregar,
+        user,
+        ehProprietario,
+        refreshClinic,
+    };
 }
 
-export function useConviteUrl(user: AuthUser | null) {
+export function useConviteUrl(user: AuthUser | null, possuiClinica = false) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [convitePendente, setConvitePendente] = useState<ClinicInvite | null>(null);
     const [carregandoConvite, setCarregandoConvite] = useState(false);
@@ -64,44 +89,62 @@ export function useConviteUrl(user: AuthUser | null) {
             const idConvite = searchParams.get("invite");
             const idClinica = searchParams.get("clinic");
 
-            if (!idConvite || !idClinica || !user) return;
+            if (!user) return;
 
-            try {
-                setCarregandoConvite(true);
-                const convite = await getInviteById(idClinica, idConvite);
+            if (idConvite && idClinica) {
+                try {
+                    setCarregandoConvite(true);
+                    const convite = await getInviteById(idClinica, idConvite);
 
-                if (convite && convite.status === "pending") {
-                    setConvitePendente(convite);
-                } else if (convite && convite.status === "accepted") {
-                    toast({
-                        title: "Convite já aceito",
-                        description: "Este convite já foi utilizado anteriormente.",
-                    });
-                    setSearchParams({});
-                } else {
-                    toast({
-                        title: "Convite não encontrado",
-                        description: "Este convite pode ter expirado ou sido removido.",
-                        variant: "destructive",
-                    });
-                    setSearchParams({});
+                    if (convite && convite.status === "pending") {
+                        setConvitePendente(convite);
+                    } else if (convite && convite.status === "accepted") {
+                        toast({
+                            title: "Convite já aceito",
+                            description: "Este convite já foi utilizado anteriormente.",
+                        });
+                        setSearchParams({});
+                    } else {
+                        toast({
+                            title: "Convite não encontrado",
+                            description: "Este convite pode ter expirado ou sido removido.",
+                            variant: "destructive",
+                        });
+                        setSearchParams({});
+                    }
+                } catch (erro) {
+                    console.error("Erro ao carregar convite:", erro);
+                } finally {
+                    setCarregandoConvite(false);
                 }
-            } catch (erro) {
-                console.error("Erro ao carregar convite:", erro);
-            } finally {
-                setCarregandoConvite(false);
+                return;
+            }
+
+            // Descoberta automática de convites pendentes para o e-mail autenticado
+            if (!possuiClinica && user.email) {
+                try {
+                    setCarregandoConvite(true);
+                    const pendentes = await getMyPendingInvites(user.email);
+                    setConvitePendente(pendentes[0] ?? null);
+                } catch (erro) {
+                    console.error("Erro ao buscar convites pendentes:", erro);
+                } finally {
+                    setCarregandoConvite(false);
+                }
             }
         };
 
         carregarConvite();
-    }, [searchParams, setSearchParams, user]);
+    }, [searchParams, setSearchParams, user, possuiClinica]);
 
     const limparConvite = () => {
         setConvitePendente(null);
-        setSearchParams({});
+        if (searchParams.get("invite") || searchParams.get("clinic")) {
+            setSearchParams({});
+        }
     };
 
-    const obterIdClinicaUrl = () => searchParams.get("clinic");
+    const obterIdClinicaUrl = () => searchParams.get("clinic") || convitePendente?.clinicId || null;
 
     return { convitePendente, carregandoConvite, limparConvite, obterIdClinicaUrl };
 }
@@ -156,15 +199,16 @@ export function useAcoesClinica(
 
             if (resultado.emailSent) {
                 toast({
-                    title: "Convite enviado por email! 📧",
+                    title: "Convite enviado por email!",
                     description: `Um email de convite foi enviado para ${email}`,
                 });
             } else {
                 toast({
                     title: "Convite criado!",
-                    description: `Convite para ${email} foi salvo. Configure o EmailJS para enviar por email.`,
+                    description: `Convite para ${email} salvo. Use "Copiar link" em Convites Pendentes para compartilhar.`,
                 });
             }
+            await recarregar();
         } catch (erro) {
             console.error("Erro ao enviar convite:", erro);
             toast({ title: "Erro ao enviar convite", variant: "destructive" });

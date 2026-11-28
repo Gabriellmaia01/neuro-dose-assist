@@ -1,6 +1,8 @@
 package com.neurodose.common;
 
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/health")
 public class HealthController {
+
+    private static final Logger log = LoggerFactory.getLogger(HealthController.class);
 
     private final MongoTemplate mongoTemplate;
 
@@ -32,11 +36,10 @@ public class HealthController {
             try {
                 mongoTemplate.executeCommand(new Document("ping", 1));
                 body.put("database", "UP");
-                body.put("databaseName", mongoTemplate.getDb().getName());
             } catch (Exception ex) {
+                log.warn("Falha no health-check do MongoDB", ex);
                 body.put("status", "DEGRADED");
                 body.put("database", "DOWN");
-                body.put("databaseError", ex.getMessage());
             }
         } else {
             body.put("database", "DISABLED");

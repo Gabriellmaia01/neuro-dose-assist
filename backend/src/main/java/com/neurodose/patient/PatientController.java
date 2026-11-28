@@ -3,6 +3,11 @@ package com.neurodose.patient;
 import com.neurodose.activity.ActivityLogService;
 import com.neurodose.security.AuthenticatedUser;
 import com.neurodose.security.TenantAccessGuard;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,15 +53,27 @@ public class PatientController {
     ) {}
 
     public record SavePatientRequest(
+            @NotBlank(message = "Nome do paciente é obrigatório")
+            @Size(max = 120, message = "Nome excede o limite de 120 caracteres")
             String name,
+            @Min(value = 0, message = "Idade não pode ser negativa")
+            @Max(value = 150, message = "Idade inválida")
             Integer age,
+            @Size(max = 40)
             String gender,
+            @Size(max = 200)
             String condition,
+            @Size(max = 5000, message = "Histórico clínico excede o limite permitido")
             String clinicalHistory,
+            @Size(max = 1000, message = "Alergias excede o limite permitido")
             String allergies,
+            @Size(max = 100)
             List<String> activeMedicationIds,
+            @Size(max = 2000)
             String currentMedications,
+            @Size(max = 120)
             String auditUserName,
+            @Size(max = 180)
             String auditUserEmail
     ) {}
 
@@ -83,7 +100,7 @@ public class PatientController {
     @PostMapping
     public ResponseEntity<Map<String, String>> create(
             @PathVariable String workspaceId,
-            @RequestBody SavePatientRequest req
+            @Valid @RequestBody SavePatientRequest req
     ) {
         AuthenticatedUser user = guard.requireWorkspaceAccess(workspaceId);
         String id = UUID.randomUUID().toString();
@@ -125,7 +142,7 @@ public class PatientController {
     public Map<String, String> updateFull(
             @PathVariable String workspaceId,
             @PathVariable String patientId,
-            @RequestBody SavePatientRequest req
+            @Valid @RequestBody SavePatientRequest req
     ) {
         AuthenticatedUser user = guard.requireWorkspaceAccess(workspaceId);
         PatientEntity entity = repository.findByIdAndWorkspaceOwnerId(patientId, workspaceId)
@@ -201,7 +218,7 @@ public class PatientController {
             @RequestParam(required = false) String auditUserName,
             @RequestParam(required = false) String auditUserEmail
     ) {
-        AuthenticatedUser user = guard.requireWorkspaceAccess(workspaceId);
+        AuthenticatedUser user = guard.requireClinicManager(workspaceId);
         Optional<PatientEntity> existing = repository.findByIdAndWorkspaceOwnerId(patientId, workspaceId);
         String resolvedName = patientName != null && !patientName.isBlank()
                 ? patientName

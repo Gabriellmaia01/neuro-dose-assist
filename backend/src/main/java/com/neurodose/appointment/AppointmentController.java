@@ -3,6 +3,11 @@ package com.neurodose.appointment;
 import com.neurodose.activity.ActivityLogService;
 import com.neurodose.security.AuthenticatedUser;
 import com.neurodose.security.TenantAccessGuard;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -56,15 +61,29 @@ public class AppointmentController {
     }
 
     public record SaveAppointmentPayload(
+            @NotBlank(message = "patientId é obrigatório")
+            @Size(max = 100)
             String patientId,
+            @Size(max = 120)
             String patientName,
+            @NotBlank(message = "date é obrigatória")
+            @Size(max = 20)
             String date,
+            @NotBlank(message = "time é obrigatório")
+            @Size(max = 20)
             String time,
+            @Min(5)
+            @Max(480)
             Integer duration,
+            @Size(max = 60)
             String type,
+            @Size(max = 40)
             String status,
+            @Size(max = 2000)
             String notes,
+            @Size(max = 120)
             String auditUserName,
+            @Size(max = 180)
             String auditUserEmail
     ) {
     }
@@ -102,7 +121,7 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<Map<String, String>> create(
             @PathVariable String workspaceId,
-            @RequestBody SaveAppointmentPayload p
+            @Valid @RequestBody SaveAppointmentPayload p
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         String id = UUID.randomUUID().toString();
@@ -136,7 +155,7 @@ public class AppointmentController {
     public Map<String, String> replace(
             @PathVariable String workspaceId,
             @PathVariable String appointmentId,
-            @RequestBody SaveAppointmentPayload p
+            @Valid @RequestBody SaveAppointmentPayload p
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         AppointmentEntity row = repo.findByIdAndWorkspaceOwnerId(appointmentId, workspaceId)

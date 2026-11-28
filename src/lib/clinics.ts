@@ -96,6 +96,16 @@ export function getPendingInvitesFromClinic(
   return activeService().getPendingInvitesFromClinic(clinicId, email);
 }
 
+export function getClinicPendingInvites(clinicId: string): Promise<ClinicInvite[]> {
+  const service = activeService();
+  return service.getClinicPendingInvites ? service.getClinicPendingInvites(clinicId) : Promise.resolve([]);
+}
+
+export function getMyPendingInvites(email: string): Promise<ClinicInvite[]> {
+  const service = activeService();
+  return service.getMyPendingInvites ? service.getMyPendingInvites(email) : Promise.resolve([]);
+}
+
 export function acceptClinicInvite(
   inviteId: string,
   clinicId: string,

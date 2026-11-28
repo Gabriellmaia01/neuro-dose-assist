@@ -19,6 +19,10 @@ export function formatarDataISO(dataAtual: Date, dia: number): string {
     return `${ano}-${mes}-${diaStr}`;
 }
 
+export function obterDataLocalISO(data: Date = new Date()): string {
+    return formatarDataISO(data, data.getDate());
+}
+
 export function verificarSeEhHoje(dataAtual: Date, dia: number): boolean {
     const hoje = new Date();
     return (

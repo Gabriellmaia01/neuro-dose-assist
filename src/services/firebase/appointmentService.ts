@@ -9,6 +9,7 @@ import {
   where,
   orderBy,
 } from "firebase/firestore";
+import { obterDataLocalISO } from "@/lib/appointmentCalendar";
 import { db } from "@/lib/firebase";
 import { logActivity } from "@/lib/activityLog";
 import type {
@@ -160,7 +161,7 @@ export class FirebaseAppointmentService implements IAppointmentService {
 
   async getUpcomingAppointments(userId: string): Promise<Appointment[]> {
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = obterDataLocalISO();
       const appointmentsRef = collection(db, "users", userId, "appointments");
       const q = query(
         appointmentsRef,

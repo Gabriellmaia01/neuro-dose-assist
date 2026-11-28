@@ -2,6 +2,9 @@ package com.neurodose.note;
 
 import com.neurodose.security.AuthenticatedUser;
 import com.neurodose.security.TenantAccessGuard;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +39,18 @@ public class PatientNoteController {
     ) {
     }
 
-    public record SaveNotePayload(String patientId, String title, String content, String category) {
+    public record SaveNotePayload(
+            @NotBlank(message = "patientId é obrigatório")
+            @Size(max = 100)
+            String patientId,
+            @Size(max = 200)
+            String title,
+            @NotBlank(message = "Conteúdo da nota é obrigatório")
+            @Size(max = 10000)
+            String content,
+            @Size(max = 60)
+            String category
+    ) {
     }
 
     @GetMapping
@@ -54,7 +68,7 @@ public class PatientNoteController {
     @PostMapping
     public ResponseEntity<Map<String, String>> create(
             @PathVariable String workspaceId,
-            @RequestBody SaveNotePayload p
+            @Valid @RequestBody SaveNotePayload p
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         String id = UUID.randomUUID().toString();
@@ -79,7 +93,7 @@ public class PatientNoteController {
     public Map<String, String> replace(
             @PathVariable String workspaceId,
             @PathVariable String noteId,
-            @RequestBody SaveNotePayload p
+            @Valid @RequestBody SaveNotePayload p
     ) {
         guard.requireWorkspaceAccess(workspaceId);
         PatientNoteEntity row = repo.findByIdAndWorkspaceOwnerId(noteId, workspaceId)

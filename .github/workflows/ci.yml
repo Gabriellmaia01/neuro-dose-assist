@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -21,6 +24,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit production dependencies (High/Critical)
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Run tests
         run: npm test
@@ -46,3 +52,16 @@ jobs:
 
       - name: Run Spring Boot integration tests
         run: chmod +x mvnw && ./mvnw -B test
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify no hardcoded secrets in tracked files
+        run: |
+          if git grep -nE "mongodb\+srv://[^/\s]+:[^@\s]+@|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----" -- ':!.env.example'; then
+            echo "::error::Possível segredo encontrado em arquivo rastreado pelo Git!"
+            exit 1
+          fi

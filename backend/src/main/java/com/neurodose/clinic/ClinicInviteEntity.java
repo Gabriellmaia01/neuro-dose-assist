@@ -18,4 +18,5 @@ public class ClinicInviteEntity {
     public String invitedBy;
     public String invitedByName;
     public String createdAt;
+    public String expiresAt;
 }

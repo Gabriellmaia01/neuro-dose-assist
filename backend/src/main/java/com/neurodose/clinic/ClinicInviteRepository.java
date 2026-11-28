@@ -8,4 +8,8 @@ public interface ClinicInviteRepository extends MongoRepository<ClinicInviteEnti
     Optional<ClinicInviteEntity> findByIdAndClinicId(String id, String clinicId);
 
     List<ClinicInviteEntity> findByClinicIdAndEmailIgnoreCaseAndStatus(String clinicId, String email, String status);
+
+    List<ClinicInviteEntity> findByClinicIdAndStatusOrderByCreatedAtDesc(String clinicId, String status);
+
+    List<ClinicInviteEntity> findByEmailIgnoreCaseAndStatusOrderByCreatedAtDesc(String email, String status);
 }

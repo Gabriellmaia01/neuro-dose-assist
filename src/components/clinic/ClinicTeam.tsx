@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import { useFormulariosClinica } from "@/hooks/useClinicManagement";
-import type { Clinic, MemberRole } from "@/lib/clinics";
-import { Loader2, Mail, Plus, Trash2, Users } from "lucide-react";
+import type { Clinic, ClinicInvite, MemberRole } from "@/lib/clinics";
+import { generateInviteLink } from "@/lib/email";
+import { Check, Copy, Link2, Loader2, Mail, Plus, Trash2, Users } from "lucide-react";
 import { ESTILOS_FUNCAO, ICONES_FUNCAO, ROTULOS_FUNCAO } from "./clinicPresentation";
 import { ClinicInfoCard } from "./ClinicOverview";
 
@@ -224,15 +227,107 @@ function ClinicTeamCard({
     );
 }
 
+function PendingInvitesCard({
+    clinicId,
+    invites,
+}: {
+    clinicId: string;
+    invites: ClinicInvite[];
+}) {
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    if (invites.length === 0) return null;
+
+    const handleCopyLink = async (invite: ClinicInvite) => {
+        if (!invite.id) return;
+        const link = generateInviteLink(invite.id, clinicId);
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(link);
+            }
+            setCopiedId(invite.id);
+            toast({
+                title: "Link de convite copiado!",
+                description: `Envie o link para ${invite.email} acessar a clínica.`,
+            });
+            window.setTimeout(() => setCopiedId((prev) => (prev === invite.id ? null : prev)), 2500);
+        } catch {
+            toast({
+                title: "Link de convite",
+                description: link,
+            });
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                    <Link2 className="w-5 h-5" aria-hidden="true" />
+                    Convites Pendentes
+                </CardTitle>
+                <CardDescription>
+                    Compartilhe o link direto ou aguarde o colaborador acessar a página Clínica com o e-mail convidado.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3">
+                    {invites.map((invite) => (
+                        <div
+                            key={invite.id || invite.email}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card"
+                        >
+                            <div className="min-w-0">
+                                <p className="font-medium truncate">{invite.email}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="outline" className={ESTILOS_FUNCAO[invite.role]}>
+                                        {ROTULOS_FUNCAO[invite.role]}
+                                    </Badge>
+                                    {invite.createdAt && (
+                                        <span className="text-xs text-muted-foreground tabular-nums">
+                                            Enviado em {new Date(invite.createdAt).toLocaleDateString("pt-BR")}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="shrink-0 h-10"
+                                onClick={() => handleCopyLink(invite)}
+                            >
+                                {copiedId === invite.id ? (
+                                    <>
+                                        <Check className="w-4 h-4 mr-1.5 text-success" aria-hidden="true" />
+                                        Copiado
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                                        Copiar link
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 export function ExistingClinicSection({
     clinic,
     isOwner,
+    pendingInvites = [],
     forms,
     onSendInvite,
     onRemoveMember,
 }: {
     clinic: Clinic;
     isOwner: boolean;
+    pendingInvites?: ClinicInvite[];
     forms: ReturnType<typeof useFormulariosClinica>;
     onSendInvite: () => void;
     onRemoveMember: (uid: string) => void;
@@ -247,6 +342,9 @@ export function ExistingClinicSection({
                 onSendInvite={onSendInvite}
                 onRemoveMember={onRemoveMember}
             />
+            {isOwner && clinic.id && (
+                <PendingInvitesCard clinicId={clinic.id} invites={pendingInvites} />
+            )}
         </>
     );
 }

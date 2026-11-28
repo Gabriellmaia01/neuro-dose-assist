@@ -3,6 +3,10 @@ package com.neurodose.medication;
 import com.neurodose.activity.ActivityLogService;
 import com.neurodose.security.AuthenticatedUser;
 import com.neurodose.security.TenantAccessGuard;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,16 +59,28 @@ public class MedicationController {
     }
 
     public record SaveMedicationPayload(
+            @NotBlank(message = "Nome do medicamento é obrigatório")
+            @Size(max = 120)
             String name,
+            @Size(max = 120)
             String brandName,
+            @Size(max = 200)
             String activeIngredient,
+            @Size(max = 120)
             String therapeuticClass,
+            @Size(max = 80)
             String form,
+            @DecimalMin(value = "0.0")
             Double minDose,
+            @DecimalMin(value = "0.0")
             Double maxDose,
+            @Size(max = 20)
             String unit,
+            @DecimalMin(value = "0.01")
             Double halfLifeHours,
+            @Size(max = 120)
             String auditUserName,
+            @Size(max = 180)
             String auditUserEmail
     ) {
     }
@@ -89,7 +105,7 @@ public class MedicationController {
     @PostMapping
     public ResponseEntity<Map<String, String>> create(
             @PathVariable String workspaceId,
-            @RequestBody SaveMedicationPayload payload
+            @Valid @RequestBody SaveMedicationPayload payload
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         String id = UUID.randomUUID().toString();
@@ -123,7 +139,7 @@ public class MedicationController {
     public Map<String, String> replace(
             @PathVariable String workspaceId,
             @PathVariable String medicationId,
-            @RequestBody SaveMedicationPayload payload
+            @Valid @RequestBody SaveMedicationPayload payload
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         MedicationEntity row = repo.findByIdAndWorkspaceOwnerId(medicationId, workspaceId)
@@ -183,7 +199,7 @@ public class MedicationController {
             @RequestParam(required = false) String auditUserName,
             @RequestParam(required = false) String auditUserEmail
     ) {
-        AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
+        AuthenticatedUser actor = guard.requireClinicManager(workspaceId);
         Optional<MedicationEntity> found = repo.findByIdAndWorkspaceOwnerId(medicationId, workspaceId);
         String label = (medicationName != null && !medicationName.isBlank())
                 ? medicationName

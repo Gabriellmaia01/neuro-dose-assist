@@ -3,6 +3,9 @@ package com.neurodose.dose;
 import com.neurodose.activity.ActivityLogService;
 import com.neurodose.security.AuthenticatedUser;
 import com.neurodose.security.TenantAccessGuard;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -47,17 +50,31 @@ public class DoseRecordController {
     ) {}
 
     public record CreateDosePayload(
+            @NotBlank(message = "patientId é obrigatório")
+            @Size(max = 100)
             String patientId,
+            @NotBlank(message = "medicationId é obrigatório")
+            @Size(max = 100)
             String medicationId,
+            @Size(max = 40)
             String doseAmount,
+            @Size(max = 20)
             String time,
+            @Size(max = 240)
             String indication,
+            @Size(max = 50)
             Map<String, Object> subjectiveState,
+            @Size(max = 50)
             Map<String, Object> analysis,
+            @Size(max = 50)
             String timestamp,
+            @Size(max = 120)
             String patientName,
+            @Size(max = 120)
             String medicationName,
+            @Size(max = 120)
             String auditUserName,
+            @Size(max = 180)
             String auditUserEmail
     ) {}
 
@@ -82,7 +99,7 @@ public class DoseRecordController {
     @PostMapping
     public ResponseEntity<Map<String, String>> create(
             @PathVariable String workspaceId,
-            @RequestBody CreateDosePayload p
+            @Valid @RequestBody CreateDosePayload p
     ) {
         AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
         String id = UUID.randomUUID().toString();
@@ -129,7 +146,7 @@ public class DoseRecordController {
             @RequestParam(required = false) String auditUserName,
             @RequestParam(required = false) String auditUserEmail
     ) {
-        AuthenticatedUser actor = guard.requireWorkspaceAccess(workspaceId);
+        AuthenticatedUser actor = guard.requireClinicManager(workspaceId);
         Optional<DoseRecordEntity> found = repo.findByIdAndWorkspaceOwnerId(doseId, workspaceId);
         found.ifPresent(repo::delete);
 

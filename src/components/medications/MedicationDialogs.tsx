@@ -147,7 +147,7 @@ export function MedicationFormDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="med-min">Dose Mínima *</Label>
               <Input
@@ -198,6 +198,23 @@ export function MedicationFormDialog({
                   <SelectItem value="mcg">mcg</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="med-half-life">Meia-vida (h)</Label>
+              <Input
+                id="med-half-life"
+                name="medHalfLifeHours"
+                type="number"
+                inputMode="decimal"
+                step="0.5"
+                min="0.1"
+                autoComplete="off"
+                placeholder="Ex.: 11…"
+                value={formData.halfLifeHours}
+                onChange={(e) => setFormData({ ...formData, halfLifeHours: e.target.value })}
+                onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                className="h-11 tabular-nums"
+              />
             </div>
           </div>
         </div>
@@ -275,10 +292,16 @@ export function MedicationDetailsDialog({
               </div>
               <div className="space-y-1">
                 <Label className="text-muted-foreground">Dosagem</Label>
-                <p className="font-medium">
+                <p className="font-medium tabular-nums">
                   {medication.minDose} - {medication.maxDose} {medication.unit}
                 </p>
               </div>
+              {medication.halfLifeHours !== undefined && medication.halfLifeHours !== null && (
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Meia-vida (t½)</Label>
+                  <p className="font-medium tabular-nums">{medication.halfLifeHours} h</p>
+                </div>
+              )}
             </div>
             <div className="pt-4 border-t text-sm text-muted-foreground flex justify-between">
               <span>ID: {medication.id}</span>
