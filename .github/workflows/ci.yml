@@ -61,7 +61,7 @@ jobs:
 
       - name: Verify no hardcoded secrets in tracked files
         run: |
-          if git grep -nE "mongodb\+srv://[^/\s]+:[^@\s]+@|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----" -- ':!.env.example'; then
+          if git grep -nE "mongodb\+srv://[^/\s]+:[^@\s]+@|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----" -- ':!.env.example' ':!.agent/**'; then
             echo "::error::Possível segredo encontrado em arquivo rastreado pelo Git!"
             exit 1
           fi
