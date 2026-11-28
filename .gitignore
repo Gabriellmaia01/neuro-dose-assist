@@ -26,6 +26,7 @@ backend/.env
 backend/src/main/resources/application-local.yml
 
 # Editor directories and files
+.agent/
 .vscode/*
 !.vscode/extensions.json
 .idea
