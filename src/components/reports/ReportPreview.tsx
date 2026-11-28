@@ -160,10 +160,7 @@ export function ReportPreview({
                                 Evolução da Eficácia
                             </h3>
                             {chartData.length > 0 ? (
-                                <EfficacyChart
-                                    data={chartData}
-                                    className="border-0 p-0 bg-transparent shadow-none"
-                                />
+                                <EfficacyChart data={chartData} embedded />
                             ) : (
                                 <p className="text-[13px] text-[var(--nd-text-secondary)] py-6">
                                     Não há registros suficientes no período selecionado para traçar a curva de eficácia.
